@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Filter, CalendarCheck, Clock, PawPrint,
   User, Stethoscope, X, Eye, ChevronLeft, ChevronRight,
-  Plus, CheckCircle, XCircle, AlertCircle, MoreHorizontal,
+  Plus, CheckCircle, XCircle, AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,19 +44,6 @@ const typeConfig: Record<AppType, string> = {
   Emergency: "badge-danger",
   FollowUp:  "badge-warning",
 };
-
-const mockAppointments: Appointment[] = [
-  { id: 1, code: "APT-00001", clientName: "Carlo Reyes",      petName: "Buddy",     petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "General Consultation",   date: "2026-06-16", time: "09:00 AM", status: "Scheduled",  type: "Scheduled",  reason: "Annual check-up" },
-  { id: 2, code: "APT-00002", clientName: "Maria Santos",     petName: "Whiskers",  petType: "Cat",    vetName: "Dr. Lovely Eguia", service: "Vaccination - 4-in-1",    date: "2026-06-16", time: "10:00 AM", status: "Approved",   type: "Scheduled",  reason: "Annual vaccine" },
-  { id: 3, code: "APT-00003", clientName: "Jose Cruz",        petName: "Max",       petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "Deworming",               date: "2026-06-16", time: "10:30 AM", status: "Pending",    type: "Scheduled",  reason: "3-month deworming" },
-  { id: 4, code: "APT-00004", clientName: "Ana Lopez",        petName: "Luna",      petType: "Cat",    vetName: "Dr. Lovely Eguia", service: "Grooming - Full",         date: "2026-06-16", time: "11:00 AM", status: "InProgress", type: "WalkIn",     reason: "Grooming session" },
-  { id: 5, code: "APT-00005", clientName: "Ramon Diaz",       petName: "Rocky",     petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "Emergency Consultation",  date: "2026-06-16", time: "11:30 AM", status: "Completed",  type: "Emergency",  reason: "Ate foreign object" },
-  { id: 6, code: "APT-00006", clientName: "Sofia Lim",        petName: "Mochi",     petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "Laboratory - Blood Test", date: "2026-06-17", time: "09:00 AM", status: "Approved",   type: "Scheduled",  reason: "Blood work" },
-  { id: 7, code: "APT-00007", clientName: "Elena Villanueva", petName: "Tweety",    petType: "Bird",   vetName: "Dr. Lovely Eguia", service: "General Consultation",   date: "2026-06-17", time: "10:00 AM", status: "Pending",    type: "Scheduled",  reason: "Wing injury" },
-  { id: 8, code: "APT-00008", clientName: "David Garcia",     petName: "Coco",      petType: "Cat",    vetName: "Dr. Lovely Eguia", service: "Dental Cleaning",        date: "2026-06-15", time: "02:00 PM", status: "Cancelled",  type: "Scheduled",  reason: "Dental cleaning" },
-  { id: 9, code: "APT-00009", clientName: "Rachel Torres",    petName: "Biscuit",   petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "Vaccination - 5-in-1",   date: "2026-06-15", time: "03:00 PM", status: "NoShow",     type: "Scheduled",  reason: "Puppy vaccines" },
-  { id: 10, code: "APT-00010", clientName: "Marco Reyes",     petName: "Shadow",    petType: "Dog",    vetName: "Dr. Lovely Eguia", service: "Follow-Up Visit",        date: "2026-06-18", time: "09:30 AM", status: "Scheduled",  type: "FollowUp",   reason: "Post-surgery follow-up" },
-];
 
 const kpiData = [
   { label: "Today's Total", value: 7, color: "#FF4FA3" },
@@ -140,10 +128,6 @@ export default function AppointmentsPage() {
   const [page, setPage] = useState(1);
   const PER_PAGE = 8;
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem("vcms_token");
@@ -160,6 +144,10 @@ export default function AppointmentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const filtered = apts.filter((a) => {
     const q = search.toLowerCase();

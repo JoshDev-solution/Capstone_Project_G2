@@ -17,3 +17,4 @@ D:\Capstone_Project_VCMS\backend\LJVetClinic.Infrastructure\obj\Debug\net10.0\re
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Infrastructure\obj\Debug\net10.0\LJVetClinic.Infrastructure.pdb
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Infrastructure\obj\Debug\net10.0\LJVetClinic.Infrastructure.genruntimeconfig.cache
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Infrastructure\obj\Debug\net10.0\ref\LJVetClinic.Infrastructure.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Infrastructure\obj\Debug\net10.0\LJVetClinic.Infrastructure.sourcelink.json

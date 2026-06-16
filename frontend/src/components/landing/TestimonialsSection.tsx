@@ -97,7 +97,7 @@ export default function TestimonialsSection() {
               </div>
 
               <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-8 max-w-3xl mx-auto italic">
-                "{t.text}"
+                &quot;{t.text}&quot;
               </p>
 
               {/* Author */}

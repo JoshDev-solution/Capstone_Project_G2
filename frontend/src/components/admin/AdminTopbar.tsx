@@ -26,6 +26,12 @@ export default function AdminTopbar({ sidebarCollapsed, title = "Dashboard" }: A
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("vcms_token");
+    localStorage.removeItem("vcms_user");
+    window.location.href = "/login";
+  };
+
   const notifications = [
     { id: 1, text: "New client registration pending approval", time: "2m ago", unread: true },
     { id: 2, text: "Low stock alert: Anti-Rabies Vaccine (5 left)", time: "15m ago", unread: true },
@@ -138,7 +144,10 @@ export default function AdminTopbar({ sidebarCollapsed, title = "Dashboard" }: A
                 </a>
               ))}
               <div className="border-t border-[var(--card-border)] mt-1 pt-1">
-                <button className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-danger hover:bg-danger/5 transition-colors w-full">
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-danger hover:bg-danger/5 transition-colors w-full"
+                >
                   <LogOut className="w-4 h-4" />
                   Sign Out
                 </button>

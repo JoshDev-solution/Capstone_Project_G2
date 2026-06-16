@@ -61,6 +61,12 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
 
+  const handleLogout = () => {
+    localStorage.removeItem("vcms_token");
+    localStorage.removeItem("vcms_user");
+    window.location.href = "/login";
+  };
+
   return (
     <motion.aside
       animate={{ width: collapsed ? 72 : 240 }}
@@ -154,7 +160,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         </button>
 
         {/* User row */}
-        <div className={cn("flex items-center gap-2.5 p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer", collapsed && "justify-center")}>
+        <div className={cn("flex items-center gap-2.5 p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors", collapsed && "justify-center")}>
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
             SA
           </div>
@@ -165,7 +171,13 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             </div>
           )}
           {!collapsed && (
-            <LogOut className="w-4 h-4 text-neutral-400 hover:text-danger shrink-0" />
+            <button 
+              onClick={handleLogout} 
+              className="p-1 rounded-lg hover:bg-danger/10 text-neutral-400 hover:text-danger shrink-0 transition-colors" 
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           )}
         </div>
       </div>

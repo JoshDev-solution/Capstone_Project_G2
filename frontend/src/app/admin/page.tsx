@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import {
-  TrendingUp, Users, PawPrint, CalendarCheck,
-  AlertTriangle, ArrowUp, ArrowDown, PhilippinePeso, Package,
+  PawPrint, CalendarCheck,
+  AlertTriangle, ArrowUp, ArrowDown, PhilippinePeso,
   ClipboardList,
 } from "lucide-react";
 import {
@@ -11,7 +11,6 @@ import {
   LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler,
 } from "chart.js";
 import { Line, Bar, Doughnut } from "react-chartjs-2";
-import { formatCurrency } from "@/lib/utils";
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -164,7 +163,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-neutral-400 mt-0.5">
-            Welcome back, Admin. Here's what's happening today.
+            Welcome back, Admin. Here&apos;s what&apos;s happening today.
           </p>
         </div>
         <div className="text-sm text-neutral-400">
@@ -280,7 +279,7 @@ export default function AdminDashboardPage() {
           className="card p-6"
         >
           <h3 className="font-bold text-lg mb-1">Weekly Appointments</h3>
-          <p className="text-xs text-neutral-400 mb-6">This week's appointment volume</p>
+          <p className="text-xs text-neutral-400 mb-6">This week&apos;s appointment volume</p>
           <div className="h-48">
             <Bar
               data={appointmentsData}

@@ -39,8 +39,8 @@ export default function LoginPage() {
       
       // Redirect to admin dashboard
       window.location.href = "/admin";
-    } catch (err: any) {
-      setError(err.message || "An error occurred while logging in.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred while logging in.");
     } finally {
       setLoading(false);
     }
@@ -163,6 +163,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   className="input pl-10"
+                  style={{ paddingLeft: "2.5rem" }}
                 />
               </div>
             </div>
@@ -187,6 +188,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="input pl-10 pr-10"
+                  style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}
                 />
                 <button
                   type="button"
@@ -221,7 +223,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-neutral-500 mt-6">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary-500 font-semibold hover:text-primary-600">
               Create account
             </Link>

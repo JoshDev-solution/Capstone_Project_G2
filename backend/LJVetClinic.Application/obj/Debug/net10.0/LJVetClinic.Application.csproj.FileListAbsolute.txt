@@ -13,3 +13,4 @@ D:\Capstone_Project_VCMS\backend\LJVetClinic.Application\obj\Debug\net10.0\LJVet
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Application\obj\Debug\net10.0\refint\LJVetClinic.Application.dll
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Application\obj\Debug\net10.0\LJVetClinic.Application.pdb
 D:\Capstone_Project_VCMS\backend\LJVetClinic.Application\obj\Debug\net10.0\ref\LJVetClinic.Application.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Application\obj\Debug\net10.0\LJVetClinic.Application.sourcelink.json

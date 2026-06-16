@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Phone, Clock, ExternalLink, Mail, PawPrint } from "lucide-react";
+import { MapPin, Phone, Clock, ExternalLink, Mail } from "lucide-react";
 
 const contactItems = [
   {
@@ -49,7 +49,7 @@ export default function ContactSection() {
             Get In <span className="gradient-text">Touch</span>
           </h2>
           <p className="text-neutral-500 dark:text-neutral-400 max-w-xl mx-auto text-lg">
-            We'd love to hear from you. Visit us, call us, or send a message anytime.
+            We&apos;d love to hear from you. Visit us, call us, or send a message anytime.
           </p>
         </motion.div>
 

@@ -101,7 +101,7 @@ export default function RegisterPage() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Registration Submitted!</h3>
               <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm leading-relaxed">
-                Your account is pending admin approval. You'll receive an email notification once approved. Thank you for joining LJ Veterinary Clinic!
+                Your account is pending admin approval. You&apos;ll receive an email notification once approved. Thank you for joining LJ Veterinary Clinic!
               </p>
               <Link href="/login" className="btn btn-primary w-full justify-center">
                 Go to Login
@@ -140,14 +140,14 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium mb-1.5" htmlFor="email">Email Address</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="email" type="email" required placeholder="you@example.com" className="input pl-10" />
+                        <input id="email" type="email" required placeholder="you@example.com" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" htmlFor="reg-password">Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="reg-password" type={showPassword ? "text" : "password"} required placeholder="Min. 8 characters" className="input pl-10 pr-10" />
+                        <input id="reg-password" type={showPassword ? "text" : "password"} required placeholder="Min. 8 characters" className="input pl-10 pr-10" style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600" tabIndex={-1}>
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium mb-1.5" htmlFor="confirm-password">Confirm Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="confirm-password" type="password" required placeholder="Re-enter password" className="input pl-10" />
+                        <input id="confirm-password" type="password" required placeholder="Re-enter password" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                   </motion.div>
@@ -170,7 +170,7 @@ export default function RegisterPage() {
                         <label className="block text-sm font-medium mb-1.5" htmlFor="first-name">First Name</label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                          <input id="first-name" type="text" required placeholder="Juan" className="input pl-10" />
+                          <input id="first-name" type="text" required placeholder="Juan" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                         </div>
                       </div>
                       <div>
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium mb-1.5" htmlFor="phone">Phone Number</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="phone" type="tel" placeholder="+63-9XX-XXX-XXXX" className="input pl-10" />
+                        <input id="phone" type="tel" placeholder="+63-9XX-XXX-XXXX" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                     <div>

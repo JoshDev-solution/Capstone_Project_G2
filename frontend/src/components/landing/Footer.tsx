@@ -14,10 +14,12 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-neutral-950 text-white overflow-hidden">
-      {/* Top gradient */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/40 to-transparent" />
-      <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full bg-primary-500/5 blur-[120px]" />
+    <footer className="relative bg-neutral-950 text-white mt-16">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/40 to-transparent" />
+        <div className="absolute top-0 left-1/4 w-[400px] h-[400px] rounded-full bg-primary-500/5 blur-[120px]" />
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* CTA Banner */}
