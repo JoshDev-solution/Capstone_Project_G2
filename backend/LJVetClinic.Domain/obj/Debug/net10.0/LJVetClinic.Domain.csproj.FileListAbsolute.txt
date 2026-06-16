@@ -1,0 +1,11 @@
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\bin\Debug\net10.0\LJVetClinic.Domain.deps.json
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\bin\Debug\net10.0\LJVetClinic.Domain.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\bin\Debug\net10.0\LJVetClinic.Domain.pdb
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.AssemblyInfoInputs.cache
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.AssemblyInfo.cs
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.csproj.CoreCompileInputs.cache
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\refint\LJVetClinic.Domain.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\LJVetClinic.Domain.pdb
+D:\Capstone_Project_VCMS\backend\LJVetClinic.Domain\obj\Debug\net10.0\ref\LJVetClinic.Domain.dll
