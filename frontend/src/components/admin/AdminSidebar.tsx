@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, PawPrint, CalendarCheck, Stethoscope,
@@ -60,6 +60,36 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
+  const [counts, setCounts] = useState({ registrationsCount: 0, notificationsCount: 0 });
+
+  const fetchCounts = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      if (!token) return;
+
+      const res = await fetch(`${baseUrl}/api/users/counts`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCounts({
+          registrationsCount: data.registrationsCount,
+          notificationsCount: data.notificationsCount
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch sidebar counts:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("vcms_token");
@@ -108,6 +138,13 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             )}
             {group.items.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+              let badgeVal = 0;
+              if (item.label === "Notifications") {
+                badgeVal = counts.notificationsCount;
+              } else if (item.label === "Registrations") {
+                badgeVal = counts.registrationsCount;
+              }
+
               return (
                 <Link
                   key={item.href}
@@ -132,12 +169,12 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                       </motion.span>
                     )}
                   </AnimatePresence>
-                  {!collapsed && "badge" in item && item.badge && (
+                  {!collapsed && badgeVal > 0 && (
                     <span className="ml-auto badge badge-primary text-[10px] px-1.5 py-0.5">
-                      {item.badge}
+                      {badgeVal}
                     </span>
                   )}
-                  {collapsed && "badge" in item && item.badge && (
+                  {collapsed && badgeVal > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary-500" />
                   )}
                 </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Bell, Check, CheckCheck, PawPrint, CalendarCheck, Package, UserPlus, CreditCard, MessageSquare, Filter, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,21 +48,96 @@ const mockNotifs: Notif[] = [
   { id: 9,  type: "Registration",  title: "Registration Approved",           message: "David Garcia's client account has been successfully approved.",                 time: "Yesterday",  read: true },
   { id: 10, type: "System",        title: "System Backup Complete",          message: "Daily database backup completed successfully at 3:00 AM.",                     time: "Yesterday",  read: true },
   { id: 11, type: "Payment",       title: "Refund Processed",                message: "Refund of ₱800 to Carlo Reyes has been processed via GCash.",                 time: "2 days ago", read: true },
-  { id: 12, type: "Vaccination",   title: "Deworming Reminder",              message: "Luna (Ana Lopez) is overdue for deworming treatment.",                         time: "2 days ago", read: true },
 ];
 
 const filters: (NType | "All")[] = ["All", "Appointment", "Registration", "LowStock", "Payment", "Message", "System"];
 
 export default function NotificationsPage() {
-  const [notifs, setNotifs] = useState(mockNotifs);
+  const [notifs, setNotifs] = useState<Notif[]>([]);
   const [filter, setFilter] = useState<NType | "All">("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/notifications`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to load notifications.");
+      }
+      const data = await res.json();
+      setNotifs(data);
+    } catch (err: any) {
+      setError(err.message || "An error occurred while loading notifications.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const displayed = filter === "All" ? notifs : notifs.filter((n) => n.type === filter);
   const unread = notifs.filter((n) => !n.read).length;
 
-  const markRead = (id: number) => setNotifs((p) => p.map((n) => n.id === id ? { ...n, read: true } : n));
-  const markAllRead = () => setNotifs((p) => p.map((n) => ({ ...n, read: true })));
-  const remove = (id: number) => setNotifs((p) => p.filter((n) => n.id !== id));
+  const markRead = async (id: number) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/notifications/${id}/read`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to mark notification as read.");
+      setNotifs((p) => p.map((n) => n.id === id ? { ...n, read: true } : n));
+    } catch (err: any) {
+      alert(err.message || "An error occurred.");
+    }
+  };
+
+  const markAllRead = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/notifications/read-all`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to mark all notifications as read.");
+      setNotifs((p) => p.map((n) => ({ ...n, read: true })));
+    } catch (err: any) {
+      alert(err.message || "An error occurred.");
+    }
+  };
+
+  const remove = async (id: number) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/notifications/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to delete notification.");
+      setNotifs((p) => p.filter((n) => n.id !== id));
+    } catch (err: any) {
+      alert(err.message || "An error occurred.");
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,71 +180,88 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Notification List */}
-      <div className="card overflow-hidden divide-y divide-[var(--card-border)]">
-        {displayed.length === 0 && (
-          <div className="text-center py-14 text-neutral-400">
-            <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p>No notifications.</p>
-          </div>
-        )}
-        {displayed.map((notif, i) => {
-          const Icon = typeIcon[notif.type];
-          const color = typeColor[notif.type];
-          return (
-            <motion.div
-              key={notif.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className={cn(
-                "flex items-start gap-4 px-5 py-4 group transition-colors cursor-pointer",
-                notif.read
-                  ? "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
-                  : "bg-primary-50/40 dark:bg-primary-500/5 hover:bg-primary-50/70 dark:hover:bg-primary-500/10"
-              )}
-              onClick={() => markRead(notif.id)}
-            >
-              {/* Icon */}
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${color}15` }}>
-                <Icon className="w-5 h-5" style={{ color }} />
-              </div>
+      {loading && (
+        <div className="text-center py-12 text-neutral-400">
+          <svg className="animate-spin h-8 w-8 mx-auto mb-3 text-primary-500" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          <p className="text-sm">Loading notifications...</p>
+        </div>
+      )}
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <p className={cn("text-sm font-semibold", !notif.read && "text-foreground")}>{notif.title}</p>
-                  <span className="text-xs text-neutral-400 whitespace-nowrap shrink-0">{notif.time}</span>
-                </div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">{notif.message}</p>
-              </div>
+      {error && (
+        <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm max-w-md">
+          {error}
+        </div>
+      )}
 
-              {/* Actions */}
-              <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                {!notif.read && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); markRead(notif.id); }}
-                    className="btn-icon btn-ghost rounded-lg w-7 h-7 flex items-center justify-center text-success"
-                    title="Mark as read"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                  </button>
+      {!loading && !error && (
+        <div className="card overflow-hidden divide-y divide-[var(--card-border)]">
+          {displayed.length === 0 && (
+            <div className="text-center py-14 text-neutral-400">
+              <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <p>No notifications.</p>
+            </div>
+          )}
+          {displayed.map((notif, i) => {
+            const Icon = typeIcon[notif.type] || Bell;
+            const color = typeColor[notif.type] || "#6B7280";
+            return (
+              <motion.div
+                key={notif.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className={cn(
+                  "flex items-start gap-4 px-5 py-4 group transition-colors cursor-pointer",
+                  notif.read
+                    ? "hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                    : "bg-primary-50/40 dark:bg-primary-500/5 hover:bg-primary-50/70 dark:hover:bg-primary-500/10"
                 )}
-                <button
-                  onClick={(e) => { e.stopPropagation(); remove(notif.id); }}
-                  className="btn-icon btn-ghost rounded-lg w-7 h-7 flex items-center justify-center text-neutral-400 hover:text-danger"
-                  title="Remove"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+                onClick={() => markRead(notif.id)}
+              >
+                {/* Icon */}
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: `${color}15` }}>
+                  <Icon className="w-5 h-5" style={{ color }} />
+                </div>
 
-              {/* Unread dot */}
-              {!notif.read && <div className="w-2 h-2 rounded-full bg-primary-500 shrink-0 mt-2" />}
-            </motion.div>
-          );
-        })}
-      </div>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={cn("text-sm font-semibold", !notif.read && "text-foreground")}>{notif.title}</p>
+                    <span className="text-xs text-neutral-400 whitespace-nowrap shrink-0">{notif.time}</span>
+                  </div>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">{notif.message}</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {!notif.read && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); markRead(notif.id); }}
+                      className="btn-icon btn-ghost rounded-lg w-7 h-7 flex items-center justify-center text-success"
+                      title="Mark as read"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); remove(notif.id); }}
+                    className="btn-icon btn-ghost rounded-lg w-7 h-7 flex items-center justify-center text-neutral-400 hover:text-danger"
+                    title="Remove"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Unread dot */}
+                {!notif.read && <div className="w-2 h-2 rounded-full bg-primary-500 shrink-0 mt-2" />}
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

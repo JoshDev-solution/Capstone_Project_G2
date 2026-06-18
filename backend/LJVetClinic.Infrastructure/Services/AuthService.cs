@@ -79,6 +79,30 @@ public class AuthService : IAuthService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
+        try
+        {
+            var adminUser = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Role != null && u.Role.Name == "Admin");
+            if (adminUser != null)
+            {
+                var notification = new Notification
+                {
+                    UserId = adminUser.Id,
+                    Type = "Registration",
+                    Title = "New Client Registration",
+                    Message = $"{request.FirstName} {request.LastName} has submitted a registration request awaiting approval.",
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+            }
+        }
+        catch
+        {
+            // Fail silently if there's any database mapping exception during notification creation
+        }
+
         var token = _jwtProvider.GenerateToken(user, "Client");
 
         return new AuthResponse
