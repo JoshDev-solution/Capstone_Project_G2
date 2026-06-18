@@ -232,4 +232,250 @@ public class UsersController : ControllerBase
         if (span.TotalDays < 2) return "Yesterday";
         return createdTime.ToString("yyyy-MM-dd");
     }
+
+    // ─── GENERAL USER MANAGEMENT CRUD ──────────────────────────────────────────
+
+    [HttpGet("list")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ListUsers()
+    {
+        try
+        {
+            var users = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Profile)
+                .Include(u => u.Staff)
+                .Where(u => !u.IsDeleted && u.IsApproved)
+                .OrderBy(u => u.Profile != null ? u.Profile.FirstName : "")
+                .ToListAsync();
+
+            var result = users.Select(u => {
+                string displayRole = "Client";
+                if (u.Role?.Name == "Admin")
+                {
+                    displayRole = u.Staff?.Position ?? "Administrator";
+                }
+                else if (u.Role?.Name == "Veterinarian")
+                {
+                    displayRole = "Veterinarian";
+                }
+
+                return new
+                {
+                    id = u.Id,
+                    name = u.Profile != null ? $"{u.Profile.FirstName} {u.Profile.LastName}" : "Unknown User",
+                    email = u.Email,
+                    role = displayRole,
+                    status = u.IsActive ? "Active" : "Inactive",
+                    joined = u.CreatedAt.ToString("MMM dd, yyyy"),
+                    phone = u.Profile?.Phone ?? ""
+                };
+            });
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("manage")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CreateUser([FromBody] ManageUserRequest request)
+    {
+        try
+        {
+            string dbRoleName = "Client";
+            if (request.Role == "Administrator" || request.Role == "Manager" || request.Role == "Cashier")
+            {
+                dbRoleName = "Admin";
+            }
+            else if (request.Role == "Veterinarian")
+            {
+                dbRoleName = "Veterinarian";
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dbRoleName);
+            if (role == null)
+            {
+                role = new Role { Name = dbRoleName, Description = dbRoleName, IsActive = true, CreatedAt = DateTime.UtcNow };
+                _context.Roles.Add(role);
+                await _context.SaveChangesAsync();
+            }
+
+            var names = request.Name.Split(' ');
+            var firstName = names[0];
+            var lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : "User";
+
+            var user = new User
+            {
+                Email = request.Email,
+                PasswordHash = global::BCrypt.Net.BCrypt.HashPassword("DefaultPassword123!"),
+                RoleId = role.Id,
+                IsActive = request.Status.ToLower() == "active",
+                IsApproved = true,
+                EmailVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                Profile = new UserProfile
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Phone = request.Phone,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            if (request.Role == "Client")
+            {
+                var client = new Client
+                {
+                    UserId = user.Id,
+                    ClientCode = $"CLI-{new Random().Next(1000, 9999)}",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.Clients.Add(client);
+            }
+            else
+            {
+                var staff = new Staff
+                {
+                    UserId = user.Id,
+                    EmployeeCode = $"STF-{new Random().Next(1000, 9999)}",
+                    Position = request.Role,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.Staff.Add(staff);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User created successfully.", id = user.Id });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("manage/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateUser(long id, [FromBody] ManageUserRequest request)
+    {
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.Profile)
+                .Include(u => u.Role)
+                .Include(u => u.Staff)
+                .Include(u => u.Client)
+                .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            string dbRoleName = "Client";
+            if (request.Role == "Administrator" || request.Role == "Manager" || request.Role == "Cashier")
+            {
+                dbRoleName = "Admin";
+            }
+            else if (request.Role == "Veterinarian")
+            {
+                dbRoleName = "Veterinarian";
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dbRoleName);
+            if (role != null)
+            {
+                user.RoleId = role.Id;
+            }
+
+            user.Email = request.Email;
+            user.IsActive = request.Status.ToLower() == "active";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var names = request.Name.Split(' ');
+            var firstName = names[0];
+            var lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : "User";
+
+            if (user.Profile == null)
+            {
+                user.Profile = new UserProfile
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Phone = request.Phone,
+                    CreatedAt = DateTime.UtcNow
+                };
+            }
+            else
+            {
+                user.Profile.FirstName = firstName;
+                user.Profile.LastName = lastName;
+                user.Profile.Phone = request.Phone;
+                user.Profile.UpdatedAt = DateTime.UtcNow;
+            }
+
+            if (request.Role == "Client")
+            {
+                if (user.Staff != null) _context.Staff.Remove(user.Staff);
+                if (user.Client == null)
+                {
+                    _context.Clients.Add(new Client { UserId = user.Id, ClientCode = $"CLI-{new Random().Next(1000, 9999)}", CreatedAt = DateTime.UtcNow });
+                }
+            }
+            else
+            {
+                if (user.Client != null) _context.Clients.Remove(user.Client);
+                if (user.Staff == null)
+                {
+                    _context.Staff.Add(new Staff { UserId = user.Id, EmployeeCode = $"STF-{new Random().Next(1000, 9999)}", Position = request.Role, CreatedAt = DateTime.UtcNow });
+                }
+                else
+                {
+                    user.Staff.Position = request.Role;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("manage/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUser(long id)
+    {
+        try
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            user.IsDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User deleted successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+}
+
+public class ManageUserRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Role { get; set; } = "Client";
+    public string Status { get; set; } = "Active";
+    public string Phone { get; set; } = string.Empty;
 }

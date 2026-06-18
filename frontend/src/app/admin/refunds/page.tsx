@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Eye, CheckCircle, XCircle, RotateCcw, Filter,
@@ -31,15 +31,6 @@ const statusConfig: Record<RefundStatus, string> = {
   Processed: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
 };
 
-const mockRefunds: Refund[] = [
-  { id: 1, code: "RFD-00001", clientName: "Carlo Reyes",      billCode: "BILL-00012", paymentMethod: "GCash",      amount: 800,  reason: "Service not rendered — appointment cancelled by clinic", status: "Pending",   requestedAt: "Jun 16, 2026 08:30 AM" },
-  { id: 2, code: "RFD-00002", clientName: "Ana Lopez",        billCode: "BILL-00015", paymentMethod: "Cash",       amount: 500,  reason: "Duplicate payment recorded in system",                   status: "Approved",  requestedAt: "Jun 15, 2026 04:00 PM", processedAt: "Jun 16, 2026 09:00 AM" },
-  { id: 3, code: "RFD-00003", clientName: "Maria Santos",     billCode: "BILL-00008", paymentMethod: "Maya",       amount: 1500, reason: "Pet allergic reaction to medication administered",        status: "Processed", requestedAt: "Jun 14, 2026 11:00 AM", processedAt: "Jun 15, 2026 10:30 AM" },
-  { id: 4, code: "RFD-00004", clientName: "Jose Cruz",        billCode: "BILL-00021", paymentMethod: "CreditCard", amount: 2500, reason: "Surgery complication — client requested refund",          status: "Rejected",  requestedAt: "Jun 13, 2026 02:00 PM" },
-  { id: 5, code: "RFD-00005", clientName: "Sofia Lim",        billCode: "BILL-00025", paymentMethod: "GCash",      amount: 300,  reason: "Wrong service billed to account",                       status: "Pending",   requestedAt: "Jun 16, 2026 09:45 AM" },
-  { id: 6, code: "RFD-00006", clientName: "Elena Villanueva", billCode: "BILL-00031", paymentMethod: "Cash",       amount: 1200, reason: "Pet passed away before treatment",                      status: "Approved",  requestedAt: "Jun 12, 2026 03:30 PM", processedAt: "Jun 13, 2026 08:00 AM" },
-];
-
 function DetailModal({ refund, onClose, onApprove, onReject, onProcess }: {
   refund: Refund;
   onClose: () => void;
@@ -59,7 +50,6 @@ function DetailModal({ refund, onClose, onApprove, onReject, onProcess }: {
           <button onClick={onClose} className="btn-icon btn-ghost rounded-xl w-9 h-9 flex items-center justify-center"><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Amount Highlight */}
         <div className="gradient-primary rounded-2xl p-5 text-white text-center mb-6">
           <p className="text-xs uppercase tracking-widest opacity-80 mb-1">Refund Amount</p>
           <p className="text-4xl font-bold">₱{refund.amount.toLocaleString()}</p>
@@ -104,12 +94,62 @@ function DetailModal({ refund, onClose, onApprove, onReject, onProcess }: {
 }
 
 export default function RefundsPage() {
-  const [refunds, setRefunds] = useState(mockRefunds);
+  const [refunds, setRefunds] = useState<Refund[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [selected, setSelected] = useState<Refund | null>(null);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const PER_PAGE = 8;
+
+  const fetchRefunds = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/refunds`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to fetch refunds.");
+      const data = await res.json();
+      setRefunds(data);
+    } catch (err: any) {
+      setError(err.message || "An error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRefunds();
+  }, []);
+
+  const updateStatus = async (id: number, newStatus: RefundStatus) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/refunds/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error("Failed to update status.");
+      await fetchRefunds();
+    } catch (err: any) {
+      alert(err.message || "An error occurred.");
+    }
+  };
+
+  const approve = (id: number) => updateStatus(id, "Approved");
+  const reject = (id: number) => updateStatus(id, "Rejected");
+  const process_ = (id: number) => updateStatus(id, "Processed");
 
   const filtered = refunds.filter((r) => {
     const q = search.toLowerCase();
@@ -121,12 +161,8 @@ export default function RefundsPage() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
 
-  const approve  = (id: number) => setRefunds((p) => p.map((r) => r.id === id ? { ...r, status: "Approved"  as RefundStatus, processedAt: new Date().toLocaleDateString() } : r));
-  const reject   = (id: number) => setRefunds((p) => p.map((r) => r.id === id ? { ...r, status: "Rejected"  as RefundStatus } : r));
-  const process_ = (id: number) => setRefunds((p) => p.map((r) => r.id === id ? { ...r, status: "Processed" as RefundStatus, processedAt: new Date().toLocaleDateString() } : r));
-
-  const pending   = refunds.filter((r) => r.status === "Pending").length;
-  const totalAmt  = refunds.filter((r) => r.status === "Processed").reduce((s, r) => s + r.amount, 0);
+  const pending = refunds.filter((r) => r.status === "Pending").length;
+  const totalAmt = refunds.filter((r) => r.status === "Processed").reduce((s, r) => s + r.amount, 0);
 
   return (
     <>
@@ -138,24 +174,22 @@ export default function RefundsPage() {
           </div>
         </div>
 
-        {/* Summary strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Pending",   value: pending,                        color: "#F59E0B" },
+            { label: "Pending",   value: pending, color: "#F59E0B" },
             { label: "Approved",  value: refunds.filter((r) => r.status === "Approved").length, color: "#10B981" },
             { label: "Processed", value: refunds.filter((r) => r.status === "Processed").length, color: "#3B82F6" },
             { label: "Total Refunded", value: `₱${totalAmt.toLocaleString()}`, color: "#FF4FA3" },
           ].map((s) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="card p-4 flex items-center gap-3">
+            <div key={s.label} className="card p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${s.color}15` }}>
                 <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
               </div>
               <p className="text-xs text-neutral-400 leading-tight">{s.label}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -170,79 +204,96 @@ export default function RefundsPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Refund Code</th>
-                  <th>Client</th>
-                  <th className="hidden sm:table-cell">Bill</th>
-                  <th>Amount</th>
-                  <th className="hidden md:table-cell">Payment</th>
-                  <th>Status</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((r, i) => (
-                  <motion.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
-                    <td><code className="text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded font-mono">{r.code}</code></td>
-                    <td>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">{r.clientName.charAt(0)}</div>
-                        <div>
-                          <p className="text-sm font-semibold">{r.clientName}</p>
-                          <p className="text-xs text-neutral-400">{r.requestedAt}</p>
+        {loading && (
+          <div className="text-center py-12 text-neutral-400">
+            <svg className="animate-spin h-8 w-8 mx-auto mb-3 text-primary-500" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <p className="text-sm">Loading refunds...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm max-w-md">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Refund Code</th>
+                    <th>Client</th>
+                    <th className="hidden sm:table-cell">Bill</th>
+                    <th>Amount</th>
+                    <th className="hidden md:table-cell">Payment</th>
+                    <th>Status</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map((r, i) => (
+                    <motion.tr key={r.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
+                      <td><code className="text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded font-mono">{r.code}</code></td>
+                      <td>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">{r.clientName.charAt(0)}</div>
+                          <div>
+                            <p className="text-sm font-semibold">{r.clientName}</p>
+                            <p className="text-xs text-neutral-400">{r.requestedAt}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="hidden sm:table-cell"><code className="text-xs text-neutral-400">{r.billCode}</code></td>
-                    <td className="font-bold text-primary-600 dark:text-primary-400">₱{r.amount.toLocaleString()}</td>
-                    <td className="hidden md:table-cell text-sm text-neutral-500">{r.paymentMethod}</td>
-                    <td><span className={cn("badge", statusConfig[r.status])}>{r.status}</span></td>
-                    <td>
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => setSelected(r)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        {r.status === "Pending" && (
-                          <>
-                            <button onClick={() => approve(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-success" title="Approve">
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => reject(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger" title="Reject">
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {r.status === "Approved" && (
-                          <button onClick={() => process_(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-blue-500" title="Process">
-                            <RotateCcw className="w-4 h-4" />
+                      </td>
+                      <td className="hidden sm:table-cell"><code className="text-xs text-neutral-400">{r.billCode}</code></td>
+                      <td className="font-bold text-primary-600 dark:text-primary-400">₱{r.amount.toLocaleString()}</td>
+                      <td className="hidden md:table-cell text-sm text-neutral-500">{r.paymentMethod}</td>
+                      <td><span className={cn("badge", statusConfig[r.status])}>{r.status}</span></td>
+                      <td>
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setSelected(r)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
+                            <Eye className="w-4 h-4" />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {filtered.length === 0 && (
-            <div className="text-center py-14 text-neutral-400">
-              <RotateCcw className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>No refund requests found.</p>
+                          {r.status === "Pending" && (
+                            <>
+                              <button onClick={() => approve(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-success" title="Approve">
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => reject(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger" title="Reject">
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                          {r.status === "Approved" && (
+                            <button onClick={() => process_(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-blue-500" title="Process">
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-          <div className="px-4 py-3 border-t border-[var(--card-border)] flex items-center justify-between text-sm text-neutral-400">
-            <span>Showing {Math.min((page-1)*PER_PAGE+1,filtered.length)}–{Math.min(page*PER_PAGE,filtered.length)} of {filtered.length}</span>
-            <div className="flex gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p-1))} disabled={page===1} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
-              <button onClick={() => setPage((p) => Math.min(totalPages, p+1))} disabled={page===totalPages} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
+            {filtered.length === 0 && (
+              <div className="text-center py-14 text-neutral-400">
+                <RotateCcw className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p>No refund requests found.</p>
+              </div>
+            )}
+            <div className="px-4 py-3 border-t border-[var(--card-border)] flex items-center justify-between text-sm text-neutral-400">
+              <span>Showing {Math.min((page-1)*PER_PAGE+1,filtered.length)}–{Math.min(page*PER_PAGE,filtered.length)} of {filtered.length}</span>
+              <div className="flex gap-1">
+                <button onClick={() => setPage((p) => Math.max(1, p-1))} disabled={page===1} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30"><ChevronLeft className="w-4 h-4" /></button>
+                <button onClick={() => setPage((p) => Math.min(totalPages, p+1))} disabled={page===totalPages} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30"><ChevronRight className="w-4 h-4" /></button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <AnimatePresence>

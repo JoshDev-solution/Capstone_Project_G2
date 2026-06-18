@@ -1,91 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search, Plus, Edit, Trash2, PawPrint, Eye, Filter,
-  X, User, ChevronLeft, ChevronRight, Syringe,
-  ClipboardList, Shield,
+  Plus, Search, Edit, Trash2, PawPrint, X, AlertTriangle, Filter,
+  User, Shield, ChevronLeft, ChevronRight, Eye, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// ─── Types ─────────────────────────────────────────────────────────────────
-type Species = "Dog" | "Cat" | "Bird" | "Rabbit" | "Hamster" | "Reptile" | "Other";
-type Sex      = "Male" | "Female";
 
 interface Pet {
   id: number;
   name: string;
-  species: Species;
+  species: string;
   breed: string;
-  sex: Sex;
+  sex: string;
   color: string;
-  dob: string;          // YYYY-MM-DD
-  weight: number;       // kg
-  microchip?: string;
+  dob: string;
+  weight: number;
   ownerName: string;
   ownerEmail: string;
-  status: "Active" | "Deceased" | "Transferred";
-  vaccinationStatus: "Up to Date" | "Due Soon" | "Overdue" | "Unknown";
+  status: string;
+  vaccinationStatus: string;
   lastVisit: string;
-  notes?: string;
-  imageUrl?: string;    // placeholder for Cloudinary
+  microchip: string;
 }
 
-interface MedicalRecord {
-  id: number;
-  petId: number;
-  date: string;
-  type: "Consultation" | "Vaccination" | "Deworming" | "Surgery" | "Lab" | "Grooming";
-  diagnosis?: string;
-  treatment: string;
-  vet: string;
-  weight?: number;
-  notes?: string;
-  nextVisit?: string;
-}
+const speciesEmoji: Record<string, string> = {
+  Dog: "🐕", Cat: "🐈", Bird: "生物", Rabbit: "🐰", Hamster: "🐹", Reptile: "🦎", Other: "🐾"
+};
 
-interface VaccinationRecord {
-  id: number;
-  petId: number;
-  vaccineName: string;
-  doseNumber: number;
-  administeredDate: string;
-  nextDueDate: string;
-  batch: string;
-  vet: string;
-}
+const speciesColor: Record<string, string> = {
+  Dog: "#FF4FA3", Cat: "#D98CFF", Bird: "#F59E0B", Rabbit: "#10B981", Hamster: "#F97316", Reptile: "#14B8A6", Other: "#6B7280"
+};
 
-// ─── Mock Data ─────────────────────────────────────────────────────────────
-const mockPets: Pet[] = [
-  { id: 1,  name: "Buddy",     species: "Dog",    breed: "Labrador Retriever", sex: "Male",   color: "Golden",  dob: "2020-03-15", weight: 28.5, ownerName: "Carlo Reyes",      ownerEmail: "carlo.r@gmail.com",    status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 10, 2026", microchip: "900032000123456" },
-  { id: 2,  name: "Whiskers",  species: "Cat",    breed: "Persian",            sex: "Female", color: "White",   dob: "2021-07-22", weight: 4.2,  ownerName: "Maria Santos",     ownerEmail: "maria.s@gmail.com",    status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 8, 2026",  microchip: "900032000234567" },
-  { id: 3,  name: "Max",       species: "Dog",    breed: "German Shepherd",    sex: "Male",   color: "Black/Tan",dob: "2019-11-05",weight: 32.0, ownerName: "Jose Cruz",        ownerEmail: "jose.c@gmail.com",     status: "Active",    vaccinationStatus: "Due Soon",   lastVisit: "May 20, 2026" },
-  { id: 4,  name: "Luna",      species: "Cat",    breed: "Siamese",            sex: "Female", color: "Cream",   dob: "2022-01-10", weight: 3.8,  ownerName: "Ana Lopez",        ownerEmail: "ana.l@gmail.com",      status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 5, 2026" },
-  { id: 5,  name: "Rocky",     species: "Dog",    breed: "Aspin",              sex: "Male",   color: "Brown",   dob: "2018-06-18", weight: 15.5, ownerName: "Ramon Diaz",       ownerEmail: "ramon.d@gmail.com",    status: "Active",    vaccinationStatus: "Overdue",    lastVisit: "Apr 12, 2026" },
-  { id: 6,  name: "Mochi",     species: "Dog",    breed: "Shih Tzu",           sex: "Female", color: "White/Gray",dob:"2023-02-28",weight: 5.2,  ownerName: "Sofia Lim",        ownerEmail: "sofia.l@gmail.com",    status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 12, 2026" },
-  { id: 7,  name: "Tweety",    species: "Bird",   breed: "Cockatiel",          sex: "Male",   color: "Yellow",  dob: "2022-09-01", weight: 0.1,  ownerName: "Elena Villanueva", ownerEmail: "elena.v@gmail.com",    status: "Active",    vaccinationStatus: "Unknown",    lastVisit: "Jun 15, 2026" },
-  { id: 8,  name: "Coco",      species: "Cat",    breed: "Ragdoll",            sex: "Male",   color: "Bicolor", dob: "2020-12-25", weight: 6.5,  ownerName: "David Garcia",     ownerEmail: "david.g@gmail.com",    status: "Active",    vaccinationStatus: "Due Soon",   lastVisit: "May 28, 2026" },
-  { id: 9,  name: "Biscuit",   species: "Dog",    breed: "Golden Retriever",   sex: "Female", color: "Golden",  dob: "2021-04-14", weight: 24.0, ownerName: "Rachel Torres",    ownerEmail: "rachel.t@gmail.com",   status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 1, 2026" },
-  { id: 10, name: "Shadow",    species: "Dog",    breed: "Black Labrador",     sex: "Male",   color: "Black",   dob: "2019-08-30", weight: 30.0, ownerName: "Marco Reyes",      ownerEmail: "marco.r@gmail.com",    status: "Active",    vaccinationStatus: "Up to Date", lastVisit: "Jun 14, 2026" },
-  { id: 11, name: "Snowball",  species: "Rabbit", breed: "Holland Lop",        sex: "Female", color: "White",   dob: "2023-05-20", weight: 1.8,  ownerName: "Nina Aquino",      ownerEmail: "nina.a@gmail.com",     status: "Active",    vaccinationStatus: "Unknown",    lastVisit: "Mar 5, 2026" },
-  { id: 12, name: "Rex",       species: "Dog",    breed: "Doberman",           sex: "Male",   color: "Black/Rust",dob:"2018-03-11",weight: 38.0, ownerName: "Luis Santos",      ownerEmail: "luis.s@gmail.com",     status: "Active",    vaccinationStatus: "Overdue",    lastVisit: "Feb 20, 2026" },
-];
-
-const mockRecords: MedicalRecord[] = [
-  { id: 1, petId: 1, date: "Jun 10, 2026", type: "Consultation", diagnosis: "Healthy — Annual Checkup",    treatment: "General physical exam. No abnormalities found.",             vet: "Dr. Lovely Eguia", weight: 28.5, nextVisit: "Jun 2027" },
-  { id: 2, petId: 1, date: "Mar 5, 2026",  type: "Vaccination",  treatment: "Anti-Rabies vaccine administered (Verorab 1mL SC).",              vet: "Dr. Lovely Eguia", weight: 27.8 },
-  { id: 3, petId: 1, date: "Dec 1, 2025",  type: "Deworming",    treatment: "Milbemax deworming tablet administered.",                         vet: "Dr. Lovely Eguia", weight: 27.0, nextVisit: "Mar 2026" },
-  { id: 4, petId: 1, date: "Sep 15, 2025", type: "Lab",          diagnosis: "CBC Normal",                    treatment: "Complete blood count panel — all values within normal range.", vet: "Dr. Lovely Eguia" },
-];
-
-const mockVaccinations: VaccinationRecord[] = [
-  { id: 1, petId: 1, vaccineName: "Anti-Rabies",      doseNumber: 1, administeredDate: "Mar 5, 2026",  nextDueDate: "Mar 5, 2027",  batch: "VR-2026-001", vet: "Dr. Lovely Eguia" },
-  { id: 2, petId: 1, vaccineName: "5-in-1 (DHPP+L)",  doseNumber: 3, administeredDate: "Jun 10, 2025", nextDueDate: "Jun 10, 2026", batch: "DH-2025-042", vet: "Dr. Lovely Eguia" },
-  { id: 3, petId: 1, vaccineName: "Kennel Cough",      doseNumber: 1, administeredDate: "Jun 10, 2025", nextDueDate: "Jun 10, 2026", batch: "KC-2025-015", vet: "Dr. Lovely Eguia" },
-];
-
-// ─── Constants ──────────────────────────────────────────────────────────────
 const vaccStatusConfig: Record<string, { cls: string; dot: string }> = {
   "Up to Date": { cls: "badge-success",  dot: "bg-success" },
   "Due Soon":   { cls: "badge-warning",  dot: "bg-warning" },
@@ -93,87 +40,41 @@ const vaccStatusConfig: Record<string, { cls: string; dot: string }> = {
   "Unknown":    { cls: "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400", dot: "bg-neutral-400" },
 };
 
-const speciesEmoji: Record<Species, string> = {
-  Dog: "🐕", Cat: "🐈", Bird: "🦜",
-  Rabbit: "🐰", Hamster: "🐹", Reptile: "🦎", Other: "🐾",
-};
-
-const speciesColor: Record<Species, string> = {
-  Dog: "#FF4FA3", Cat: "#D98CFF", Bird: "#F59E0B",
-  Rabbit: "#10B981", Hamster: "#F97316", Reptile: "#14B8A6", Other: "#6B7280",
-};
-
-const recordTypeConfig: Record<MedicalRecord["type"], { cls: string; color: string }> = {
-  Consultation: { cls: "badge-primary",  color: "#FF4FA3" },
-  Vaccination:  { cls: "badge-success",  color: "#10B981" },
-  Deworming:    { cls: "badge-warning",  color: "#F59E0B" },
-  Surgery:      { cls: "badge-danger",   color: "#EF4444" },
-  Lab:          { cls: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300", color: "#3B82F6" },
-  Grooming:     { cls: "bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300", color: "#D98CFF" },
-};
-
-const ageFromDOB = (dob: string) => {
-  const birth = new Date(dob);
-  const now = new Date();
-  let years = now.getFullYear() - birth.getFullYear();
-  let months = now.getMonth() - birth.getMonth();
-  if (months < 0) { years--; months += 12; }
-  return years > 0 ? `${years}y ${months}m` : `${months} months`;
-};
-
-// ─── Sub-components ─────────────────────────────────────────────────────────
-
 function PetCard({ pet, onClick }: { pet: Pet; onClick: () => void }) {
-  const emoji = speciesEmoji[pet.species];
-  const vsCfg = vaccStatusConfig[pet.vaccinationStatus];
-  const color = speciesColor[pet.species];
+  const emoji = speciesEmoji[pet.species] || speciesEmoji.Other;
+  const color = speciesColor[pet.species] || speciesColor.Other;
+  const vsCfg = vaccStatusConfig[pet.vaccinationStatus] || vaccStatusConfig.Unknown;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       onClick={onClick}
-      className="card p-5 cursor-pointer group hover:shadow-lg transition-shadow"
+      className="card p-5 cursor-pointer group relative overflow-hidden"
     >
-      {/* Avatar + Badge */}
-      <div className="relative mb-4">
-        <div className="w-full h-32 rounded-xl flex items-center justify-center" style={{ background: `${color}12` }}>
-          <span className="text-6xl opacity-50 group-hover:opacity-70 transition-opacity select-none">{emoji}</span>
-        </div>
-        <div className="absolute top-2 right-2">
-          <span className={cn("badge text-[10px] px-2 py-0.5 flex items-center gap-1", vsCfg.cls)}>
-            <span className={cn("w-1.5 h-1.5 rounded-full", vsCfg.dot)} />
-            {pet.vaccinationStatus}
-          </span>
-        </div>
-        <div className="absolute -bottom-3 left-4">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-md" style={{ background: color }}>
-            <span className="text-white text-xs font-bold">{pet.name.charAt(0)}</span>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: `${color}15` }}>
+            {emoji}
           </div>
-        </div>
-      </div>
-
-      <div className="pt-2">
-        <div className="flex items-start justify-between">
           <div>
             <h3 className="font-bold text-base">{pet.name}</h3>
             <p className="text-xs text-neutral-400">{pet.breed}</p>
           </div>
-          <span className="text-xs text-neutral-400">{ageFromDOB(pet.dob)}</span>
         </div>
+        <span className={cn("badge flex items-center gap-1 text-[10px]", vsCfg.cls)}>
+          <span className={cn("w-1.5 h-1.5 rounded-full", vsCfg.dot)} />
+          {pet.vaccinationStatus}
+        </span>
+      </div>
 
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <span className="badge text-[10px] px-2" style={{ background: `${color}15`, color }}>{pet.species}</span>
-          <span className="badge text-[10px] px-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-500">{pet.sex}</span>
-          <span className="badge text-[10px] px-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-500">{pet.weight} kg</span>
+      <div className="flex flex-col gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+        <div className="flex items-center gap-1.5">
+          <User className="w-3.5 h-3.5 text-neutral-400" />
+          <span>{pet.ownerName}</span>
         </div>
-
-        <div className="mt-3 pt-3 border-t border-[var(--card-border)] flex items-center justify-between text-xs text-neutral-400">
-          <div className="flex items-center gap-1">
-            <User className="w-3 h-3" />
-            <span className="truncate max-w-[100px]">{pet.ownerName}</span>
-          </div>
-          <span>Last: {pet.lastVisit}</span>
+        <div className="flex items-center justify-between text-neutral-400 text-[10px] mt-2 border-t border-neutral-100 dark:border-neutral-800 pt-2">
+          <span>Last visit: {pet.lastVisit}</span>
+          <span>{pet.weight} kg</span>
         </div>
       </div>
     </motion.div>
@@ -181,29 +82,24 @@ function PetCard({ pet, onClick }: { pet: Pet; onClick: () => void }) {
 }
 
 function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => void; onEdit: () => void }) {
-  const [tab, setTab] = useState<"profile" | "medical" | "vaccines">("profile");
-  const emoji = speciesEmoji[pet.species];
-  const vsCfg = vaccStatusConfig[pet.vaccinationStatus];
-  const color = speciesColor[pet.species];
-  const records = mockRecords.filter((r) => r.petId === pet.id);
-  const vaccines = mockVaccinations.filter((v) => v.petId === pet.id);
+  const vsCfg = vaccStatusConfig[pet.vaccinationStatus] || vaccStatusConfig.Unknown;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95 }}
-        className="relative w-full max-w-2xl card z-10 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="relative overflow-hidden rounded-t-2xl p-6 flex items-start gap-4" style={{ background: `${color}15` }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0" style={{ background: color }}>
-            <span className="text-3xl select-none">{emoji}</span>
+      <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+        className="relative w-full max-w-xl card z-10 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        
+        <div className="flex items-start gap-4 p-6 border-b border-[var(--card-border)]">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0" style={{ background: `${speciesColor[pet.species]}15` }}>
+            {speciesEmoji[pet.species] || speciesEmoji.Other}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold">{pet.name}</h2>
               <span className={cn("badge flex items-center gap-1 text-[10px]", vsCfg.cls)}>
                 <span className={cn("w-1.5 h-1.5 rounded-full", vsCfg.dot)} />
-                Vaccine: {pet.vaccinationStatus}
+                {pet.vaccinationStatus}
               </span>
             </div>
             <p className="text-sm text-neutral-500">{pet.breed} · {pet.species} · {pet.sex}</p>
@@ -222,253 +118,168 @@ function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => voi
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-[var(--card-border)] px-6">
-          {([["profile", "Profile"], ["medical", "Medical History"], ["vaccines", "Vaccinations"]] as const).map(([t, label]) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={cn("px-4 py-3 text-sm font-medium border-b-2 transition-colors", tab === t ? "border-primary-500 text-primary-500" : "border-transparent text-neutral-400 hover:text-neutral-600")}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {/* Profile Tab */}
-          {tab === "profile" && (
-            <div className="grid sm:grid-cols-2 gap-4">
-              {[
-                { label: "Full Name",          value: pet.name },
-                { label: "Species",            value: pet.species },
-                { label: "Breed",              value: pet.breed },
-                { label: "Sex",                value: pet.sex },
-                { label: "Date of Birth",      value: pet.dob },
-                { label: "Age",                value: ageFromDOB(pet.dob) },
-                { label: "Weight",             value: `${pet.weight} kg` },
-                { label: "Color / Markings",   value: pet.color },
-                { label: "Microchip No.",      value: pet.microchip ?? "Not registered" },
-                { label: "Status",             value: pet.status },
-                { label: "Last Visit",         value: pet.lastVisit },
-                { label: "Vaccination Status", value: pet.vaccinationStatus },
-              ].map((row) => (
-                <div key={row.label} className="flex flex-col gap-0.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900">
-                  <span className="text-[10px] text-neutral-400 uppercase tracking-wide">{row.label}</span>
-                  <span className="text-sm font-medium">{row.value}</span>
-                </div>
-              ))}
-              {pet.notes && (
-                <div className="sm:col-span-2 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900">
-                  <span className="text-[10px] text-neutral-400 uppercase tracking-wide">Notes</span>
-                  <p className="text-sm mt-0.5">{pet.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Medical History Tab */}
-          {tab === "medical" && (
-            <div>
-              {records.length === 0 ? (
-                <div className="text-center py-10 text-neutral-400">
-                  <ClipboardList className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p>No medical records found for {pet.name}.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {records.map((rec) => {
-                    const cfg = recordTypeConfig[rec.type];
-                    return (
-                      <div key={rec.id} className="relative pl-5 border-l-2 border-[var(--card-border)]">
-                        <div className="absolute left-[-5px] top-2 w-2 h-2 rounded-full" style={{ background: cfg.color }} />
-                        <div className="card p-4">
-                          <div className="flex items-start justify-between mb-2 gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className={cn("badge", cfg.cls)}>{rec.type}</span>
-                              <span className="text-xs text-neutral-400">{rec.date}</span>
-                              {rec.weight && <span className="text-xs text-neutral-400">{rec.weight} kg</span>}
-                            </div>
-                            <span className="text-xs text-neutral-400 shrink-0">{rec.vet}</span>
-                          </div>
-                          {rec.diagnosis && (
-                            <p className="text-sm font-semibold mb-1">{rec.diagnosis}</p>
-                          )}
-                          <p className="text-sm text-neutral-500 dark:text-neutral-400">{rec.treatment}</p>
-                          {rec.nextVisit && (
-                            <p className="text-xs text-primary-500 mt-2 font-medium">Next visit: {rec.nextVisit}</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              <button className="btn btn-primary w-full mt-6 text-sm">
-                <Plus className="w-4 h-4" /> Add Medical Record
-              </button>
-            </div>
-          )}
-
-          {/* Vaccines Tab */}
-          {tab === "vaccines" && (
-            <div>
-              {vaccines.length === 0 ? (
-                <div className="text-center py-10 text-neutral-400">
-                  <Syringe className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p>No vaccination records for {pet.name}.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {vaccines.map((v) => {
-                    const isOverdue = new Date(v.nextDueDate) < new Date();
-                    return (
-                      <div key={v.id} className="card p-4 flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                          <Syringe className="w-5 h-5 text-success" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <p className="font-bold text-sm">{v.vaccineName}</p>
-                            <span className="badge badge-success text-[10px]">Dose {v.doseNumber}</span>
-                          </div>
-                          <p className="text-xs text-neutral-400">Administered: {v.administeredDate} · Batch: {v.batch}</p>
-                          <p className="text-xs text-neutral-400">Vet: {v.vet}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-[10px] text-neutral-400">Next Due</p>
-                          <p className={cn("text-sm font-bold", isOverdue ? "text-danger" : "text-success")}>{v.nextDueDate}</p>
-                          {isOverdue && <span className="badge badge-danger text-[10px]">Overdue</span>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              <button className="btn btn-primary w-full mt-6 text-sm">
-                <Syringe className="w-4 h-4" /> Record Vaccination
-              </button>
-            </div>
-          )}
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[
+              { label: "Full Name",          value: pet.name },
+              { label: "Species",            value: pet.species },
+              { label: "Breed",              value: pet.breed },
+              { label: "Sex",                value: pet.sex },
+              { label: "Date of Birth",      value: pet.dob || "Unknown" },
+              { label: "Weight",             value: `${pet.weight} kg` },
+              { label: "Color / Markings",   value: pet.color || "None" },
+              { label: "Microchip No.",      value: pet.microchip || "Not registered" },
+              { label: "Status",             value: pet.status },
+              { label: "Last Visit",         value: pet.lastVisit },
+            ].map((row) => (
+              <div key={row.label} className="flex flex-col gap-0.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900">
+                <span className="text-[10px] text-neutral-400 uppercase tracking-wide">{row.label}</span>
+                <span className="text-sm font-medium">{row.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-function PetFormModal({ pet, onClose }: { pet?: Pet; onClose: () => void }) {
+function PetFormModal({ 
+  pet, 
+  onClose,
+  onSave
+}: { 
+  pet?: Pet; 
+  onClose: () => void;
+  onSave: (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => void;
+}) {
+  const isEdit = !!pet;
+  const [name, setName] = useState(isEdit ? pet.name : "");
+  const [species, setSpecies] = useState(isEdit ? pet.species : "Dog");
+  const [breed, setBreed] = useState(isEdit ? pet.breed : "");
+  const [sex, setSex] = useState(isEdit ? pet.sex : "Male");
+  const [dob, setDob] = useState(isEdit ? pet.dob : "");
+  const [weight, setWeight] = useState(isEdit ? pet.weight : 0);
+  const [color, setColor] = useState(isEdit ? pet.color : "");
+  const [microchip, setMicrochip] = useState(isEdit ? pet.microchip : "");
+  const [ownerName, setOwnerName] = useState(isEdit ? pet.ownerName : "");
+  const [ownerEmail, setOwnerEmail] = useState(isEdit ? pet.ownerEmail : "");
+  const [status, setStatus] = useState(isEdit ? pet.status : "Active");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !species || !ownerName.trim() || !ownerEmail.trim()) {
+      alert("Name, Species, Owner Name, and Owner Email are required.");
+      return;
+    }
+    onSave({
+      id: pet?.id,
+      name,
+      species,
+      breed,
+      sex,
+      dob,
+      weight: Number(weight),
+      color,
+      microchip,
+      ownerName,
+      ownerEmail,
+      status
+    });
+    onClose();
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
         className="relative w-full max-w-xl card z-10 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between p-6 border-b border-[var(--card-border)]">
-          <h2 className="text-xl font-bold">{pet ? `Edit ${pet.name}` : "Register New Pet"}</h2>
-          <button onClick={onClose} className="btn-icon btn-ghost rounded-xl w-9 h-9 flex items-center justify-center"><X className="w-5 h-5" /></button>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-center justify-between p-6 border-b border-[var(--card-border)]">
+            <h2 className="text-xl font-bold">{isEdit ? `Edit ${pet.name}` : "Register New Pet"}</h2>
+            <button type="button" onClick={onClose} className="btn-icon btn-ghost rounded-xl w-9 h-9 flex items-center justify-center"><X className="w-5 h-5" /></button>
+          </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="flex flex-col gap-4">
-            {/* Basic Info */}
+          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Pet Information</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Pet Name *</label>
-                <input type="text" defaultValue={pet?.name} className="input" placeholder="e.g., Buddy" />
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="e.g., Buddy" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Species *</label>
-                <select defaultValue={pet?.species ?? ""} className="input appearance-none cursor-pointer">
-                  <option value="">Select species...</option>
+                <select value={species} onChange={(e) => setSpecies(e.target.value)} className="input appearance-none cursor-pointer">
                   {["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Reptile", "Other"].map((s) => (
-                    <option key={s}>{s}</option>
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Breed</label>
-                <input type="text" defaultValue={pet?.breed} className="input" placeholder="e.g., Labrador" />
+                <input type="text" value={breed} onChange={(e) => setBreed(e.target.value)} className="input" placeholder="e.g., Labrador" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Sex *</label>
-                <select defaultValue={pet?.sex ?? ""} className="input appearance-none cursor-pointer">
-                  <option value="">Select...</option>
-                  <option>Male</option>
-                  <option>Female</option>
+                <select value={sex} onChange={(e) => setSex(e.target.value)} className="input appearance-none cursor-pointer">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Date of Birth</label>
-                <input type="date" defaultValue={pet?.dob} className="input" />
+                <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className="input" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Weight (kg)</label>
-                <input type="number" step="0.1" defaultValue={pet?.weight} className="input" placeholder="0.0" />
+                <input type="number" step="0.1" value={weight} onChange={(e) => setWeight(Number(e.target.value))} className="input" placeholder="0.0" min="0" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Color / Markings</label>
-                <input type="text" defaultValue={pet?.color} className="input" placeholder="e.g., Golden" />
+                <input type="text" value={color} onChange={(e) => setColor(e.target.value)} className="input" placeholder="e.g., Golden" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Microchip No.</label>
-                <input type="text" defaultValue={pet?.microchip} className="input" placeholder="15-digit number" />
+                <input type="text" value={microchip} onChange={(e) => setMicrochip(e.target.value)} className="input" placeholder="15-digit number" />
               </div>
             </div>
 
-            {/* Owner Info */}
             <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mt-2">Owner Information</p>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Owner *</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <select className="input pl-9 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
-                  <option value="">Select existing client...</option>
-                  {["Carlo Reyes", "Maria Santos", "Jose Cruz", "Ana Lopez", "Ramon Diaz", "Sofia Lim"].map((n) => (
-                    <option key={n}>{n}</option>
-                  ))}
-                </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Owner Name *</label>
+                <input type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} className="input" placeholder="e.g., Carlo Reyes" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Owner Email *</label>
+                <input type="email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} className="input" placeholder="e.g., owner@gmail.com" required />
               </div>
             </div>
 
-            {/* Health Status */}
-            <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mt-2">Health Status</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400 mt-2">Status</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Pet Status</label>
-                <select defaultValue={pet?.status ?? "Active"} className="input appearance-none cursor-pointer">
-                  <option>Active</option>
-                  <option>Deceased</option>
-                  <option>Transferred</option>
+                <select value={status} onChange={(e) => setStatus(e.target.value)} className="input appearance-none cursor-pointer">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Vaccination Status</label>
-                <select defaultValue={pet?.vaccinationStatus ?? "Unknown"} className="input appearance-none cursor-pointer">
-                  <option>Up to Date</option>
-                  <option>Due Soon</option>
-                  <option>Overdue</option>
-                  <option>Unknown</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Additional Notes</label>
-              <textarea defaultValue={pet?.notes} rows={3} className="input resize-none" placeholder="Allergies, special conditions, behavior notes..." />
             </div>
           </div>
-        </div>
 
-        <div className="flex gap-3 p-6 border-t border-[var(--card-border)]">
-          <button onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
-          <button className="btn btn-primary flex-1">{pet ? "Save Changes" : "Register Pet"}</button>
-        </div>
+          <div className="flex gap-3 p-6 border-t border-[var(--card-border)]">
+            <button type="button" onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
+            <button type="submit" className="btn btn-primary flex-1">{isEdit ? "Save Changes" : "Register Pet"}</button>
+          </div>
+        </form>
       </motion.div>
     </motion.div>
   );
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
 export default function PetsPage() {
-  const [pets] = useState(mockPets);
+  const [pets, setPets] = useState<Pet[]>([]);
   const [search, setSearch] = useState("");
   const [speciesFilter, setSpeciesFilter] = useState("All");
   const [vaccFilter, setVaccFilter] = useState("All");
@@ -477,7 +288,76 @@ export default function PetsPage() {
   const [formPet, setFormPet] = useState<Pet | undefined | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
-  const PER_PAGE = 9;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const PER_PAGE = 8;
+
+  const fetchPets = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/pets`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to fetch pets.");
+      const data = await res.json();
+      setPets(data);
+    } catch (err: any) {
+      setError(err.message || "An error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPets();
+  }, []);
+
+  const handleSave = async (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const isEdit = !!formData.id;
+      const url = isEdit ? `${baseUrl}/api/pets/${formData.id}` : `${baseUrl}/api/pets`;
+      const method = isEdit ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!res.ok) throw new Error("Failed to save pet.");
+      await fetchPets();
+    } catch (err: any) {
+      alert(err.message || "An error occurred while saving.");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this pet?")) return;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/pets/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to delete pet.");
+      setPets((prev) => prev.filter((p) => p.id !== id));
+    } catch (err: any) {
+      alert(err.message || "An error occurred while deleting.");
+    }
+  };
 
   const filtered = pets.filter((p) => {
     const q = search.toLowerCase();
@@ -490,7 +370,6 @@ export default function PetsPage() {
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
 
-  // Summary counts
   const overdue  = pets.filter((p) => p.vaccinationStatus === "Overdue").length;
   const dueSoon  = pets.filter((p) => p.vaccinationStatus === "Due Soon").length;
   const upToDate = pets.filter((p) => p.vaccinationStatus === "Up to Date").length;
@@ -498,7 +377,6 @@ export default function PetsPage() {
   return (
     <>
       <div className="flex flex-col gap-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Pet Management</h1>
@@ -509,7 +387,6 @@ export default function PetsPage() {
           </button>
         </div>
 
-        {/* Vaccination Status Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { label: "Total Pets",    value: pets.length, color: "#FF4FA3" },
@@ -517,16 +394,15 @@ export default function PetsPage() {
             { label: "Due Soon",      value: dueSoon,     color: "#F59E0B" },
             { label: "Overdue",       value: overdue,     color: "#EF4444" },
           ].map((s) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="card p-4 flex items-center gap-3">
+            <div key={s.label} className="card p-4 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${s.color}15` }}>
                 <span className="text-base font-bold" style={{ color: s.color }}>{s.value}</span>
               </div>
               <p className="text-xs text-neutral-400 leading-tight">{s.label}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -549,7 +425,6 @@ export default function PetsPage() {
               {["Up to Date", "Due Soon", "Overdue", "Unknown"].map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
-          {/* View Toggle */}
           <div className="flex rounded-xl overflow-hidden border border-[var(--card-border)] shrink-0">
             <button onClick={() => setView("grid")} className={cn("px-3 py-2 text-sm transition-colors", view === "grid" ? "gradient-primary text-white" : "btn-ghost text-neutral-400")}>
               ⊞
@@ -560,125 +435,138 @@ export default function PetsPage() {
           </div>
         </div>
 
-        {/* Grid View */}
-        {view === "grid" && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {paginated.map((pet) => (
-              <PetCard key={pet.id} pet={pet} onClick={() => setSelectedPet(pet)} />
-            ))}
+        {loading && (
+          <div className="text-center py-12 text-neutral-400">
+            <svg className="animate-spin h-8 w-8 mx-auto mb-3 text-primary-500" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <p className="text-sm">Loading pets...</p>
           </div>
         )}
 
-        {/* Table View */}
-        {view === "table" && (
-          <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Pet</th>
-                    <th>Species / Breed</th>
-                    <th className="hidden sm:table-cell">Owner</th>
-                    <th>Age / Weight</th>
-                    <th>Vaccine Status</th>
-                    <th className="hidden lg:table-cell">Last Visit</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((pet, i) => {
-                    const emoji = speciesEmoji[pet.species];
-                    const color = speciesColor[pet.species];
-                    const vsCfg = vaccStatusConfig[pet.vaccinationStatus];
-                    return (
-                      <motion.tr key={pet.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
-                        <td>
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}15` }}>
-                              <span className="text-base select-none">{emoji}</span>
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold">{pet.name}</p>
-                              <p className="text-xs text-neutral-400">{pet.sex}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <p className="text-sm">{pet.species}</p>
-                          <p className="text-xs text-neutral-400">{pet.breed}</p>
-                        </td>
-                        <td className="hidden sm:table-cell text-sm text-neutral-500">{pet.ownerName}</td>
-                        <td>
-                          <p className="text-sm">{ageFromDOB(pet.dob)}</p>
-                          <p className="text-xs text-neutral-400">{pet.weight} kg</p>
-                        </td>
-                        <td>
-                          <span className={cn("badge flex items-center gap-1 w-fit text-[10px]", vsCfg.cls)}>
-                            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", vsCfg.dot)} />
-                            {pet.vaccinationStatus}
-                          </span>
-                        </td>
-                        <td className="hidden lg:table-cell text-sm text-neutral-500">{pet.lastVisit}</td>
-                        <td>
-                          <div className="flex items-center justify-end gap-1">
-                            <button onClick={() => setSelectedPet(pet)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => { setFormPet(pet); setShowForm(true); }} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </motion.tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+        {error && (
+          <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm max-w-md">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {view === "grid" && (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {paginated.map((pet) => (
+                  <PetCard key={pet.id} pet={pet} onClick={() => setSelectedPet(pet)} />
+                ))}
+              </div>
+            )}
+
+            {view === "table" && (
+              <div className="card overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Pet</th>
+                        <th>Species / Breed</th>
+                        <th className="hidden sm:table-cell">Owner</th>
+                        <th>Age / Weight</th>
+                        <th>Vaccine Status</th>
+                        <th className="hidden lg:table-cell">Last Visit</th>
+                        <th className="text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginated.map((pet, i) => {
+                        const emoji = speciesEmoji[pet.species] || speciesEmoji.Other;
+                        const color = speciesColor[pet.species] || speciesColor.Other;
+                        const vsCfg = vaccStatusConfig[pet.vaccinationStatus] || vaccStatusConfig.Unknown;
+                        return (
+                          <motion.tr key={pet.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}>
+                            <td>
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}15` }}>
+                                  <span className="text-base select-none">{emoji}</span>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold">{pet.name}</p>
+                                  <p className="text-xs text-neutral-400">{pet.sex}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <p className="text-sm">{pet.species}</p>
+                              <p className="text-xs text-neutral-400">{pet.breed}</p>
+                            </td>
+                            <td className="hidden sm:table-cell text-sm text-neutral-500">{pet.ownerName}</td>
+                            <td>
+                              <p className="text-sm">{pet.dob || "Unknown"}</p>
+                              <p className="text-xs text-neutral-400">{pet.weight} kg</p>
+                            </td>
+                            <td>
+                              <span className={cn("badge flex items-center gap-1 w-fit text-[10px]", vsCfg.cls)}>
+                                <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", vsCfg.dot)} />
+                                {pet.vaccinationStatus}
+                              </span>
+                            </td>
+                            <td className="hidden lg:table-cell text-sm text-neutral-500">{pet.lastVisit}</td>
+                            <td>
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => setSelectedPet(pet)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => { setFormPet(pet); setShowForm(true); }} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-primary-500">
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(pet.id)}
+                                  className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             {filtered.length === 0 && (
-              <div className="text-center py-14 text-neutral-400">
-                <PawPrint className="w-10 h-10 mx-auto mb-3 opacity-30" />
+              <div className="text-center py-20 text-neutral-400 col-span-full">
+                <PawPrint className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>No pets found matching your search.</p>
               </div>
             )}
-          </div>
-        )}
 
-        {filtered.length === 0 && view === "grid" && (
-          <div className="text-center py-20 text-neutral-400">
-            <PawPrint className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>No pets found matching your search.</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {filtered.length > 0 && (
-          <div className="flex items-center justify-between text-sm text-neutral-400">
-            <span>Showing {Math.min((page-1)*PER_PAGE+1, filtered.length)}–{Math.min(page*PER_PAGE, filtered.length)} of {filtered.length} pets</span>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1,p-1))} disabled={page===1}
-                className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i} onClick={() => setPage(i+1)}
-                  className={cn("px-3 py-1 rounded-lg text-xs font-medium transition-colors", page===i+1 ? "bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400" : "hover:bg-neutral-100 dark:hover:bg-neutral-800")}>
-                  {i+1}
-                </button>
-              ))}
-              <button onClick={() => setPage((p) => Math.min(totalPages,p+1))} disabled={page===totalPages}
-                className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+            {filtered.length > 0 && (
+              <div className="flex items-center justify-between text-sm text-neutral-400 mt-4">
+                <span>Showing {Math.min((page-1)*PER_PAGE+1, filtered.length)}–{Math.min(page*PER_PAGE, filtered.length)} of {filtered.length} pets</span>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setPage((p) => Math.max(1,p-1))} disabled={page===1}
+                    className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button key={i} onClick={() => setPage(i+1)}
+                      className={cn("px-3 py-1 rounded-lg text-xs font-medium transition-colors", page===i+1 ? "bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400" : "hover:bg-neutral-100 dark:hover:bg-neutral-800")}>
+                      {i+1}
+                    </button>
+                  ))}
+                  <button onClick={() => setPage((p) => Math.min(totalPages,p+1))} disabled={page===totalPages}
+                    className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center disabled:opacity-30">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Modals */}
       <AnimatePresence>
         {selectedPet && (
           <PetDetailModal
@@ -693,6 +581,7 @@ export default function PetsPage() {
           <PetFormModal
             pet={formPet ?? undefined}
             onClose={() => { setShowForm(false); setFormPet(null); }}
+            onSave={handleSave}
           />
         )}
       </AnimatePresence>
