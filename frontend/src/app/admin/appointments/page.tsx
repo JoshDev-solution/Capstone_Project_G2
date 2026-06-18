@@ -131,7 +131,8 @@ export default function AppointmentsPage() {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem("vcms_token");
-      const res = await fetch("http://localhost:5000/api/appointments", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${baseUrl}/api/appointments`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -162,7 +163,8 @@ export default function AppointmentsPage() {
   const changeStatus = async (id: number, status: Status) => {
     try {
       const token = localStorage.getItem("vcms_token");
-      const res = await fetch(`http://localhost:5000/api/appointments/${id}/status`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${baseUrl}/api/appointments/${id}/status`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
