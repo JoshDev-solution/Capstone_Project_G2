@@ -62,7 +62,7 @@ function ServiceModal({ service, onClose }: { service?: Service; onClose: () => 
               <label className="block text-sm font-medium mb-1.5">Price (₱)</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm">₱</span>
-                <input type="number" defaultValue={service?.price} className="input pl-7" placeholder="0.00" />
+                <input type="number" defaultValue={service?.price} className="input pl-7" style={{ paddingLeft: "1.75rem" }} placeholder="0.00" />
               </div>
             </div>
           </div>
@@ -70,7 +70,7 @@ function ServiceModal({ service, onClose }: { service?: Service; onClose: () => 
             <label className="block text-sm font-medium mb-1.5">Duration (minutes)</label>
             <div className="relative">
               <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-              <input type="number" defaultValue={service?.duration} className="input pl-9" placeholder="30" />
+              <input type="number" defaultValue={service?.duration} className="input pl-9" style={{ paddingLeft: "2.25rem" }} placeholder="30" />
             </div>
           </div>
           <div>
@@ -113,7 +113,7 @@ export default function ServicesPage() {
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search services..." className="input pl-10 w-full" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search services..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
         </div>
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">

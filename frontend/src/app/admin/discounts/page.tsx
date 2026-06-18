@@ -46,7 +46,7 @@ function DiscountModal({ discount, onClose }: { discount?: Discount; onClose: ()
               <label className="block text-sm font-medium mb-1.5">Discount Code</label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <input type="text" defaultValue={discount?.code} className="input pl-9 uppercase" placeholder="PROMO2026" />
+                <input type="text" defaultValue={discount?.code} className="input pl-9 uppercase" style={{ paddingLeft: "2.25rem" }} placeholder="PROMO2026" />
               </div>
             </div>
             <div>
@@ -121,7 +121,7 @@ export default function DiscountsPage() {
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or code..." className="input pl-10 w-full" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or code..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
         </div>
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">

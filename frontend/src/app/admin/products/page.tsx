@@ -149,11 +149,11 @@ export default function ProductsPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or SKU..." className="input pl-10 w-full" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or SKU..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
           </div>
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="input pl-9 pr-8 min-w-40 appearance-none cursor-pointer">
+            <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="input pl-9 pr-8 min-w-40 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
               <option value="All">All Categories</option>
               {["Medicines", "Vaccines", "Pet Food", "Supplements", "Grooming", "Accessories"].map((c) => (
                 <option key={c}>{c}</option>

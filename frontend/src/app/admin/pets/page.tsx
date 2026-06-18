@@ -420,7 +420,7 @@ function PetFormModal({ pet, onClose }: { pet?: Pet; onClose: () => void }) {
               <label className="block text-sm font-medium mb-1.5">Owner *</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <select className="input pl-9 appearance-none cursor-pointer">
+                <select className="input pl-9 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
                   <option value="">Select existing client...</option>
                   {["Carlo Reyes", "Maria Santos", "Jose Cruz", "Ana Lopez", "Ramon Diaz", "Sofia Lim"].map((n) => (
                     <option key={n}>{n}</option>
@@ -531,12 +531,12 @@ export default function PetsPage() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Search by pet name, breed, or owner..." className="input pl-10 w-full" />
+              placeholder="Search by pet name, breed, or owner..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
           </div>
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <select value={speciesFilter} onChange={(e) => { setSpeciesFilter(e.target.value); setPage(1); }}
-              className="input pl-9 pr-8 min-w-36 appearance-none cursor-pointer">
+              className="input pl-9 pr-8 min-w-36 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
               <option value="All">All Species</option>
               {["Dog", "Cat", "Bird", "Rabbit", "Hamster", "Reptile", "Other"].map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -544,7 +544,7 @@ export default function PetsPage() {
           <div className="relative">
             <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <select value={vaccFilter} onChange={(e) => { setVaccFilter(e.target.value); setPage(1); }}
-              className="input pl-9 pr-8 min-w-40 appearance-none cursor-pointer">
+              className="input pl-9 pr-8 min-w-40 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
               <option value="All">All Vaccine Status</option>
               {["Up to Date", "Due Soon", "Overdue", "Unknown"].map((s) => <option key={s}>{s}</option>)}
             </select>

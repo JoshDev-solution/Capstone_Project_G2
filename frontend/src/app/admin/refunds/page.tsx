@@ -159,11 +159,11 @@ export default function RefundsPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by client, code, or bill..." className="input pl-10 w-full" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by client, code, or bill..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
           </div>
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="input pl-9 pr-8 min-w-36 appearance-none cursor-pointer">
+            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="input pl-9 pr-8 min-w-36 appearance-none cursor-pointer" style={{ paddingLeft: "2.25rem" }}>
               <option value="All">All Status</option>
               {["Pending", "Approved", "Rejected", "Processed"].map((s) => <option key={s}>{s}</option>)}
             </select>

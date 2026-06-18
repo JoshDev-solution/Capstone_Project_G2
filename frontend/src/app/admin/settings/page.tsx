@@ -111,7 +111,7 @@ export default function SettingsPage() {
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Current Password</label>
                   <div className="relative">
-                    <input type={showOld ? "text" : "password"} className="input pr-10" placeholder="Current password" />
+                    <input type={showOld ? "text" : "password"} className="input pr-10" style={{ paddingRight: "2.5rem" }} placeholder="Current password" />
                     <button type="button" onClick={() => setShowOld(!showOld)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
                       {showOld ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                   <div>
                     <label className="block text-sm font-medium mb-1.5">New Password</label>
                     <div className="relative">
-                      <input type={showNew ? "text" : "password"} className="input pr-10" placeholder="Min. 8 characters" />
+                      <input type={showNew ? "text" : "password"} className="input pr-10" style={{ paddingRight: "2.5rem" }} placeholder="Min. 8 characters" />
                       <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
                         {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>

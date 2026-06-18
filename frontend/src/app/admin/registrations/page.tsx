@@ -118,7 +118,7 @@ export default function RegistrationsPage() {
         {/* Search */}
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search registrations..." className="input pl-10 w-full" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search registrations..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
         </div>
 
         {/* Cards Grid */}
