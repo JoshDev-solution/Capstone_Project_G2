@@ -18,13 +18,57 @@ export default function RegisterPage() {
   const [done, setDone] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [error, setError] = useState("");
+
   const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 1) { setStep(step + 1); return; }
+    if (step < 1) { 
+      setStep(step + 1); 
+      return; 
+    }
+    
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    setDone(true);
+    setError("");
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${baseUrl}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phone,
+          password,
+          address,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Registration failed.");
+      }
+
+      setDone(true);
+    } catch (err: any) {
+      setError(err.message || "An error occurred during registration.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -140,14 +184,14 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium mb-1.5" htmlFor="email">Email Address</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="email" type="email" required placeholder="you@example.com" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                        <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" htmlFor="reg-password">Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="reg-password" type={showPassword ? "text" : "password"} required placeholder="Min. 8 characters" className="input pl-10 pr-10" style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} />
+                        <input id="reg-password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 characters" className="input pl-10 pr-10" style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600" tabIndex={-1}>
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -157,7 +201,7 @@ export default function RegisterPage() {
                       <label className="block text-sm font-medium mb-1.5" htmlFor="confirm-password">Confirm Password</label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="confirm-password" type="password" required placeholder="Re-enter password" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                        <input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter password" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                   </motion.div>
@@ -170,24 +214,24 @@ export default function RegisterPage() {
                         <label className="block text-sm font-medium mb-1.5" htmlFor="first-name">First Name</label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                          <input id="first-name" type="text" required placeholder="Juan" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                          <input id="first-name" type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Juan" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                         </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1.5" htmlFor="last-name">Last Name</label>
-                        <input id="last-name" type="text" required placeholder="Dela Cruz" className="input" />
+                        <input id="last-name" type="text" required value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dela Cruz" className="input" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" htmlFor="phone">Phone Number</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="phone" type="tel" placeholder="+63-9XX-XXX-XXXX" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                        <input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+63-9XX-XXX-XXXX" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" htmlFor="address">Address</label>
-                      <input id="address" type="text" placeholder="Street, Barangay, City" className="input" />
+                      <input id="address" type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, Barangay, City" className="input" />
                     </div>
                     <div className="flex items-start gap-3 mt-1">
                       <input id="terms" type="checkbox" required className="mt-1 accent-primary-500" />
@@ -199,6 +243,12 @@ export default function RegisterPage() {
                       </label>
                     </div>
                   </motion.div>
+                )}
+
+                {error && (
+                  <div className="text-xs text-rose-500 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3">
+                    {error}
+                  </div>
                 )}
 
                 <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-2">

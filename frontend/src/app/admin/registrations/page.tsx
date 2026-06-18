@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Eye, Search, Clock, User, PawPrint, Mail, Phone, X } from "lucide-react";
 
@@ -83,17 +83,87 @@ function DetailModal({ reg, onClose, onApprove, onReject }: {
 }
 
 export default function RegistrationsPage() {
-  const [regs, setRegs] = useState(mock);
+  const [regs, setRegs] = useState<Registration[]>([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Registration | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchRegistrations = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/registrations`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch registrations.");
+      }
+      const data = await res.json();
+      setRegs(data);
+    } catch (err: any) {
+      setError(err.message || "An error occurred while loading registrations.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRegistrations();
+  }, []);
+
+  const approve = async (id: number) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/registrations/${id}/approve`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to approve registration.");
+      }
+      setRegs((prev) => prev.filter((r) => r.id !== id));
+      if (selected?.id === id) {
+        setSelected(null);
+      }
+    } catch (err: any) {
+      alert(err.message || "An error occurred while approving registration.");
+    }
+  };
+
+  const reject = async (id: number) => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/users/registrations/${id}/reject`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Failed to reject registration.");
+      }
+      setRegs((prev) => prev.filter((r) => r.id !== id));
+      if (selected?.id === id) {
+        setSelected(null);
+      }
+    } catch (err: any) {
+      alert(err.message || "An error occurred while rejecting registration.");
+    }
+  };
 
   const filtered = regs.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase()) ||
     r.email.toLowerCase().includes(search.toLowerCase())
   );
-
-  const approve = (id: number) => setRegs((prev) => prev.map((r) => r.id === id ? { ...r, status: "Approved" } : r));
-  const reject = (id: number) => setRegs((prev) => prev.map((r) => r.id === id ? { ...r, status: "Rejected" } : r));
 
   const pending = regs.filter((r) => r.status === "Pending").length;
 
@@ -121,67 +191,87 @@ export default function RegistrationsPage() {
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search registrations..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filtered.map((reg, i) => (
-            <motion.div
-              key={reg.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              className="card p-5"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center text-white font-bold shadow-md">
-                    {reg.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{reg.name}</p>
-                    <p className="text-xs text-neutral-400">{reg.email}</p>
-                  </div>
-                </div>
-                <span className={`badge ${reg.status === "Pending" ? "badge-warning" : reg.status === "Approved" ? "badge-success" : "badge-danger"}`}>
-                  {reg.status}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-1.5 mb-4">
-                <div className="flex items-center gap-2 text-xs text-neutral-400">
-                  <Phone className="w-3 h-3" /> {reg.phone}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-neutral-400">
-                  <Clock className="w-3 h-3" /> {reg.submittedAt}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setSelected(reg)}
-                  className="btn btn-ghost text-xs flex-1 py-1.5"
-                >
-                  <Eye className="w-3.5 h-3.5" /> View
-                </button>
-                {reg.status === "Pending" && (
-                  <>
-                    <button onClick={() => reject(reg.id)} className="btn text-xs py-1.5 flex-1 bg-danger/10 text-danger hover:bg-danger/20">
-                      <XCircle className="w-3.5 h-3.5" /> Reject
-                    </button>
-                    <button onClick={() => approve(reg.id)} className="btn btn-primary text-xs py-1.5 flex-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Approve
-                    </button>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="text-center py-20 text-neutral-400">
-            <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-20" />
-            <p>No registrations found.</p>
+        {loading && (
+          <div className="text-center py-12 text-neutral-400">
+            <svg className="animate-spin h-8 w-8 mx-auto mb-3 text-primary-500" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            <p className="text-sm">Loading pending registrations...</p>
           </div>
+        )}
+
+        {error && (
+          <div className="p-4 rounded-xl bg-danger/10 border border-danger/20 text-danger text-sm max-w-md">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {/* Cards Grid */}
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filtered.map((reg, i) => (
+                <motion.div
+                  key={reg.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  className="card p-5"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl gradient-primary flex items-center justify-center text-white font-bold shadow-md">
+                        {reg.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{reg.name}</p>
+                        <p className="text-xs text-neutral-400">{reg.email}</p>
+                      </div>
+                    </div>
+                    <span className={`badge ${reg.status === "Pending" ? "badge-warning" : reg.status === "Approved" ? "badge-success" : "badge-danger"}`}>
+                      {reg.status}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    <div className="flex items-center gap-2 text-xs text-neutral-400">
+                      <Phone className="w-3 h-3" /> {reg.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-neutral-400">
+                      <Clock className="w-3 h-3" /> {reg.submittedAt}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelected(reg)}
+                      className="btn btn-ghost text-xs flex-1 py-1.5"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> View
+                    </button>
+                    {reg.status === "Pending" && (
+                      <>
+                        <button onClick={() => reject(reg.id)} className="btn text-xs py-1.5 flex-1 bg-danger/10 text-danger hover:bg-danger/20">
+                          <XCircle className="w-3.5 h-3.5" /> Reject
+                        </button>
+                        <button onClick={() => approve(reg.id)} className="btn btn-primary text-xs py-1.5 flex-1">
+                          <CheckCircle className="w-3.5 h-3.5" /> Approve
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {filtered.length === 0 && (
+              <div className="text-center py-20 text-neutral-400">
+                <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                <p>No registrations found.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

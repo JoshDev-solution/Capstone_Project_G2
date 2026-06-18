@@ -71,7 +71,8 @@ public class AuthService : IAuthService
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                Phone = request.Phone
+                Phone = request.Phone,
+                Address = request.Address
             }
         };
 
