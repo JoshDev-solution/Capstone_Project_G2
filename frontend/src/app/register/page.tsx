@@ -124,7 +124,7 @@ export default function RegisterPage() {
         
         <Link 
           href="/"
-          className="absolute top-6 left-6 btn-icon btn-ghost rounded-full flex items-center gap-2 px-4 w-auto h-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+          className="absolute top-6 left-6 btn-icon btn-ghost rounded-full flex items-center gap-2 px-4 w-auto h-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white lg:hidden"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium hidden sm:inline">Home</span>
@@ -134,8 +134,16 @@ export default function RegisterPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md relative"
         >
+          {/* Back to Home Button (Desktop & Tablet) */}
+          <Link 
+            href="/"
+            className="hidden lg:inline-flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Link>
           <Link href="/" className="flex items-center gap-2.5 mb-8 lg:hidden">
             <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow">
               <PawPrint className="w-4 h-4 text-white" />
