@@ -45,7 +45,7 @@ function UserModal({
 }: { 
   user?: UserRow; 
   onClose: () => void; 
-  onSave: (formData: Omit<UserRow, "id" | "joined"> & { id?: number }) => void 
+  onSave: (formData: Omit<UserRow, "id" | "joined"> & { id?: number; password?: string }) => void 
 }) {
   const isEdit = !!user;
   const [firstName, setFirstName] = useState(isEdit ? user.name.split(" ")[0] : "");
@@ -329,7 +329,7 @@ export default function UsersPage() {
     );
   };
 
-  const handleSaveUser = async (formData: Omit<UserRow, "id" | "joined"> & { id?: number }) => {
+  const handleSaveUser = async (formData: Omit<UserRow, "id" | "joined"> & { id?: number; password?: string }) => {
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
