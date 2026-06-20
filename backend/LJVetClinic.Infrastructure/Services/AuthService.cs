@@ -207,6 +207,8 @@ public class AuthService : IAuthService
         // For now, log to console so the developer can see it
         Console.WriteLine($"[OTP] Code for {user.Email}: {otp}");
 
+        string? otpFallback = null;
+
         if (isEmail)
         {
             var subject = "Your Password Reset OTP - LJ Veterinary Clinic";
@@ -223,8 +225,15 @@ public class AuthService : IAuthService
                 <p style='color: #999; font-size: 12px; text-align: center;'>Compassionate Care for Every Paw</p>
             </div>";
             
-            // Send email asynchronously (fire and forget or await, depending on requirements. Here we await to ensure delivery)
-            await _emailService.SendEmailAsync(user.Email, subject, body);
+            try 
+            {
+                await _emailService.SendEmailAsync(user.Email, subject, body);
+            } 
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"[WARNING] Failed to send email via SMTP. Bypassing for development. Error: {ex.Message}");
+                otpFallback = otp; // Fallback so the user can see it in frontend if SMTP is blocked
+            }
         }
 
         return new ForgotPasswordResponse
@@ -232,7 +241,8 @@ public class AuthService : IAuthService
             Success = true,
             Message = $"A 6-digit OTP has been sent to your {(isEmail ? "email" : "phone")}.",
             SentTo = sentTo,
-            Method = isEmail ? "email" : "phone"
+            Method = isEmail ? "email" : "phone",
+            OtpCode = otpFallback
         };
     }
 

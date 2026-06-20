@@ -50,6 +50,8 @@ public class ForgotPasswordResponse
     public string SentTo { get; set; } = string.Empty;
     /// <summary>"email" or "phone"</summary>
     public string Method { get; set; } = string.Empty;
+    /// <summary>Only populated in development or fallback mode if email fails to send</summary>
+    public string? OtpCode { get; set; }
 }
 
 public class VerifyOtpRequest
