@@ -10,15 +10,45 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Railway Port Configuration
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://*:{port}");
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-// Configure Database — MySQL via Pomelo
+// Configure Database — MySQL via Pomelo or SQLite
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Check for Railway's MYSQL_URL environment variable
+var railwayMySqlUrl = Environment.GetEnvironmentVariable("MYSQL_URL");
+if (!string.IsNullOrEmpty(railwayMySqlUrl))
+{
+    // Convert mysql://user:password@host:port/database to standard connection string
+    var uri = new Uri(railwayMySqlUrl);
+    var userInfo = uri.UserInfo.Split(':');
+    var user = userInfo[0];
+    var pass = userInfo.Length > 1 ? userInfo[1] : "";
+    var db = uri.LocalPath.TrimStart('/');
+    connectionString = $"Server={uri.Host};Port={uri.Port};Database={db};Uid={user};Pwd={pass};";
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("DataSource=app.db"));
+{
+    if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Server="))
+    {
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+    }
+    else
+    {
+        options.UseSqlite(connectionString ?? "DataSource=app.db");
+    }
+});
 
 // Configure Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
