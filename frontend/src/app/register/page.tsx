@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   PawPrint, Mail, Lock, Eye, EyeOff, ArrowRight,
-  User, Phone, CheckCircle2, Sun, Moon,
+  User, Phone, CheckCircle2, Sun, Moon, ArrowLeft
 } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/providers/ThemeProvider";
@@ -121,6 +121,14 @@ export default function RegisterPage() {
         >
           {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
+        
+        <Link 
+          href="/"
+          className="absolute top-6 left-6 btn-icon btn-ghost rounded-full flex items-center gap-2 px-4 w-auto h-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm font-medium hidden sm:inline">Home</span>
+        </Link>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
