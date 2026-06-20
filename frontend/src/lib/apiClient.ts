@@ -10,7 +10,7 @@ export const apiFetch = async (url: string, options: RequestInit = {}) => {
     headers.set("Content-Type", "application/json");
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
   const response = await fetch(`${baseUrl}/api${url}`, {
     ...options,
     headers,

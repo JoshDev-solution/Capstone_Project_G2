@@ -141,7 +141,7 @@ export default function DiscountsPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/discounts`, {
         headers: {
@@ -164,7 +164,7 @@ export default function DiscountsPage() {
 
   const handleSave = async (formData: Omit<Discount, "id" | "usageCount"> & { id?: number }) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const isEdit = !!formData.id;
       const url = isEdit ? `${baseUrl}/api/discounts/${formData.id}` : `${baseUrl}/api/discounts`;
@@ -188,7 +188,7 @@ export default function DiscountsPage() {
 
   const toggle = async (id: number, currentActive: boolean) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const discount = discounts.find((d) => d.id === id);
       if (!discount) return;
@@ -215,7 +215,7 @@ export default function DiscountsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this discount?")) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/discounts/${id}`, {
         method: "DELETE",

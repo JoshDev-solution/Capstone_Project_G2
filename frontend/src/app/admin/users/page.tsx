@@ -220,7 +220,7 @@ export default function UsersPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/list`, {
         headers: {
@@ -254,7 +254,7 @@ export default function UsersPage() {
       `Are you sure you want to ${action} the account for user "${name}"?`,
       async () => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+          const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
           const token = localStorage.getItem("vcms_token");
           const targetUser = users.find((u) => u.id === id);
           if (!targetUser) return;
@@ -291,7 +291,7 @@ export default function UsersPage() {
       `Are you sure you want to permanently delete user account "${name}"? This action is irreversible.`,
       async () => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+          const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
           const token = localStorage.getItem("vcms_token");
           const res = await fetch(`${baseUrl}/api/users/manage/${id}`, {
             method: "DELETE",
@@ -310,7 +310,7 @@ export default function UsersPage() {
 
   const handleSaveUser = async (formData: Omit<UserRow, "id" | "joined"> & { id?: number }) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const isEdit = !!formData.id;
       const url = isEdit ? `${baseUrl}/api/users/manage/${formData.id}` : `${baseUrl}/api/users/manage`;

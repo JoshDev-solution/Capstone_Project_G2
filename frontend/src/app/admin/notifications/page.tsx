@@ -62,7 +62,7 @@ export default function NotificationsPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/notifications`, {
         headers: {
@@ -90,7 +90,7 @@ export default function NotificationsPage() {
 
   const markRead = async (id: number) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/notifications/${id}/read`, {
         method: "PUT",
@@ -107,7 +107,7 @@ export default function NotificationsPage() {
 
   const markAllRead = async () => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/notifications/read-all`, {
         method: "PUT",
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
 
   const remove = async (id: number) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/notifications/${id}`, {
         method: "DELETE",

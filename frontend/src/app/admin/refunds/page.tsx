@@ -107,7 +107,7 @@ export default function RefundsPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/refunds`, {
         headers: {
@@ -130,7 +130,7 @@ export default function RefundsPage() {
 
   const updateStatus = async (id: number, newStatus: RefundStatus) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/refunds/${id}`, {
         method: "PUT",

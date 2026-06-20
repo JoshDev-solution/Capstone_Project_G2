@@ -296,7 +296,7 @@ export default function PetsPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/pets`, {
         headers: {
@@ -319,7 +319,7 @@ export default function PetsPage() {
 
   const handleSave = async (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const isEdit = !!formData.id;
       const url = isEdit ? `${baseUrl}/api/pets/${formData.id}` : `${baseUrl}/api/pets`;
@@ -344,7 +344,7 @@ export default function PetsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this pet?")) return;
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/pets/${id}`, {
         method: "DELETE",
