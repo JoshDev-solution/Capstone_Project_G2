@@ -127,7 +127,8 @@ export default function ServicesPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/services`, {
         headers: {
@@ -150,7 +151,8 @@ export default function ServicesPage() {
 
   const handleSave = async (formData: Omit<Service, "id"> & { id?: number }) => {
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const isEdit = !!formData.id;
       const url = isEdit ? `${baseUrl}/api/services/${formData.id}` : `${baseUrl}/api/services`;
@@ -175,7 +177,8 @@ export default function ServicesPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this service?")) return;
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/services/${id}`, {
         method: "DELETE",

@@ -220,14 +220,18 @@ export default function UsersPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/list`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
-      if (!res.ok) throw new Error("Failed to fetch users.");
+      if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to fetch users: ${res.status} ${errText}`);
+      }
       const data = await res.json();
       setUsers(data);
     } catch (err: any) {
@@ -254,7 +258,8 @@ export default function UsersPage() {
       `Are you sure you want to ${action} the account for user "${name}"?`,
       async () => {
         try {
-          const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+          let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
           const token = localStorage.getItem("vcms_token");
           const targetUser = users.find((u) => u.id === id);
           if (!targetUser) return;
@@ -291,7 +296,8 @@ export default function UsersPage() {
       `Are you sure you want to permanently delete user account "${name}"? This action is irreversible.`,
       async () => {
         try {
-          const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+          let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
           const token = localStorage.getItem("vcms_token");
           const res = await fetch(`${baseUrl}/api/users/manage/${id}`, {
             method: "DELETE",
@@ -310,7 +316,8 @@ export default function UsersPage() {
 
   const handleSaveUser = async (formData: Omit<UserRow, "id" | "joined"> & { id?: number }) => {
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const isEdit = !!formData.id;
       const url = isEdit ? `${baseUrl}/api/users/manage/${formData.id}` : `${baseUrl}/api/users/manage`;
@@ -325,7 +332,10 @@ export default function UsersPage() {
         body: JSON.stringify(formData)
       });
 
-      if (!res.ok) throw new Error("Failed to save user.");
+      if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Failed to save user: ${res.status} ${errText}`);
+      }
       await fetchUsers();
     } catch (err: any) {
       alert(err.message || "An error occurred while saving.");

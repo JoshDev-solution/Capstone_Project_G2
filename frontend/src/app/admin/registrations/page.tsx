@@ -93,7 +93,8 @@ export default function RegistrationsPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/registrations`, {
         headers: {
@@ -118,7 +119,8 @@ export default function RegistrationsPage() {
 
   const approve = async (id: number) => {
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/registrations/${id}/approve`, {
         method: "PUT",
@@ -140,7 +142,8 @@ export default function RegistrationsPage() {
 
   const reject = async (id: number) => {
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       const res = await fetch(`${baseUrl}/api/users/registrations/${id}/reject`, {
         method: "PUT",

@@ -64,7 +64,8 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
 
   const fetchCounts = async () => {
     try {
-      const baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       if (!token) return;
 
