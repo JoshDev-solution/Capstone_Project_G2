@@ -66,14 +66,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex gradient-hero relative">
-      {/* Back to Home Button (Absolute Top Left) */}
-      <Link 
-        href="/"
-        className="absolute top-6 left-6 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors text-white shadow-lg"
-        title="Back to Home"
-      >
-        <ArrowLeft className="w-5 h-5" />
-      </Link>
       {/* Left Panel — Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden gradient-primary items-center justify-center p-12">
         <div className="absolute inset-0 opacity-20">
@@ -135,21 +127,22 @@ export default function LoginPage() {
 
       {/* Right Panel — Form */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 relative">
-        <button
-          onClick={toggleTheme}
-          className="absolute top-6 right-6 btn-icon btn-ghost rounded-full w-10 h-10 flex items-center justify-center"
-        >
-          {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+        <div className="absolute top-6 right-6 flex items-center gap-2 z-50">
+          <Link 
+            href="/"
+            className="btn-icon btn-ghost rounded-full w-10 h-10 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+            title="Back to Home"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <button
+            onClick={toggleTheme}
+            className="btn-icon btn-ghost rounded-full w-10 h-10 flex items-center justify-center"
+          >
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
         
-        <Link 
-          href="/"
-          className="absolute top-6 left-6 btn-icon btn-ghost rounded-full flex items-center gap-2 px-4 w-auto h-10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white lg:hidden"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm font-medium hidden sm:inline">Home</span>
-        </Link>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
