@@ -514,10 +514,12 @@ using (var scope = app.Services.CreateScope())
 
 
 // Configure the HTTP request pipeline.
-    app.MapOpenApi();
+app.MapOpenApi();
 
-app.UseHttpsRedirection();
+// Removed app.UseHttpsRedirection() because Railway/Vercel handles HTTPS termination
+// and redirects cause CORS preflight (OPTIONS) requests to fail.
 
+app.UseRouting();
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
