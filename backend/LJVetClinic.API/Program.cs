@@ -27,22 +27,35 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 // Check for Railway's MYSQL_URL environment variable
 var railwayMySqlUrl = Environment.GetEnvironmentVariable("MYSQL_URL");
+var isRailway = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PORT"));
+
 if (!string.IsNullOrEmpty(railwayMySqlUrl))
 {
-    // Convert mysql://user:password@host:port/database to standard connection string
-    var uri = new Uri(railwayMySqlUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    var user = userInfo[0];
-    var pass = userInfo.Length > 1 ? userInfo[1] : "";
-    var db = uri.LocalPath.TrimStart('/');
-    connectionString = $"Server={uri.Host};Port={uri.Port};Database={db};Uid={user};Pwd={pass};";
+    try
+    {
+        // Convert mysql://user:password@host:port/database to standard connection string
+        var uri = new Uri(railwayMySqlUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        var user = userInfo[0];
+        var pass = userInfo.Length > 1 ? userInfo[1] : "";
+        var db = uri.LocalPath.TrimStart('/');
+        connectionString = $"Server={uri.Host};Port={uri.Port};Database={db};Uid={user};Pwd={pass};";
+    }
+    catch { /* Ignore parsing errors */ }
+}
+else if (isRailway)
+{
+    // If deployed on Railway but MySQL isn't linked, fallback safely to SQLite
+    // rather than trying to connect to localhost and crashing.
+    connectionString = "DataSource=app.db";
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("Server="))
     {
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        // Avoid AutoDetect which crashes the app on startup if DB is offline
+        options.UseMySql(connectionString, ServerVersion.Parse("8.0.0-mysql"));
     }
     else
     {
