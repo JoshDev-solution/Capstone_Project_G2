@@ -65,7 +65,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex gradient-hero">
+    <div className="min-h-screen flex gradient-hero relative">
+      {/* Back to Home Button (Absolute Top Left) */}
+      <Link 
+        href="/"
+        className="absolute top-6 left-6 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors text-white shadow-lg"
+        title="Back to Home"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Link>
       {/* Left Panel — Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden gradient-primary items-center justify-center p-12">
         <div className="absolute inset-0 opacity-20">
@@ -148,14 +156,6 @@ export default function LoginPage() {
           transition={{ duration: 0.6 }}
           className="w-full max-w-md relative"
         >
-          {/* Back to Home Button (Desktop & Tablet) */}
-          <Link 
-            href="/"
-            className="hidden lg:inline-flex items-center gap-2 text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
           <Link href="/" className="flex items-center gap-2.5 mb-10 lg:hidden">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow">
               <PawPrint className="w-5 h-5 text-white" />
