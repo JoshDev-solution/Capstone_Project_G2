@@ -31,15 +31,22 @@ public class EmailService : IEmailService
         message.Body = bodyBuilder.ToMessageBody();
 
         using var client = new SmtpClient();
+        client.Timeout = 10000; // 10 seconds timeout to prevent hanging
+
         try
         {
             await client.ConnectAsync(emailSettings["SmtpServer"], int.Parse(emailSettings["Port"]!), SecureSocketOptions.StartTls);
             await client.AuthenticateAsync(emailSettings["Username"], emailSettings["Password"]);
             await client.SendAsync(message);
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[EMAIL ERROR] {ex.Message}");
+            throw new Exception($"Email failed to send. Error: {ex.Message}");
+        }
         finally
         {
-            await client.DisconnectAsync(true);
+            try { await client.DisconnectAsync(true); } catch { }
         }
     }
 }
