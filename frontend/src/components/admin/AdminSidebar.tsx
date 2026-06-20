@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 const navGroups = [
   {
@@ -61,6 +61,16 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname();
   const [counts, setCounts] = useState({ registrationsCount: 0, notificationsCount: 0 });
+  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; role: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("vcms_user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (e) { }
+  }, []);
 
   const fetchCounts = async () => {
     try {
@@ -200,12 +210,12 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         {/* User row */}
         <div className={cn("flex items-center gap-2.5 p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors", collapsed && "justify-center")}>
           <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-xs font-bold shrink-0">
-            SA
+            {user ? getInitials(user.firstName || "", user.lastName || "") : "SA"}
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate">System Admin</p>
-              <p className="text-[10px] text-neutral-400 truncate">admin@ljvetclinic.com</p>
+              <p className="text-xs font-semibold truncate">{user ? `${user.firstName} ${user.lastName}` : "System Admin"}</p>
+              <p className="text-[10px] text-neutral-400 truncate">{user ? user.email : "admin@ljvetclinic.com"}</p>
             </div>
           )}
           {!collapsed && (
