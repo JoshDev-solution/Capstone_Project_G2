@@ -52,12 +52,13 @@ function UserModal({
   const [lastName, setLastName] = useState(isEdit ? user.name.split(" ").slice(1).join(" ") : "");
   const [email, setEmail] = useState(isEdit ? user.email : "");
   const [phone, setPhone] = useState(isEdit ? user.phone : "");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>(isEdit ? user.role : "Client");
   const [status, setStatus] = useState<Status>(isEdit ? user.status : "Active");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim() || !role) {
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim() || !role || (!isEdit && !password.trim())) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -66,6 +67,7 @@ function UserModal({
       name: `${firstName} ${lastName}`,
       email,
       phone,
+      password,
       role,
       status,
     });
@@ -123,18 +125,31 @@ function UserModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1.5">Email Address *</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Email Address *</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  className="input pl-10" 
+                  style={{ paddingLeft: "2.5rem" }}
+                  placeholder="juan@example.com" 
+                  required 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Password {isEdit ? "(Leave empty to keep current)" : "*"}</label>
               <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                className="input pl-10" 
-                style={{ paddingLeft: "2.5rem" }}
-                placeholder="juan@example.com" 
-                required 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                className="input" 
+                placeholder="Secure password" 
+                required={!isEdit} 
               />
             </div>
           </div>

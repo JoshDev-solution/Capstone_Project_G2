@@ -308,10 +308,12 @@ public class UsersController : ControllerBase
             var firstName = names[0];
             var lastName = names.Length > 1 ? string.Join(" ", names.Skip(1)) : "User";
 
+            var passwordToHash = !string.IsNullOrWhiteSpace(request.Password) ? request.Password : "DefaultPassword123!";
+            
             var user = new User
             {
                 Email = request.Email,
-                PasswordHash = global::BCrypt.Net.BCrypt.HashPassword("DefaultPassword123!"),
+                PasswordHash = global::BCrypt.Net.BCrypt.HashPassword(passwordToHash),
                 RoleId = role.Id,
                 IsActive = request.Status.ToLower() == "active",
                 IsApproved = true,
@@ -475,6 +477,7 @@ public class ManageUserRequest
 {
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string? Password { get; set; }
     public string Role { get; set; } = "Client";
     public string Status { get; set; } = "Active";
     public string Phone { get; set; } = string.Empty;
