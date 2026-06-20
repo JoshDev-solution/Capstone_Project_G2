@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { PawPrint, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
+import { PawPrint, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/providers/ThemeProvider";
 import { Sun, Moon } from "lucide-react";
@@ -11,15 +11,26 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { theme, toggleTheme } = useTheme();
+
+  // Check for success message from registration
+  useEffect(() => {
+    const msg = typeof window !== "undefined" ? sessionStorage.getItem("vcms_success") : null;
+    if (msg) {
+      setSuccess(msg);
+      sessionStorage.removeItem("vcms_success");
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+    setSuccess("");
+
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
       const res = await fetch(`${baseUrl}/api/auth/login`, {
@@ -27,19 +38,24 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || "Invalid credentials. Please try again.");
       }
-      
-      // Store token (in a real app, use HttpOnly cookies or secure storage)
+
+      // Store token and user info
       localStorage.setItem("vcms_token", data.token);
       localStorage.setItem("vcms_user", JSON.stringify(data.user));
-      
-      // Redirect to admin dashboard
-      window.location.href = "/admin";
+
+      // Role-based redirect
+      const role = data.user?.role?.toLowerCase() || "client";
+      if (role === "admin" || role === "veterinarian" || role === "manager") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/";
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred while logging in.");
     } finally {
@@ -110,7 +126,6 @@ export default function LoginPage() {
 
       {/* Right Panel — Form */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 relative">
-        {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           className="absolute top-6 right-6 btn-icon btn-ghost rounded-full w-10 h-10 flex items-center justify-center"
@@ -124,7 +139,6 @@ export default function LoginPage() {
           transition={{ duration: 0.6 }}
           className="w-full max-w-md"
         >
-          {/* Logo (mobile) */}
           <Link href="/" className="flex items-center gap-2.5 mb-10 lg:hidden">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow">
               <PawPrint className="w-5 h-5 text-white" />
@@ -136,6 +150,17 @@ export default function LoginPage() {
           <p className="text-neutral-500 dark:text-neutral-400 mb-8">
             Sign in to access your dashboard.
           </p>
+
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm mb-6"
+            >
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              {success}
+            </motion.div>
+          )}
 
           {error && (
             <motion.div
@@ -149,7 +174,6 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-1.5" htmlFor="email">
                 Email Address
@@ -169,7 +193,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium" htmlFor="password">
@@ -202,11 +225,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn btn-primary btn-lg w-full mt-2"
-            >
+            <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-full mt-2">
               {loading ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -229,8 +248,6 @@ export default function LoginPage() {
               Create account
             </Link>
           </p>
-
-
         </motion.div>
       </div>
     </div>

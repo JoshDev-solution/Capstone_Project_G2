@@ -98,6 +98,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.VerificationToken).HasColumnName("verification_token").HasMaxLength(255);
             entity.Property(e => e.ResetToken).HasColumnName("reset_token").HasMaxLength(255);
             entity.Property(e => e.ResetTokenExpiry).HasColumnName("reset_token_expiry");
+            entity.Property(e => e.OtpCode).HasColumnName("otp_code").HasMaxLength(10);
+            entity.Property(e => e.OtpExpiry).HasColumnName("otp_expiry");
             entity.Property(e => e.RefreshToken).HasColumnName("refresh_token").HasMaxLength(512);
             entity.Property(e => e.RefreshTokenExpiry).HasColumnName("refresh_token_expiry");
             entity.Property(e => e.IsActive).HasColumnName("is_active");

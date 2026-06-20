@@ -17,6 +17,10 @@ public class User : BaseEntity
     public string? ResetToken { get; set; }
     public DateTime? ResetTokenExpiry { get; set; }
 
+    // OTP for Password Reset
+    public string? OtpCode { get; set; }
+    public DateTime? OtpExpiry { get; set; }
+
     // Refresh Token
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiry { get; set; }

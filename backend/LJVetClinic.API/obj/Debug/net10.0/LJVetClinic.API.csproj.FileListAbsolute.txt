@@ -82,3 +82,6 @@ D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\runtimes\win-
 D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\runtimes\win-x64\native\e_sqlite3.dll
 D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\runtimes\win-x86\native\e_sqlite3.dll
 D:\Capstone_Project_VCMS\backend\LJVetClinic.API\obj\Debug\net10.0\LJVetClinic.API.sourcelink.json
+D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\BouncyCastle.Cryptography.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\MailKit.dll
+D:\Capstone_Project_VCMS\backend\LJVetClinic.API\bin\Debug\net10.0\MimeKit.dll
