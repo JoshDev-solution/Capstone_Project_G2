@@ -151,6 +151,7 @@ function PetFormModal({
   pet?: Pet; 
   onClose: () => void;
   onSave: (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => void;
+  clients?: {id: number, name: string, email: string}[];
 }) {
   const isEdit = !!pet;
   const [name, setName] = useState(isEdit ? pet.name : "");
@@ -162,6 +163,18 @@ function PetFormModal({
   const [color, setColor] = useState(isEdit ? pet.color : "");
   const [ownerName, setOwnerName] = useState(isEdit ? pet.ownerName : "");
   const [ownerEmail, setOwnerEmail] = useState(isEdit ? pet.ownerEmail : "");
+  
+  const handleOwnerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setOwnerName(val);
+    
+    if (clients) {
+      const matchedClient = clients.find(c => c.name === val);
+      if (matchedClient) {
+        setOwnerEmail(matchedClient.email);
+      }
+    }
+  };
   const [status, setStatus] = useState(isEdit ? pet.status : "Active");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -241,7 +254,21 @@ function PetFormModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Owner Name *</label>
-                <input type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} className="input" placeholder="e.g., Carlo Reyes" required />
+                <input 
+                  type="text" 
+                  list="clientsList"
+                  value={ownerName} 
+                  onChange={handleOwnerNameChange} 
+                  className="input" 
+                  placeholder="e.g., Carlo Reyes" 
+                  required 
+                  autoComplete="off"
+                />
+                <datalist id="clientsList">
+                  {clients?.map((c) => (
+                    <option key={c.id} value={c.name} />
+                  ))}
+                </datalist>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Owner Email *</label>
@@ -280,6 +307,7 @@ export default function PetsPage() {
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [formPet, setFormPet] = useState<Pet | undefined | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [clients, setClients] = useState<{id: number, name: string, email: string}[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -292,14 +320,19 @@ export default function PetsPage() {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
-      const res = await fetch(`${baseUrl}/api/pets`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      if (!res.ok) throw new Error("Failed to fetch pets.");
-      const data = await res.json();
-      setPets(data);
+      const [petsRes, clientsRes] = await Promise.all([
+        fetch(`${baseUrl}/api/pets`, { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${baseUrl}/api/users/clients`, { headers: { "Authorization": `Bearer ${token}` } })
+      ]);
+      
+      if (!petsRes.ok) throw new Error("Failed to fetch pets.");
+      const petsData = await petsRes.json();
+      setPets(petsData);
+      
+      if (clientsRes.ok) {
+        const clientsData = await clientsRes.json();
+        setClients(clientsData);
+      }
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {
@@ -578,6 +611,7 @@ export default function PetsPage() {
             pet={formPet ?? undefined}
             onClose={() => { setShowForm(false); setFormPet(null); }}
             onSave={handleSave}
+            clients={clients}
           />
         )}
       </AnimatePresence>

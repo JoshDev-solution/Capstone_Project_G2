@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "BlEfWdDvjCM=",
+  "dgSpecHash": "ZldJc8qULXE=",
   "success": true,
-  "projectFilePath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+  "projectFilePath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\joshu\\.nuget\\packages\\automapper\\16.1.1\\automapper.16.1.1.nupkg.sha512",
     "C:\\Users\\joshu\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
@@ -68,9 +68,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'MailKit' 4.7.1.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-9j88-vvj5-vhgr",
-      "projectPath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "projectPath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "warningLevel": 1,
-      "filePath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "filePath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "libraryId": "MailKit",
       "targetGraphs": [
         "net10.0"
@@ -80,9 +80,9 @@
       "code": "NU1902",
       "level": "Warning",
       "message": "Package 'MimeKit' 4.7.1 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g7hc-96xr-gvvx",
-      "projectPath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "projectPath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "warningLevel": 1,
-      "filePath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "filePath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "libraryId": "MimeKit",
       "targetGraphs": [
         "net10.0"
@@ -92,9 +92,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'SQLitePCLRaw.lib.e_sqlite3' 2.1.10 has a known high severity vulnerability, https://github.com/advisories/GHSA-2m69-gcr7-jv3q",
-      "projectPath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "projectPath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "warningLevel": 1,
-      "filePath": "d:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
+      "filePath": "D:\\Capstone_Project_VCMS\\backend\\LJVetClinic.Infrastructure\\LJVetClinic.Infrastructure.csproj",
       "libraryId": "SQLitePCLRaw.lib.e_sqlite3",
       "targetGraphs": [
         "net10.0"

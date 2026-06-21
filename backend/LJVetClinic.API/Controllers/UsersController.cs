@@ -74,6 +74,27 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("clients")]
+    [Authorize]
+    public async Task<IActionResult> GetClients()
+    {
+        var clients = await _context.Users
+            .Include(u => u.Profile)
+            .Include(u => u.Role)
+            .Where(u => u.Role != null && u.Role.Name == "Client" && u.IsApproved == true && u.IsActive == true)
+            .OrderBy(u => u.Profile != null ? u.Profile.FirstName : "")
+            .ToListAsync();
+
+        var result = clients.Select(u => new
+        {
+            id = u.Id,
+            name = u.Profile != null ? $"{u.Profile.FirstName} {u.Profile.LastName}".Trim() : "Unknown",
+            email = u.Email
+        });
+
+        return Ok(result);
+    }
+
     [HttpPut("registrations/{id}/approve")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ApproveRegistration(long id)

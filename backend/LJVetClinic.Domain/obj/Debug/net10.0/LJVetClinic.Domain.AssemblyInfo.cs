@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LJVetClinic.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c45b24081e27028685fa6207c4f7dc47f3ae444e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00f43fea8f059eee969152c0058322833feb570b")]
 [assembly: System.Reflection.AssemblyProductAttribute("LJVetClinic.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LJVetClinic.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
