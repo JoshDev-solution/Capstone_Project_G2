@@ -29,31 +29,53 @@ export async function POST(req: Request) {
         </div>
     `;
 
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "accept": "application/json",
-        "api-key": apiKey,
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        sender: { name: "LJ Veterinary Clinic", email: senderEmail },
-        to: [{ email: email }],
-        subject: "Your Password Reset OTP - LJ Veterinary Clinic",
-        htmlContent: htmlContent
-      })
-    });
+    let response;
+    if (apiKey.startsWith("re_")) {
+      // Use Resend API
+      response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: senderEmail === "system@ljvetclinic.com" ? "onboarding@resend.dev" : senderEmail,
+          to: email,
+          subject: "Your Password Reset OTP - LJ Veterinary Clinic",
+          html: htmlContent
+        })
+      });
+    } else {
+      // Use Brevo API
+      if (apiKey.startsWith("xsmtpsib-")) {
+        return NextResponse.json({ error: "You are using a Brevo SMTP password instead of an API key. Please generate an API Key from the 'API Keys' tab in Brevo." }, { status: 400 });
+      }
+      response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "accept": "application/json",
+          "api-key": apiKey,
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          sender: { name: "LJ Veterinary Clinic", email: senderEmail },
+          to: [{ email: email }],
+          subject: "Your Password Reset OTP - LJ Veterinary Clinic",
+          htmlContent: htmlContent
+        })
+      });
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(JSON.stringify(errorData));
     }
 
-    return NextResponse.json({ success: true, message: "Email sent successfully via Brevo REST API" });
+    return NextResponse.json({ success: true, message: "Email sent successfully" });
   } catch (error: any) {
     console.error("[EMAIL ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to send email via Brevo REST API", details: error.message },
+      { error: "Failed to send email", details: error.message },
       { status: 500 }
     );
   }
