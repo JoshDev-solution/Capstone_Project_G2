@@ -146,7 +146,8 @@ function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => voi
 function PetFormModal({ 
   pet, 
   onClose,
-  onSave
+  onSave,
+  clients
 }: { 
   pet?: Pet; 
   onClose: () => void;
