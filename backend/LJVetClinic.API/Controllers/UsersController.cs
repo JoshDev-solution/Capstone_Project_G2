@@ -290,7 +290,8 @@ public class UsersController : ControllerBase
                     role = displayRole,
                     status = u.IsActive ? "Active" : "Inactive",
                     joined = u.CreatedAt.ToString("MMM dd, yyyy"),
-                    phone = u.Profile?.Phone ?? ""
+                    phone = u.Profile?.Phone ?? "",
+                    profileImageUrl = u.Profile?.ProfileImageUrl ?? ""
                 };
             });
 

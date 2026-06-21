@@ -21,6 +21,7 @@ interface UserRow {
   status: Status;
   joined: string;
   phone: string;
+  profileImageUrl?: string;
 }
 
 const roleColors: Record<Role, string> = {
@@ -265,7 +266,10 @@ export default function UsersPage() {
           throw new Error(`Failed to fetch users: ${res.status} ${errText}`);
       }
       const data = await res.json();
-      setUsers(data);
+      setUsers(data.map((u: any) => ({
+        ...u,
+        profileImageUrl: u.profileImageUrl ? `${baseUrl}${u.profileImageUrl}` : undefined
+      })));
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {
@@ -468,12 +472,16 @@ export default function UsersPage() {
                     >
                       <td>
                         <div className="flex items-center gap-3">
-                          <div 
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0"
-                            style={{ backgroundColor: avatarColors[user.role] || "#D98CFF" }}
-                          >
-                            {getInitials(user.name.split(" ")[0] || "", user.name.split(" ").slice(1).join(" ") || "")}
-                          </div>
+                          {user.profileImageUrl ? (
+                            <img src={user.profileImageUrl} alt={user.name} className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0" />
+                          ) : (
+                            <div 
+                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0"
+                              style={{ backgroundColor: avatarColors[user.role] || "#D98CFF" }}
+                            >
+                              {getInitials(user.name.split(" ")[0] || "", user.name.split(" ").slice(1).join(" ") || "")}
+                            </div>
+                          )}
                           <div>
                             <p className="text-sm font-semibold">{user.name}</p>
                             <p className="text-xs text-neutral-400">{user.email}</p>
