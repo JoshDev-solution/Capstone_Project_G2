@@ -127,7 +127,7 @@ using (var scope = app.Services.CreateScope())
     var dbClientRole = context.Roles.First(r => r.Name == "Client");
 
     // 2. Users (Admin, Vets, Clients)
-    if (!context.Users.Any(u => u.Email == "LJadmin@gmail.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "LJadmin@gmail.com"))
     {
         var adminUser = new LJVetClinic.Domain.Entities.User
         {
@@ -148,7 +148,7 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    if (!context.Users.Any(u => u.Email == "drlopez@ljvetclinic.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "drlopez@ljvetclinic.com"))
     {
         var vetUser = new LJVetClinic.Domain.Entities.User
         {
@@ -170,7 +170,7 @@ using (var scope = app.Services.CreateScope())
 
         var staffCode1 = "STF-0001";
         int suffix1 = 1;
-        while (context.Staff.Any(s => s.EmployeeCode == staffCode1))
+        while (context.Staff.IgnoreQueryFilters().Any(s => s.EmployeeCode == staffCode1))
         {
             suffix1++;
             staffCode1 = $"STF-{suffix1:D4}";
@@ -187,7 +187,7 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    if (!context.Users.Any(u => u.Email == "drreyes@ljvetclinic.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "drreyes@ljvetclinic.com"))
     {
         var vetUser = new LJVetClinic.Domain.Entities.User
         {
@@ -209,7 +209,7 @@ using (var scope = app.Services.CreateScope())
 
         var staffCode2 = "STF-0002";
         int suffix2 = 1;
-        while (context.Staff.Any(s => s.EmployeeCode == staffCode2))
+        while (context.Staff.IgnoreQueryFilters().Any(s => s.EmployeeCode == staffCode2))
         {
             suffix2++;
             staffCode2 = $"STF-{suffix2:D4}";
@@ -226,7 +226,7 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    if (!context.Users.Any(u => u.Email == "manager@ljvetclinic.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "manager@ljvetclinic.com"))
     {
         var managerUser = new LJVetClinic.Domain.Entities.User
         {
@@ -248,7 +248,7 @@ using (var scope = app.Services.CreateScope())
 
         var staffCode3 = "STF-0003";
         int suffix3 = 1;
-        while (context.Staff.Any(s => s.EmployeeCode == staffCode3))
+        while (context.Staff.IgnoreQueryFilters().Any(s => s.EmployeeCode == staffCode3))
         {
             suffix3++;
             staffCode3 = $"STF-{suffix3:D4}";
@@ -265,7 +265,7 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    if (!context.Users.Any(u => u.Email == "cashier@ljvetclinic.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "cashier@ljvetclinic.com"))
     {
         var cashierUser = new LJVetClinic.Domain.Entities.User
         {
@@ -287,7 +287,7 @@ using (var scope = app.Services.CreateScope())
 
         var staffCode4 = "STF-0004";
         int suffix4 = 1;
-        while (context.Staff.Any(s => s.EmployeeCode == staffCode4))
+        while (context.Staff.IgnoreQueryFilters().Any(s => s.EmployeeCode == staffCode4))
         {
             suffix4++;
             staffCode4 = $"STF-{suffix4:D4}";
@@ -304,7 +304,7 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    if (!context.Users.Any(u => u.Email == "petowner@gmail.com"))
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "petowner@gmail.com"))
     {
         var clientUser = new LJVetClinic.Domain.Entities.User
         {
@@ -326,7 +326,7 @@ using (var scope = app.Services.CreateScope())
 
         var clientCode = "CLI-0001";
         int suffixClient = 1;
-        while (context.Clients.Any(c => c.ClientCode == clientCode))
+        while (context.Clients.IgnoreQueryFilters().Any(c => c.ClientCode == clientCode))
         {
             suffixClient++;
             clientCode = $"CLI-{suffixClient:D4}";
@@ -459,7 +459,7 @@ using (var scope = app.Services.CreateScope())
         {
             var clientCode = "CLI-0001";
             int suffixClient = 1;
-            while (context.Clients.Any(c => c.ClientCode == clientCode))
+            while (context.Clients.IgnoreQueryFilters().Any(c => c.ClientCode == clientCode))
             {
                 suffixClient++;
                 clientCode = $"CLI-{suffixClient:D4}";
@@ -498,7 +498,7 @@ using (var scope = app.Services.CreateScope())
         {
             var clientCode = "CLI-0001";
             int suffixClient = 1;
-            while (context.Clients.Any(c => c.ClientCode == clientCode))
+            while (context.Clients.IgnoreQueryFilters().Any(c => c.ClientCode == clientCode))
             {
                 suffixClient++;
                 clientCode = $"CLI-{suffixClient:D4}";
