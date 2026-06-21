@@ -44,7 +44,19 @@ function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
-const navGroups = [
+type NavItem = {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+  subItems?: { icon: React.ElementType; label: string; href: string }[];
+};
+
+type NavGroup = {
+  title: string;
+  items: NavItem[];
+};
+
+const navGroups: NavGroup[] = [
   {
     title: "Overview",
     items: [
@@ -182,7 +194,7 @@ export default function VetSidebar({ collapsed, onToggle }: VetSidebarProps) {
     let changed = false;
     navGroups.forEach(group => {
       group.items.forEach(item => {
-        if (item.subItems) {
+        if ("subItems" in item && item.subItems) {
           const isChildActive = item.subItems.some(sub => pathname.startsWith(sub.href));
           if (isChildActive && !newExpanded[item.href]) {
             newExpanded[item.href] = true;

@@ -193,6 +193,7 @@ function PetFormModal({
       dob,
       weight: Number(weight),
       color,
+      microchip: pet?.microchip || "",
       ownerName,
       ownerEmail,
       status
