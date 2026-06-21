@@ -607,7 +607,23 @@ app.MapOpenApi();
 // and redirects cause CORS preflight (OPTIONS) requests to fail.
 
 app.UseRouting();
-app.UseStaticFiles();
+
+var webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(webRoot))
+{
+    Directory.CreateDirectory(webRoot);
+}
+var profilesFolder = Path.Combine(webRoot, "uploads", "profiles");
+if (!Directory.Exists(profilesFolder))
+{
+    Directory.CreateDirectory(profilesFolder);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRoot),
+    RequestPath = ""
+});
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
