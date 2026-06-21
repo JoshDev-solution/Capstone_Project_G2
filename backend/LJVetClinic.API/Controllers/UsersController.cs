@@ -82,15 +82,16 @@ public class UsersController : ControllerBase
             .Include(u => u.Profile)
             .Include(u => u.Role)
             .Where(u => u.Role != null && u.Role.Name == "Client" && u.IsApproved == true && u.IsActive == true)
-            .OrderBy(u => u.Profile != null ? u.Profile.FirstName : "")
             .ToListAsync();
 
-        var result = clients.Select(u => new
-        {
-            id = u.Id,
-            name = u.Profile != null ? $"{u.Profile.FirstName} {u.Profile.LastName}".Trim() : "Unknown",
-            email = u.Email
-        });
+        var result = clients
+            .OrderBy(u => u.Profile?.FirstName ?? "")
+            .Select(u => new
+            {
+                id = u.Id,
+                name = u.Profile != null ? $"{u.Profile.FirstName} {u.Profile.LastName}".Trim() : "Unknown",
+                email = u.Email
+            });
 
         return Ok(result);
     }
