@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Stethoscope, X, Clock, ClipboardList } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Service {
   id: number;
@@ -39,6 +40,7 @@ function ServiceModal({
   const [duration, setDuration] = useState(isEdit ? service.duration : 30);
   const [description, setDescription] = useState(isEdit ? service.description : "");
   const [active, setActive] = useState(isEdit ? service.active : true);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +48,10 @@ function ServiceModal({
       alert("Name and Category are required.");
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave({
       id: service?.id,
       name,
@@ -55,6 +61,7 @@ function ServiceModal({
       description,
       active
     });
+    setShowConfirm(false);
     onClose();
   };
 
@@ -111,6 +118,16 @@ function ServiceModal({
           </div>
         </form>
       </motion.div>
+      <ConfirmationModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEdit ? "Confirm Updates" : "Confirm Addition"}
+        message={isEdit ? "Are you sure you want to save these changes to the service?" : "Are you sure you want to add this new service?"}
+        confirmText="Yes, Save"
+        cancelText="Cancel"
+        type="info"
+      />
     </motion.div>
   );
 }
@@ -174,8 +191,16 @@ export default function ServicesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this service?")) return;
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirmId) return;
+    const id = deleteConfirmId;
+    setDeleteConfirmId(null);
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -269,7 +294,7 @@ export default function ServicesPage() {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button 
-                      onClick={() => handleDelete(service.id)}
+                      onClick={() => handleDeleteClick(service.id)}
                       className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -298,6 +323,17 @@ export default function ServicesPage() {
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={executeDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to permanently delete this service? This action cannot be undone."
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </>
   );
 }

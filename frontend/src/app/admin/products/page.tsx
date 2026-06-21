@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Edit, Trash2, Package, X, AlertTriangle, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Product {
   id: number;
@@ -53,6 +54,7 @@ function ProductModal({
   const [reorderLevel, setReorderLevel] = useState(isEdit ? product.reorderLevel : 10);
   const [expiry, setExpiry] = useState(isEdit ? product.expiry : "");
   const [active, setActive] = useState(isEdit ? product.active : true);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +62,10 @@ function ProductModal({
       alert("Name, Category, and SKU are required.");
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave({
       id: product?.id,
       name,
@@ -72,6 +78,7 @@ function ProductModal({
       expiry: expiry || undefined,
       active
     });
+    setShowConfirm(false);
     onClose();
   };
 
@@ -138,6 +145,16 @@ function ProductModal({
           </div>
         </form>
       </motion.div>
+      <ConfirmationModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEdit ? "Confirm Updates" : "Confirm Addition"}
+        message={isEdit ? "Are you sure you want to save these changes to the product?" : "Are you sure you want to add this new product?"}
+        confirmText="Yes, Save"
+        cancelText="Cancel"
+        type="info"
+      />
     </motion.div>
   );
 }
@@ -202,8 +219,16 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirmId) return;
+    const id = deleteConfirmId;
+    setDeleteConfirmId(null);
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -342,7 +367,7 @@ export default function ProductsPage() {
                               <Edit className="w-4 h-4" />
                             </button>
                             <button 
-                              onClick={() => handleDelete(p.id)}
+                              onClick={() => handleDeleteClick(p.id)}
                               className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -368,6 +393,17 @@ export default function ProductsPage() {
           />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={executeDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to permanently delete this product? This action cannot be undone."
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </>
   );
 }

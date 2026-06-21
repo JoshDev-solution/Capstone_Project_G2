@@ -7,6 +7,7 @@ import {
   User, Shield, ChevronLeft, ChevronRight, Eye, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Pet {
   id: number;
@@ -177,6 +178,7 @@ function PetFormModal({
     }
   };
   const [status, setStatus] = useState(isEdit ? pet.status : "Active");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +186,10 @@ function PetFormModal({
       alert("Name, Species, Owner Name, and Owner Email are required.");
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave({
       id: pet?.id,
       name,
@@ -198,6 +204,7 @@ function PetFormModal({
       ownerEmail,
       status
     });
+    setShowConfirm(false);
     onClose();
   };
 
@@ -296,6 +303,16 @@ function PetFormModal({
           </div>
         </form>
       </motion.div>
+      <ConfirmationModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEdit ? "Confirm Updates" : "Confirm Registration"}
+        message={isEdit ? "Are you sure you want to save these changes to the pet's profile?" : "Are you sure you want to register this new pet?"}
+        confirmText="Yes, Save"
+        cancelText="Cancel"
+        type="info"
+      />
     </motion.div>
   );
 }
@@ -372,8 +389,16 @@ export default function PetsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this pet?")) return;
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirmId) return;
+    const id = deleteConfirmId;
+    setDeleteConfirmId(null);
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -551,7 +576,7 @@ export default function PetsPage() {
                                   <Edit className="w-4 h-4" />
                                 </button>
                                 <button 
-                                  onClick={() => handleDelete(pet.id)}
+                                  onClick={() => handleDeleteClick(pet.id)}
                                   className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger"
                                 >
                                   <Trash2 className="w-4 h-4" />

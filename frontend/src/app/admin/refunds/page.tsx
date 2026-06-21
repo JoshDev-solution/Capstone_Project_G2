@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 type RefundStatus = "Pending" | "Approved" | "Rejected" | "Processed";
 
@@ -101,6 +102,7 @@ export default function RefundsPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirmState, setConfirmState] = useState<{ open: boolean; action: "approve" | "reject" | "process"; id: number | null }>({ open: false, action: "approve", id: null });
   const PER_PAGE = 8;
 
   const fetchRefunds = async () => {
@@ -149,9 +151,13 @@ export default function RefundsPage() {
     }
   };
 
-  const approve = (id: number) => updateStatus(id, "Approved");
-  const reject = (id: number) => updateStatus(id, "Rejected");
-  const process_ = (id: number) => updateStatus(id, "Processed");
+  const executeApprove = (id: number) => updateStatus(id, "Approved");
+  const executeReject = (id: number) => updateStatus(id, "Rejected");
+  const executeProcess = (id: number) => updateStatus(id, "Processed");
+
+  const handleApproveClick = (id: number) => { setConfirmState({ open: true, action: "approve", id }); };
+  const handleRejectClick = (id: number) => { setConfirmState({ open: true, action: "reject", id }); };
+  const handleProcessClick = (id: number) => { setConfirmState({ open: true, action: "process", id }); };
 
   const filtered = refunds.filter((r) => {
     const q = search.toLowerCase();
@@ -261,16 +267,16 @@ export default function RefundsPage() {
                           </button>
                           {r.status === "Pending" && (
                             <>
-                              <button onClick={() => approve(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-success" title="Approve">
+                              <button onClick={() => handleApproveClick(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-success" title="Approve">
                                 <CheckCircle className="w-4 h-4" />
                               </button>
-                              <button onClick={() => reject(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger" title="Reject">
+                              <button onClick={() => handleRejectClick(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-danger" title="Reject">
                                 <XCircle className="w-4 h-4" />
                               </button>
                             </>
                           )}
                           {r.status === "Approved" && (
-                            <button onClick={() => process_(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-blue-500" title="Process">
+                            <button onClick={() => handleProcessClick(r.id)} className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center text-neutral-400 hover:text-blue-500" title="Process">
                               <RotateCcw className="w-4 h-4" />
                             </button>
                           )}
@@ -299,8 +305,26 @@ export default function RefundsPage() {
       </div>
 
       <AnimatePresence>
-        {selected && <DetailModal refund={selected} onClose={() => setSelected(null)} onApprove={approve} onReject={reject} onProcess={process_} />}
+        {selected && <DetailModal refund={selected} onClose={() => setSelected(null)} onApprove={handleApproveClick} onReject={handleRejectClick} onProcess={handleProcessClick} />}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmState.open}
+        onClose={() => setConfirmState({ ...confirmState, open: false })}
+        onConfirm={() => {
+          if (confirmState.id !== null) {
+            if (confirmState.action === "approve") executeApprove(confirmState.id);
+            else if (confirmState.action === "reject") executeReject(confirmState.id);
+            else executeProcess(confirmState.id);
+          }
+          setConfirmState({ ...confirmState, open: false });
+        }}
+        title={`Confirm ${confirmState.action.charAt(0).toUpperCase() + confirmState.action.slice(1)}`}
+        message={`Are you sure you want to ${confirmState.action} this refund request?`}
+        confirmText={`Yes, ${confirmState.action.charAt(0).toUpperCase() + confirmState.action.slice(1)}`}
+        cancelText="Cancel"
+        type={confirmState.action === "approve" ? "success" : confirmState.action === "reject" ? "danger" : "info"}
+      />
     </>
   );
 }

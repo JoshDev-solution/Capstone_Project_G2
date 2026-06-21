@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Edit, Trash2, BadgePercent, Calendar, X, Tag, ToggleRight, ToggleLeft, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Discount {
   id: number;
@@ -38,6 +39,7 @@ function DiscountModal({
   const [endDate, setEndDate] = useState(isEdit ? discount.endDate : "");
   const [usageLimit, setUsageLimit] = useState<number | string>(isEdit ? (discount.usageLimit ?? "") : "");
   const [active, setActive] = useState(isEdit ? discount.active : true);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +47,10 @@ function DiscountModal({
       alert("Name, Code, and Type are required.");
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave({
       id: discount?.id,
       name,
@@ -57,6 +63,7 @@ function DiscountModal({
       usageLimit: usageLimit === "" ? null : Number(usageLimit),
       active
     });
+    setShowConfirm(false);
     onClose();
   };
 
@@ -125,6 +132,16 @@ function DiscountModal({
           </div>
         </form>
       </motion.div>
+      <ConfirmationModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEdit ? "Confirm Updates" : "Confirm Addition"}
+        message={isEdit ? "Are you sure you want to save these changes to the discount?" : "Are you sure you want to create this new discount?"}
+        confirmText="Yes, Save"
+        cancelText="Cancel"
+        type="info"
+      />
     </motion.div>
   );
 }
@@ -215,8 +232,16 @@ export default function DiscountsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this discount?")) return;
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handleDeleteClick = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteConfirmId) return;
+    const id = deleteConfirmId;
+    setDeleteConfirmId(null);
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -332,7 +357,7 @@ export default function DiscountsPage() {
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button 
-                      onClick={() => handleDelete(d.id)}
+                      onClick={() => handleDeleteClick(d.id)}
                       className="btn text-xs py-1.5 flex-1 bg-danger/10 text-danger hover:bg-danger/20"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -355,6 +380,17 @@ export default function DiscountsPage() {
       <AnimatePresence>
         {modal && <DiscountModal discount={modal === "edit" ? selected : undefined} onClose={() => setModal(null)} onSave={handleSave} />}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={executeDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to permanently delete this discount? This action cannot be undone."
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </>
   );
 }

@@ -8,6 +8,7 @@ import {
   Filter, AlertTriangle
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 type Role = "Administrator" | "Veterinarian" | "Manager" | "Cashier" | "Client";
 type Status = "Active" | "Inactive";
@@ -55,6 +56,7 @@ function UserModal({
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>(isEdit ? user.role : "Client");
   const [status, setStatus] = useState<Status>(isEdit ? user.status : "Active");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +64,10 @@ function UserModal({
       alert("Please fill out all required fields.");
       return;
     }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
     onSave({
       id: user?.id,
       name: `${firstName} ${lastName}`,
@@ -71,6 +77,7 @@ function UserModal({
       role,
       status,
     });
+    setShowConfirm(false);
     onClose();
   };
 
@@ -212,6 +219,16 @@ function UserModal({
           </div>
         </form>
       </motion.div>
+      <ConfirmationModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEdit ? "Confirm Updates" : "Confirm Registration"}
+        message={isEdit ? "Are you sure you want to save these changes to the user account?" : "Are you sure you want to create this new user account?"}
+        confirmText="Yes, Save"
+        cancelText="Cancel"
+        type="info"
+      />
     </motion.div>
   );
 }

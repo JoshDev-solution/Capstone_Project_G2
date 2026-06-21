@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, XCircle, Eye, Search, Clock, User, PawPrint, Mail, Phone, X } from "lucide-react";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Registration {
   id: number;
@@ -88,6 +89,7 @@ export default function RegistrationsPage() {
   const [selected, setSelected] = useState<Registration | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirmState, setConfirmState] = useState<{ open: boolean; action: "approve" | "reject"; id: number | null }>({ open: false, action: "approve", id: null });
 
   const fetchRegistrations = async () => {
     setLoading(true);
@@ -117,7 +119,10 @@ export default function RegistrationsPage() {
     fetchRegistrations();
   }, []);
 
-  const approve = async (id: number) => {
+  const handleApproveClick = (id: number) => { setConfirmState({ open: true, action: "approve", id }); };
+  const handleRejectClick = (id: number) => { setConfirmState({ open: true, action: "reject", id }); };
+
+  const executeApprove = async (id: number) => {
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -140,7 +145,7 @@ export default function RegistrationsPage() {
     }
   };
 
-  const reject = async (id: number) => {
+  const executeReject = async (id: number) => {
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -255,10 +260,10 @@ export default function RegistrationsPage() {
                     </button>
                     {reg.status === "Pending" && (
                       <>
-                        <button onClick={() => reject(reg.id)} className="btn text-xs py-1.5 flex-1 bg-danger/10 text-danger hover:bg-danger/20">
+                        <button onClick={() => handleRejectClick(reg.id)} className="btn text-xs py-1.5 flex-1 bg-danger/10 text-danger hover:bg-danger/20">
                           <XCircle className="w-3.5 h-3.5" /> Reject
                         </button>
-                        <button onClick={() => approve(reg.id)} className="btn btn-primary text-xs py-1.5 flex-1">
+                        <button onClick={() => handleApproveClick(reg.id)} className="btn btn-primary text-xs py-1.5 flex-1">
                           <CheckCircle className="w-3.5 h-3.5" /> Approve
                         </button>
                       </>
@@ -280,9 +285,26 @@ export default function RegistrationsPage() {
 
       <AnimatePresence>
         {selected && (
-          <DetailModal reg={selected} onClose={() => setSelected(null)} onApprove={approve} onReject={reject} />
+          <DetailModal reg={selected} onClose={() => setSelected(null)} onApprove={handleApproveClick} onReject={handleRejectClick} />
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={confirmState.open}
+        onClose={() => setConfirmState({ ...confirmState, open: false })}
+        onConfirm={() => {
+          if (confirmState.id !== null) {
+            if (confirmState.action === "approve") executeApprove(confirmState.id);
+            else executeReject(confirmState.id);
+          }
+          setConfirmState({ ...confirmState, open: false });
+        }}
+        title={confirmState.action === "approve" ? "Confirm Approval" : "Confirm Rejection"}
+        message={`Are you sure you want to ${confirmState.action} this registration?`}
+        confirmText={confirmState.action === "approve" ? "Yes, Approve" : "Yes, Reject"}
+        cancelText="Cancel"
+        type={confirmState.action === "approve" ? "success" : "danger"}
+      />
     </>
   );
 }
