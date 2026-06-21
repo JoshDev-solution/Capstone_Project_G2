@@ -232,8 +232,8 @@ public class AuthService : IAuthService
             catch (Exception ex) 
             {
                 Console.WriteLine($"[WARNING] Failed to send email via SMTP. Bypassing for development. Error: {ex.Message}");
-                otpFallback = otp; // Fallback so the user can see it in frontend if SMTP is blocked
             }
+            otpFallback = otp; // ALWAYS return OTP to the frontend so Next.js can send it via Nodemailer
         }
 
         return new ForgotPasswordResponse

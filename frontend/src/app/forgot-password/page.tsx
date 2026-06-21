@@ -46,7 +46,19 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error(data.message || "Failed to send OTP.");
       setSentTo(data.sentTo);
       setMethod(data.method);
-      if (data.otpCode) setFallbackOtp(data.otpCode);
+
+      if (data.otpCode && data.method === "email") {
+        try {
+          const emailRes = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: identifier, otp: data.otpCode })
+          });
+          if (!emailRes.ok) throw new Error("Nodemailer failed");
+        } catch {
+          setFallbackOtp(data.otpCode);
+        }
+      }
       setStep("verify");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -161,7 +173,18 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       setSentTo(data.sentTo);
-      if (data.otpCode) setFallbackOtp(data.otpCode);
+      if (data.otpCode && data.method === "email") {
+        try {
+          const emailRes = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: identifier, otp: data.otpCode })
+          });
+          if (!emailRes.ok) throw new Error("Nodemailer failed");
+        } catch {
+          setFallbackOtp(data.otpCode);
+        }
+      }
       setError(""); // Clear any old error
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to resend OTP.");
