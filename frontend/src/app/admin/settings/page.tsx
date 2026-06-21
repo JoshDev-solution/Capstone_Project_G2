@@ -48,7 +48,7 @@ export default function SettingsPage() {
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       
-      const res = await fetch(`${baseUrl}/api/auth/me`, {
+      const res = await fetch(`${baseUrl}/api/users/profile`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to fetch profile");

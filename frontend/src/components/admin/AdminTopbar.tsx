@@ -26,7 +26,7 @@ export default function AdminTopbar({ sidebarCollapsed, title = "Dashboard" }: A
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
       if (!token) return;
-      const res = await fetch(`${baseUrl}/api/auth/me`, { headers: { "Authorization": `Bearer ${token}` } });
+      const res = await fetch(`${baseUrl}/api/users/profile`, { headers: { "Authorization": `Bearer ${token}` } });
       if (res.ok) {
         const data = await res.json();
         setUserName({ first: data.firstName || "", last: data.lastName || "", role: data.role || "" });

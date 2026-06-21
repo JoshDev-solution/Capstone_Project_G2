@@ -494,6 +494,30 @@ public class UsersController : ControllerBase
         }
     }
 
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile()
+    {
+        try
+        {
+            var userId = GetUserId();
+            var user = await _context.Users.Include(u => u.Role).Include(u => u.Profile).FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            return Ok(new {
+                firstName = user.Profile?.FirstName ?? "",
+                lastName = user.Profile?.LastName ?? "",
+                email = user.Email,
+                phone = user.Profile?.Phone ?? "",
+                role = user.Role?.Name ?? "Administrator",
+                profileImageUrl = user.Profile?.ProfileImageUrl ?? ""
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
