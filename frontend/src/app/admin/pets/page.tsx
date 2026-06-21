@@ -128,7 +128,6 @@ function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => voi
               { label: "Date of Birth",      value: pet.dob || "Unknown" },
               { label: "Weight",             value: `${pet.weight} kg` },
               { label: "Color / Markings",   value: pet.color || "None" },
-              { label: "Microchip No.",      value: pet.microchip || "Not registered" },
               { label: "Status",             value: pet.status },
               { label: "Last Visit",         value: pet.lastVisit },
             ].map((row) => (
@@ -161,7 +160,6 @@ function PetFormModal({
   const [dob, setDob] = useState(isEdit ? pet.dob : "");
   const [weight, setWeight] = useState(isEdit ? pet.weight : 0);
   const [color, setColor] = useState(isEdit ? pet.color : "");
-  const [microchip, setMicrochip] = useState(isEdit ? pet.microchip : "");
   const [ownerName, setOwnerName] = useState(isEdit ? pet.ownerName : "");
   const [ownerEmail, setOwnerEmail] = useState(isEdit ? pet.ownerEmail : "");
   const [status, setStatus] = useState(isEdit ? pet.status : "Active");
@@ -181,7 +179,6 @@ function PetFormModal({
       dob,
       weight: Number(weight),
       color,
-      microchip,
       ownerName,
       ownerEmail,
       status
@@ -237,10 +234,6 @@ function PetFormModal({
               <div>
                 <label className="block text-sm font-medium mb-1.5">Color / Markings</label>
                 <input type="text" value={color} onChange={(e) => setColor(e.target.value)} className="input" placeholder="e.g., Golden" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Microchip No.</label>
-                <input type="text" value={microchip} onChange={(e) => setMicrochip(e.target.value)} className="input" placeholder="15-digit number" />
               </div>
             </div>
 
