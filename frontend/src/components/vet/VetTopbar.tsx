@@ -16,16 +16,36 @@ export default function VetTopbar({ sidebarCollapsed, title = "Clinical Dashboar
   const [notifOpen, setNotifOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
-  const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; role: string } | null>(null);
+
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [userName, setUserName] = useState<{first: string, last: string, role: string} | null>(null);
+
+  const fetchProfile = async () => {
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      const token = localStorage.getItem("vcms_token");
+      if (!token) return;
+      const res = await fetch(`${baseUrl}/api/auth/me`, { headers: { "Authorization": `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setUserName({ first: data.firstName || "", last: data.lastName || "", role: data.role || "" });
+        if (data.profileImageUrl) {
+          setProfilePic(`${baseUrl}${data.profileImageUrl}`);
+        } else {
+          setProfilePic(null);
+        }
+      }
+    } catch (e) {}
+  };
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("vcms_user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (e) { }
+    fetchProfile();
+    window.addEventListener('profileUpdated', fetchProfile);
+    return () => window.removeEventListener('profileUpdated', fetchProfile);
   }, []);
+
+
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -130,12 +150,16 @@ export default function VetTopbar({ sidebarCollapsed, title = "Clinical Dashboar
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
-            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-xs font-bold">
-              {user ? getInitials(user.firstName || "", user.lastName || "") : "DR"}
-            </div>
+            {profilePic ? (
+              <img src={profilePic} alt="Profile" className="w-8 h-8 rounded-lg object-cover border border-neutral-200 dark:border-neutral-700" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center text-white text-xs font-bold">
+                {userName ? `${userName.first.charAt(0)}${userName.last.charAt(0)}`.toUpperCase() : "DR"}
+              </div>
+            )}
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-semibold leading-tight">{user ? `Dr. ${user.lastName}` : "Veterinarian"}</p>
-              <p className="text-[10px] text-neutral-400 leading-tight">Staff</p>
+              <p className="text-xs font-semibold leading-tight">{userName ? `Dr. ${userName.last}` : "Veterinarian"}</p>
+              <p className="text-[10px] text-neutral-400 leading-tight">{userName ? userName.role : "Staff"}</p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
           </button>
@@ -143,7 +167,7 @@ export default function VetTopbar({ sidebarCollapsed, title = "Clinical Dashboar
           {dropdownOpen && (
             <div className="absolute right-0 top-12 w-48 card shadow-xl z-50 overflow-hidden py-1">
               {[
-                { icon: User, label: "My Profile", href: "#" },
+                { icon: User, label: "My Profile", href: "/vet/profile/settings" },
               ].map((item) => (
                 <a
                   key={item.label}

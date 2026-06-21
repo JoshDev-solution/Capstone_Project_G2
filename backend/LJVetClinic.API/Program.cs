@@ -110,6 +110,12 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated();
+    try { 
+        context.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN otp_code VARCHAR(10);"); 
+    } catch { }
+    try { 
+        context.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN otp_expiry DATETIME;"); 
+    } catch { }
 
     // 1. Roles
     if (!context.Roles.Any())
@@ -122,9 +128,9 @@ using (var scope = app.Services.CreateScope())
         context.SaveChanges();
     }
 
-    var dbAdminRole = context.Roles.First(r => r.Name == "Admin");
-    var dbVetRole = context.Roles.First(r => r.Name == "Veterinarian");
-    var dbClientRole = context.Roles.First(r => r.Name == "Client");
+    var dbAdminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin" || r.Name == "Administrator") ?? context.Roles.First();
+    var dbVetRole = context.Roles.FirstOrDefault(r => r.Name == "Veterinarian") ?? context.Roles.First();
+    var dbClientRole = context.Roles.FirstOrDefault(r => r.Name == "Client") ?? context.Roles.First();
 
     // 2. Users (Admin, Vets, Clients)
     if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "LJadmin@gmail.com"))
@@ -601,6 +607,7 @@ app.MapOpenApi();
 // and redirects cause CORS preflight (OPTIONS) requests to fail.
 
 app.UseRouting();
+app.UseStaticFiles();
 app.UseCors("AllowAll");
 
 app.UseAuthentication();

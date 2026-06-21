@@ -1,14 +1,57 @@
 import re
+import os
 
 filepath = "frontend/src/app/admin/settings/page.tsx"
 with open(filepath, "r", encoding="utf-8") as f:
     content = f.read()
 
-# Fix imports
-content = content.replace('import { useState } from "react";', 'import { useState, useEffect, useRef } from "react";')
-content = content.replace('const fileInputRef = import("react").then(m => m.useRef<HTMLInputElement>(null));\n  // Let\'s use React.useRef since we didn\'t import useRef directly above. Wait, I can import useRef. Let me just add it.', 'const fileInputRef = useRef<HTMLInputElement>(null);')
+# 1. Imports
+if "User," not in content:
+    content = content.replace("Settings, Lock, Bell, Mail, Shield, Palette, Database, Save,", "Settings, Lock, Bell, Mail, Shield, Palette, Database, Save, User, Camera, Loader2,")
+if "useRef" not in content:
+    content = content.replace('import { useState } from "react";', 'import { useState, useEffect, useRef } from "react";')
 
-logic_new = """
+# 2. Sections
+sections_old = """const sections = [
+  { id: "clinic",      label: "Clinic Info",     icon: PawPrint },"""
+sections_new = """const sections = [
+  { id: "profile",     label: "My Profile",      icon: User },
+  { id: "clinic",      label: "Clinic Info",     icon: PawPrint },"""
+content = content.replace(sections_old, sections_new)
+
+# 3. State & Logic
+logic_old = """export default function SettingsPage() {
+  const [activeSection, setActiveSection] = useState("clinic");
+  const [saved, setSaved] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };"""
+
+logic_new = """export default function SettingsPage() {
+  const [activeSection, setActiveSection] = useState("profile");
+  const [saved, setSaved] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const [profile, setProfile] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    role: "",
+    profileImageUrl: "",
+  });
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -123,12 +166,10 @@ logic_new = """
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
-  };
-"""
+  };"""
+content = content.replace(logic_old, logic_new)
 
-# Insert logic after fileInputRef
-content = content.replace('const fileInputRef = useRef<HTMLInputElement>(null);', 'const fileInputRef = useRef<HTMLInputElement>(null);\n' + logic_new)
-
+# 4. JSX Injection
 jsx_injection = """{/* Profile Info */}
           {activeSection === "profile" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row gap-6">
@@ -198,7 +239,7 @@ jsx_injection = """{/* Profile Info */}
 
 content = content.replace("{/* Clinic Info */}", jsx_injection)
 
-# Save button fix
+# 5. Remove original Save Button if on profile
 content = content.replace("""{/* Save Button */}
           <div className="flex justify-end mt-4">""", """{/* Save Button */}
           {activeSection !== "profile" && <div className="flex justify-end mt-4">""")
@@ -210,6 +251,7 @@ content = content.replace("""</motion.button>
           </div>}
         </div>
       </div>""")
+
 
 with open(filepath, "w", encoding="utf-8") as f:
     f.write(content)
