@@ -49,6 +49,7 @@ export default function ForgotPasswordPage() {
       setMethod(data.method);
 
       if (data.otpCode && data.method === "email") {
+        setFallbackOtp(data.otpCode); // ALWAYS SHOW IT
         try {
           const emailRes = await fetch('/api/send-otp', {
             method: 'POST',
@@ -60,7 +61,6 @@ export default function ForgotPasswordPage() {
             throw new Error(errData.details || errData.error || "Unknown API error");
           }
         } catch (e: any) {
-          setFallbackOtp(data.otpCode);
           setEmailError(e.message);
         }
       }
