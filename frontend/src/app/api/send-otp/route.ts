@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
   try {
@@ -9,23 +8,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email and OTP are required" }, { status: 400 });
     }
 
-    // Configure Nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASSWORD;
+    const senderEmail = process.env.SMTP_USER || "system@ljvetclinic.com";
 
-    // Email content
-    const mailOptions = {
-      from: `"LJ Veterinary Clinic" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: 'Your Password Reset OTP - LJ Veterinary Clinic',
-      html: `
+    if (!apiKey) {
+      return NextResponse.json({ error: "API Key is missing" }, { status: 500 });
+    }
+
+    const htmlContent = `
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
             <h2 style='color: #FF4FA3; text-align: center;'>LJ Veterinary Clinic</h2>
             <p>Hello,</p>
@@ -37,17 +27,33 @@ export async function POST(req: Request) {
             <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;' />
             <p style='color: #999; font-size: 12px; text-align: center;'>Compassionate Care for Every Paw</p>
         </div>
-      `,
-    };
+    `;
 
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": apiKey,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        sender: { name: "LJ Veterinary Clinic", email: senderEmail },
+        to: [{ email: email }],
+        subject: "Your Password Reset OTP - LJ Veterinary Clinic",
+        htmlContent: htmlContent
+      })
+    });
 
-    return NextResponse.json({ success: true, message: "Email sent successfully via Nodemailer" });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(JSON.stringify(errorData));
+    }
+
+    return NextResponse.json({ success: true, message: "Email sent successfully via Brevo REST API" });
   } catch (error: any) {
-    console.error("[NODEMAILER ERROR]", error);
+    console.error("[EMAIL ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to send email via Nodemailer", details: error.message },
+      { error: "Failed to send email via Brevo REST API", details: error.message },
       { status: 500 }
     );
   }
