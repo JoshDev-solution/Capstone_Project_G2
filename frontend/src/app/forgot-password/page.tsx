@@ -21,6 +21,7 @@ export default function ForgotPasswordPage() {
   const [method, setMethod] = useState("");
   const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
   const [fallbackOtp, setFallbackOtp] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -54,9 +55,13 @@ export default function ForgotPasswordPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: identifier, otp: data.otpCode })
           });
-          if (!emailRes.ok) throw new Error("Nodemailer failed");
-        } catch {
+          if (!emailRes.ok) {
+            const errData = await emailRes.json();
+            throw new Error(errData.details || errData.error || "Unknown API error");
+          }
+        } catch (e: any) {
           setFallbackOtp(data.otpCode);
+          setEmailError(e.message);
         }
       }
       setStep("verify");
@@ -430,6 +435,11 @@ export default function ForgotPasswordPage() {
                     <div>
                       <p className="font-bold mb-1">Development / Defense Mode</p>
                       <p>The email service is currently blocked by your provider. To prevent you from being stuck during your presentation, your OTP is: <span className="font-mono font-bold text-lg">{fallbackOtp}</span></p>
+                      {emailError && (
+                        <p className="mt-2 text-xs text-warning/80 bg-warning/5 p-2 rounded border border-warning/10 font-mono">
+                          API Error: {emailError}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
