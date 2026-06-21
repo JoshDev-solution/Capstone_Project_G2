@@ -1,0 +1,58 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import VetSidebar from "@/components/vet/VetSidebar";
+import VetTopbar from "@/components/vet/VetTopbar";
+import { cn } from "@/lib/utils";
+
+export default function VetLayout({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("vcms_token");
+    const userStr = localStorage.getItem("vcms_user");
+    
+    if (!token || !userStr) {
+      window.location.href = "/login";
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userStr);
+      const role = user?.role?.toLowerCase() || "";
+      // Veterinarians get access to this portal
+      if (role === "veterinarian" || role === "admin" || role === "manager") {
+        setIsAuthorized(true);
+      } else {
+        window.location.href = "/login";
+      }
+    } catch {
+      window.location.href = "/login";
+    }
+  }, []);
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--background)" }}>
+        <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
+      <VetSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <VetTopbar sidebarCollapsed={collapsed} />
+
+      <main
+        className={cn(
+          "pt-16 min-h-screen transition-all duration-300",
+          collapsed ? "pl-[72px]" : "pl-[240px]"
+        )}
+      >
+        <div className="p-6 lg:p-8">{children}</div>
+      </main>
+    </div>
+  );
+}

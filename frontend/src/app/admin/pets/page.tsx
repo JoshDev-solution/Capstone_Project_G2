@@ -334,6 +334,7 @@ export default function PetsPage() {
         setClients(clientsData);
       }
     } catch (err: any) {
+      console.error("Fetch error in PetsPage:", err);
       setError(err.message || "An error occurred.");
     } finally {
       setLoading(false);

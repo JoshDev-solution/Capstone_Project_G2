@@ -225,6 +225,44 @@ using (var scope = app.Services.CreateScope())
         context.Staff.Add(staff);
         context.SaveChanges();
     }
+    if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "athennaNoman@ljvetclinic.com"))
+    {
+        var vetUser = new LJVetClinic.Domain.Entities.User
+        {
+            Email = "athennaNoman@ljvetclinic.com",
+            PasswordHash = global::BCrypt.Net.BCrypt.HashPassword("DrNoman123!"),
+            RoleId = dbVetRole.Id,
+            IsActive = true,
+            IsApproved = true,
+            EmailVerified = true,
+            Profile = new LJVetClinic.Domain.Entities.UserProfile
+            {
+                FirstName = "Athenna",
+                LastName = "Noman",
+                Phone = "+63-911-111-1111"
+            }
+        };
+        context.Users.Add(vetUser);
+        context.SaveChanges();
+
+        var staffCode = "STF-0004";
+        int suffix = 1;
+        while (context.Staff.IgnoreQueryFilters().Any(s => s.EmployeeCode == staffCode))
+        {
+            suffix++;
+            staffCode = $"STF-{suffix:D4}";
+        }
+
+        var staff = new LJVetClinic.Domain.Entities.Staff
+        {
+            UserId = vetUser.Id,
+            EmployeeCode = staffCode,
+            Position = "Veterinarian",
+            CreatedAt = DateTime.UtcNow
+        };
+        context.Staff.Add(staff);
+        context.SaveChanges();
+    }
 
     if (!context.Users.IgnoreQueryFilters().Any(u => u.Email == "manager@ljvetclinic.com"))
     {
