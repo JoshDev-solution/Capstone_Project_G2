@@ -116,6 +116,15 @@ using (var scope = app.Services.CreateScope())
     try { 
         context.Database.ExecuteSqlRaw("ALTER TABLE users ADD COLUMN otp_expiry DATETIME;"); 
     } catch { }
+    try {
+        context.Database.ExecuteSqlRaw("ALTER TABLE user_profiles ADD COLUMN profile_image_url VARCHAR(512);");
+    } catch { }
+    try {
+        context.Database.ExecuteSqlRaw("ALTER TABLE user_profiles ADD COLUMN profile_image_uploaded_at DATETIME;");
+    } catch { }
+    try {
+        context.Database.ExecuteSqlRaw("ALTER TABLE user_profiles ADD COLUMN bio TEXT;");
+    } catch { }
 
     // 1. Roles
     if (!context.Roles.Any())
