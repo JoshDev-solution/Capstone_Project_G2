@@ -185,7 +185,7 @@ export default function ForgotPasswordPage() {
           });
           if (!emailRes.ok) throw new Error("Nodemailer failed");
         } catch {
-          setFallbackOtp(data.otpCode);
+          console.warn("Nodemailer failed. OTP:", data.otpCode);
         }
       }
       setError(""); // Clear any old error
