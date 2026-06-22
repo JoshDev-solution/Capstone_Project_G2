@@ -20,7 +20,6 @@ export default function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState("");
   const [method, setMethod] = useState("");
   const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
-  const [fallbackOtp, setFallbackOtp] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -49,7 +48,6 @@ export default function ForgotPasswordPage() {
       setMethod(data.method);
 
       if (data.otpCode && data.method === "email") {
-        setFallbackOtp(data.otpCode); // ALWAYS SHOW IT
         try {
           const emailRes = await fetch('/api/send-otp', {
             method: 'POST',
@@ -423,27 +421,6 @@ export default function ForgotPasswordPage() {
                   OTP sent to <strong>{sentTo}</strong>
                 </span>
               </div>
-
-              {fallbackOtp && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-xl bg-warning/10 border border-warning/20 text-warning text-sm mt-1"
-                >
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-bold mb-1">Development / Defense Mode</p>
-                      <p>The email service is currently blocked by your provider. To prevent you from being stuck during your presentation, your OTP is: <span className="font-mono font-bold text-lg">{fallbackOtp}</span></p>
-                      {emailError && (
-                        <p className="mt-2 text-xs text-warning/80 bg-warning/5 p-2 rounded border border-warning/10 font-mono">
-                          API Error: {emailError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
 
               <div>
                 <label className="block text-sm font-medium mb-3 text-center">
