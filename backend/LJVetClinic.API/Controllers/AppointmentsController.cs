@@ -100,6 +100,95 @@ public class AppointmentsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentRequest request)
+    {
+        try
+        {
+            if (!DateOnly.TryParse(request.Date, out DateOnly aptDate))
+                return BadRequest(new { message = "Invalid date format. Use yyyy-MM-dd." });
+
+            if (!TimeOnly.TryParse(request.Time, out TimeOnly aptTime))
+                return BadRequest(new { message = "Invalid time format. Use HH:mm." });
+
+            var pet = await _context.Pets.FindAsync(request.PetId);
+            if (pet == null) return BadRequest(new { message = "Pet not found." });
+
+            var service = await _context.Services.FindAsync(request.ServiceId);
+            if (service == null) return BadRequest(new { message = "Service not found." });
+
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.UserId == request.ClientId);
+            if (client == null) return BadRequest(new { message = "Client not found." });
+
+            if (pet.ClientId != client.Id)
+                return BadRequest(new { message = "This pet does not belong to the selected client." });
+
+            if (request.VetId.HasValue && request.VetId.Value > 0)
+            {
+                var vet = await _context.Staff.FindAsync(request.VetId.Value);
+                if (vet == null) return BadRequest(new { message = "Veterinarian not found." });
+            }
+            else
+            {
+                request.VetId = null;
+            }
+
+            string code = $"APT-{new Random().Next(10000, 99999)}";
+
+            var appointment = new Appointment
+            {
+                AppointmentCode = code,
+                ClientId = client.Id,
+                PetId = request.PetId,
+                VetId = request.VetId,
+                ServiceId = request.ServiceId,
+                AppointmentDate = aptDate,
+                AppointmentTime = aptTime,
+                Type = request.Type ?? "Scheduled",
+                Status = "Pending",
+                Reason = request.Reason,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
+
+            var savedAppointment = await _context.Appointments
+                .Include(a => a.Client).ThenInclude(c => c!.User).ThenInclude(u => u!.Profile)
+                .Include(a => a.Pet).ThenInclude(p => p!.PetType)
+                .Include(a => a.Vet).ThenInclude(v => v!.User).ThenInclude(u => u!.Profile)
+                .Include(a => a.Service)
+                .FirstOrDefaultAsync(a => a.Id == appointment.Id);
+
+            var result = new
+            {
+                id = savedAppointment!.Id,
+                code = savedAppointment.AppointmentCode,
+                clientName = savedAppointment.Client?.User?.Profile != null 
+                    ? $"{savedAppointment.Client.User.Profile.FirstName} {savedAppointment.Client.User.Profile.LastName}" 
+                    : "Unknown Client",
+                petName = savedAppointment.Pet?.Name ?? "Unknown Pet",
+                petType = savedAppointment.Pet?.PetType?.Name ?? "Unknown",
+                vetName = savedAppointment.Vet?.User?.Profile != null 
+                    ? $"Dr. {savedAppointment.Vet.User.Profile.LastName}" 
+                    : "Unassigned",
+                service = savedAppointment.Service?.Name ?? "General",
+                date = savedAppointment.AppointmentDate.ToString("yyyy-MM-dd"),
+                time = savedAppointment.AppointmentTime.ToString("hh:mm tt"),
+                status = savedAppointment.Status,
+                type = savedAppointment.Type,
+                reason = savedAppointment.Reason ?? ""
+            };
+
+            return Ok(new { message = "Appointment created successfully.", appointment = result });
+        }
+        catch (System.Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateStatusRequest request)
     {
@@ -122,4 +211,16 @@ public class AppointmentsController : ControllerBase
 public class UpdateStatusRequest
 {
     public string Status { get; set; } = string.Empty;
+}
+
+public class CreateAppointmentRequest
+{
+    public long ClientId { get; set; }
+    public long PetId { get; set; }
+    public long? VetId { get; set; }
+    public long ServiceId { get; set; }
+    public string Date { get; set; } = string.Empty;
+    public string Time { get; set; } = string.Empty;
+    public string Type { get; set; } = "Scheduled";
+    public string? Reason { get; set; }
 }

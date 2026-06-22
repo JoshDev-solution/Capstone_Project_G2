@@ -128,6 +128,39 @@ export default function AppointmentsPage() {
   const [page, setPage] = useState(1);
   const PER_PAGE = 8;
 
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [formData, setFormData] = useState({
+    clientId: "", petId: "", vetId: "", serviceId: "", date: "", time: "", type: "Scheduled", reason: ""
+  });
+  const [options, setOptions] = useState({ clients: [] as any[], pets: [] as any[], services: [] as any[], vets: [] as any[] });
+
+  const fetchOptions = async () => {
+    try {
+      const token = localStorage.getItem("vcms_token");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      
+      const [clientsRes, petsRes, servicesRes, vetsRes] = await Promise.all([
+        fetch(`${baseUrl}/api/users/clients`, { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${baseUrl}/api/pets`, { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${baseUrl}/api/services`, { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${baseUrl}/api/users/vets`, { headers: { "Authorization": `Bearer ${token}` } })
+      ]);
+
+      if (clientsRes.ok && petsRes.ok && servicesRes.ok && vetsRes.ok) {
+        setOptions({
+          clients: await clientsRes.json(),
+          pets: await petsRes.json(),
+          services: await servicesRes.json(),
+          vets: await vetsRes.json()
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch options", err);
+    }
+  };
+
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem("vcms_token");
@@ -149,7 +182,49 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     fetchAppointments();
+    fetchOptions();
   }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      const token = localStorage.getItem("vcms_token");
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      
+      const payload = {
+        ...formData,
+        clientId: Number(formData.clientId),
+        petId: Number(formData.petId),
+        vetId: formData.vetId ? Number(formData.vetId) : null,
+        serviceId: Number(formData.serviceId)
+      };
+
+      const res = await fetch(`${baseUrl}/api/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        await fetchAppointments();
+        setShowNewModal(false);
+        setFormData({ clientId: "", petId: "", vetId: "", serviceId: "", date: "", time: "", type: "Scheduled", reason: "" });
+      } else {
+        const errData = await res.json();
+        alert(`Failed to create appointment: ${errData.message}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const selectedClient = options.clients.find(c => c.id.toString() === formData.clientId);
+  const clientPets = options.pets.filter(p => p.ownerEmail === selectedClient?.email);
 
   const filtered = apts.filter((a) => {
     const q = search.toLowerCase();
@@ -191,7 +266,7 @@ export default function AppointmentsPage() {
             <h1 className="text-2xl font-bold">Appointment Management</h1>
             <p className="text-sm text-neutral-400 mt-0.5">{loading ? "Loading..." : `${apts.length} total appointments`}</p>
           </div>
-          <button className="btn btn-primary shrink-0">
+          <button className="btn btn-primary shrink-0" onClick={() => setShowNewModal(true)}>
             <Plus className="w-4 h-4" /> New Appointment
           </button>
         </div>
@@ -327,6 +402,70 @@ export default function AppointmentsPage() {
 
       <AnimatePresence>
         {selected && <DetailModal apt={selected} onClose={() => setSelected(null)} onStatusChange={changeStatus} />}
+
+        {showNewModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowNewModal(false)} />
+            <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95 }} className="relative w-full max-w-lg card p-6 z-10 shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">New Appointment</h2>
+                <button onClick={() => setShowNewModal(false)} className="btn-icon btn-ghost rounded-xl w-9 h-9"><X className="w-5 h-5" /></button>
+              </div>
+              <form onSubmit={handleCreate} className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Client</label>
+                    <select required value={formData.clientId} onChange={(e) => setFormData({ ...formData, clientId: e.target.value, petId: "" })} className="input w-full">
+                      <option value="">Select Client</option>
+                      {options.clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Pet</label>
+                    <select required value={formData.petId} onChange={(e) => setFormData({ ...formData, petId: e.target.value })} className="input w-full" disabled={!formData.clientId}>
+                      <option value="">Select Pet</option>
+                      {clientPets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Service</label>
+                    <select required value={formData.serviceId} onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })} className="input w-full">
+                      <option value="">Select Service</option>
+                      {options.services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Veterinarian (Optional)</label>
+                    <select value={formData.vetId} onChange={(e) => setFormData({ ...formData, vetId: e.target.value })} className="input w-full">
+                      <option value="">Any Available Vet</option>
+                      {options.vets.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Date</label>
+                    <input type="date" required value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="input w-full" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-neutral-500 mb-1 block">Time</label>
+                    <input type="time" required value={formData.time} onChange={(e) => setFormData({ ...formData, time: e.target.value })} className="input w-full" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-neutral-500 mb-1 block">Reason / Notes</label>
+                  <textarea value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })} className="input w-full h-20 resize-none" placeholder="Reason for appointment..." />
+                </div>
+                <div className="flex justify-end gap-3 mt-2">
+                  <button type="button" onClick={() => setShowNewModal(false)} className="btn bg-neutral-100 hover:bg-neutral-200 text-neutral-700">Cancel</button>
+                  <button type="submit" disabled={creating} className="btn btn-primary min-w-[120px]">{creating ? "Creating..." : "Create Appointment"}</button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </>
   );

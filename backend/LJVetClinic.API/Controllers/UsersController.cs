@@ -96,6 +96,31 @@ public class UsersController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("vets")]
+    [Authorize]
+    public async Task<IActionResult> GetVets()
+    {
+        var vets = await _context.Staff
+            .Include(s => s.User)
+                .ThenInclude(u => u!.Profile)
+            .Include(s => s.User)
+                .ThenInclude(u => u!.Role)
+            .Where(s => s.User != null && s.User.Role != null && s.User.Role.Name == "Veterinarian" && s.User.IsActive)
+            .ToListAsync();
+
+        var result = vets
+            .OrderBy(s => s.User?.Profile?.FirstName ?? "")
+            .Select(s => new
+            {
+                id = s.Id, // Note: This is Staff.Id, required for Appointments.VetId
+                name = s.User?.Profile != null ? $"Dr. {s.User.Profile.FirstName} {s.User.Profile.LastName}".Trim() : "Unknown",
+                specialization = s.Specialization ?? "General Practice"
+            });
+
+        return Ok(result);
+    }
+
+
     [HttpPut("registrations/{id}/approve")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ApproveRegistration(long id)
