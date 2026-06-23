@@ -21,8 +21,7 @@ export default function VetLayout({ children }: { children: React.ReactNode }) {
     try {
       const user = JSON.parse(userStr);
       const role = user?.role?.toLowerCase() || "";
-      // Veterinarians get access to this portal
-      if (role === "veterinarian" || role === "admin" || role === "manager") {
+      if (role === "veterinarian" || role === "vet" || role === "admin" || role === "manager") {
         setIsAuthorized(true);
       } else {
         window.location.href = "/login";

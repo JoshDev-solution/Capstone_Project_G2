@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       // Role-based redirect
       const role = data.user?.role?.toLowerCase() || "client";
-      if (role === "veterinarian") {
+      if (role === "veterinarian" || role === "vet") {
         window.location.href = "/vet";
       } else if (role === "admin" || role === "manager") {
         window.location.href = "/admin";

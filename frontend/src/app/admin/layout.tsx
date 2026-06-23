@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       const user = JSON.parse(userStr);
       const role = user?.role?.toLowerCase() || "";
-      if (role === "admin" || role === "manager" || role === "veterinarian") {
+      if (role === "admin" || role === "manager" || role === "veterinarian" || role === "vet") {
         setIsAuthorized(true);
       } else {
         window.location.href = "/login";
