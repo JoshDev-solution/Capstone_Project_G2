@@ -35,7 +35,15 @@ try {
     env: process.env,
   });
   console.log('Database schema pushed successfully!');
+  
+  // Run the seed script to ensure default users/roles exist
+  console.log('Running database seed script...');
+  execSync('npx prisma db seed', {
+    stdio: 'inherit',
+    env: process.env,
+  });
+  console.log('Database seeded successfully!');
 } catch (error) {
-  console.error('Failed to push database schema:', error.message);
+  console.error('Failed to push or seed database:', error.message);
   process.exit(1);
 }
