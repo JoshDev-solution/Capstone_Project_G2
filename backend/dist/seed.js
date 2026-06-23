@@ -7,7 +7,9 @@ require("dotenv/config");
 const client_1 = require("@prisma/client");
 const adapter_mariadb_1 = require("@prisma/adapter-mariadb");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const adapter = new adapter_mariadb_1.PrismaMariaDb(process.env.DATABASE_URL);
+const mariadb_1 = __importDefault(require("mariadb"));
+const pool = mariadb_1.default.createPool(process.env.DATABASE_URL);
+const adapter = new adapter_mariadb_1.PrismaMariaDb(pool);
 const prisma = new client_1.PrismaClient({ adapter });
 async function main() {
     console.log('Seeding database...');
