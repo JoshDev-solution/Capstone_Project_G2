@@ -21,6 +21,8 @@ import messageRoutes from './routes/message.routes';
 import notificationRoutes from './routes/notification.routes';
 import inventoryTransactionRoutes from './routes/inventoryTransaction.routes';
 import reportRoutes from './routes/report.routes';
+import serviceRoutes from './routes/service.routes';
+import refundRoutes from './routes/refund.routes';
 
 import path from 'path';
 
@@ -61,6 +63,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/inventory-transactions', inventoryTransactionRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/refunds', refundRoutes);
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

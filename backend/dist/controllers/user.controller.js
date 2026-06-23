@@ -47,23 +47,153 @@ class UserController {
     }
     async getProfile(req, res, next) {
         try {
-            if (!req.user || !req.user.userId) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
             const user = await prisma_1.default.user.findUnique({
-                where: { id: req.user.userId },
+                where: { id: req.user?.userId },
                 include: { role: true, staff: true, client: true }
             });
             if (!user)
                 return res.status(404).json({ message: 'User not found' });
-            const firstName = user.firstName || "";
-            const lastName = user.lastName || "";
-            res.json({
-                firstName,
-                lastName,
-                role: user.role.name,
-                profileImageUrl: user.profileImageUrl
+            // Return role as a string to prevent React rendering errors on the frontend
+            const responseUser = {
+                ...user,
+                role: user.role?.name || 'User'
+            };
+            res.json(responseUser);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getClients(req, res, next) {
+        try {
+            const clients = await prisma_1.default.user.findMany({
+                where: { role: { name: 'Client' }, isActive: true },
+                select: { id: true, firstName: true, lastName: true, email: true }
             });
+            const mapped = clients.map(c => ({
+                id: c.id,
+                name: `${c.firstName || ''} ${c.lastName || ''}`.trim() || c.email.split('@')[0],
+                email: c.email
+            }));
+            res.json(mapped);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getVets(req, res, next) {
+        try {
+            const vets = await prisma_1.default.user.findMany({
+                where: { role: { name: 'Vet' } },
+                select: { id: true, firstName: true, lastName: true }
+            });
+            res.json(vets.map(v => ({ id: v.id, name: `${v.firstName || ''} ${v.lastName || ''}`.trim() })));
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getRegistrations(req, res, next) {
+        try {
+            const users = await prisma_1.default.user.findMany({
+                where: {
+                    role: { name: 'Client' },
+                    isApproved: false,
+                    isActive: true
+                },
+                include: {
+                    client: {
+                        include: { pets: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            const mapped = users.map(u => ({
+                id: u.id,
+                name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email.split('@')[0],
+                email: u.email,
+                phone: u.phone || 'N/A',
+                address: 'N/A', // Address not in schema
+                submittedAt: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date(u.createdAt)),
+                status: "Pending",
+                pets: u.client?.pets.map(p => p.name) || []
+            }));
+            res.json(mapped);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async approveRegistration(req, res, next) {
+        try {
+            const id = parseInt(req.params.id);
+            await prisma_1.default.user.update({
+                where: { id },
+                data: { isApproved: true }
+            });
+            res.status(200).json({ message: 'Approved' });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async rejectRegistration(req, res, next) {
+        try {
+            const id = parseInt(req.params.id);
+            await prisma_1.default.user.update({
+                where: { id },
+                data: { isActive: false }
+            });
+            res.status(200).json({ message: 'Rejected' });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getNotifications(req, res, next) {
+        try {
+            if (!req.user || !req.user.userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            const notifications = await prisma_1.default.notification.findMany({
+                where: { userId: req.user.userId },
+                orderBy: { createdAt: 'desc' }
+            });
+            const mapped = notifications.map(n => ({
+                id: n.id,
+                title: n.title,
+                message: n.message,
+                time: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date(n.createdAt)),
+                type: n.notificationType || 'System',
+                read: n.isRead
+            }));
+            res.json(mapped);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async readNotification(req, res, next) {
+        try {
+            const id = parseInt(req.params.id);
+            await prisma_1.default.notification.update({
+                where: { id },
+                data: { isRead: true }
+            });
+            res.status(200).json({ message: 'Marked read' });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async readAllNotifications(req, res, next) {
+        try {
+            if (!req.user || !req.user.userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            await prisma_1.default.notification.updateMany({
+                where: { userId: req.user.userId, isRead: false },
+                data: { isRead: true }
+            });
+            res.status(200).json({ message: 'All marked read' });
         }
         catch (error) {
             next(error);
@@ -114,7 +244,37 @@ class UserController {
     }
     async createUser(req, res, next) {
         try {
-            const user = await user_service_1.userService.createUser(req.body);
+            const { name, email, phone, password, role, status } = req.body;
+            const { hashPassword } = require('../utils/hash');
+            // Hash the password
+            const passwordHash = await hashPassword(password);
+            // Split name
+            const nameParts = (name || '').split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            // Map frontend role names to database role names
+            let dbRoleName = role;
+            if (role === 'Administrator')
+                dbRoleName = 'Admin';
+            if (role === 'Veterinarian')
+                dbRoleName = 'Vet';
+            // Ensure role exists in the database
+            const roleRecord = await prisma_1.default.role.upsert({
+                where: { name: dbRoleName },
+                update: {},
+                create: { name: dbRoleName, description: `System ${dbRoleName}` }
+            });
+            const user = await prisma_1.default.user.create({
+                data: {
+                    email,
+                    phone,
+                    firstName,
+                    lastName,
+                    passwordHash,
+                    roleId: roleRecord.id,
+                    isActive: status === 'Active'
+                }
+            });
             res.status(201).json(user);
         }
         catch (error) {

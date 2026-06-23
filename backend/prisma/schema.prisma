@@ -144,6 +144,12 @@ model Staff {
 model Service {
   id          Int      @id @default(autoincrement())
   name        String
+  category    String   @default("Consultation")
+  price       Decimal  @default(0.00)
+  duration    Int      @default(30)
+  description String?
+  active      Boolean  @default(true)
+  
   appointments Appointment[]
   billItems    BillItem[]
 }

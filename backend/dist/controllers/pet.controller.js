@@ -6,7 +6,23 @@ class PetController {
     async getAllPets(req, res, next) {
         try {
             const pets = await pet_service_1.petService.getAllPets();
-            res.json(pets);
+            const mapped = pets.map((p) => ({
+                id: p.id,
+                name: p.name,
+                species: p.petType?.name || 'Unknown',
+                breed: p.breed?.name || 'Unknown',
+                sex: p.sex,
+                color: p.color || 'Unknown',
+                dob: p.birthDate ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(p.birthDate)) : 'Unknown',
+                weight: Number(p.weightKg) || 0,
+                ownerName: p.client?.user?.firstName ? `${p.client.user.firstName} ${p.client.user.lastName || ''}`.trim() : 'Unknown',
+                ownerEmail: p.client?.user?.email || 'Unknown',
+                status: p.isActive ? "Active" : "Inactive",
+                vaccinationStatus: p.isNeutered ? "Vaccinated" : "Not Vaccinated", // Rough mapping
+                lastVisit: "Recent", // Stub
+                microchip: p.microchipNumber || "None"
+            }));
+            res.json(mapped);
         }
         catch (error) {
             next(error);

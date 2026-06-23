@@ -5,7 +5,16 @@ export class DiscountController {
   async getAllDiscounts(req: Request, res: Response, next: NextFunction) {
     try {
       const discounts = await discountService.getAllDiscounts();
-      res.json(discounts);
+      const mapped = discounts.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        code: d.code || 'NO-CODE',
+        type: d.type || 'Fixed Amount',
+        value: Number(d.value),
+        status: d.isActive ? "Active" : "Expired",
+        usageCount: d.usageCount || 0
+      }));
+      res.json(mapped);
     } catch (error) {
       next(error);
     }

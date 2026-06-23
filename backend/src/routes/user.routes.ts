@@ -25,6 +25,14 @@ router.get('/vets', authenticate, userController.getVets);
 router.get('/profile', authenticate, userController.getProfile);
 router.put('/profile', authenticate, userController.updateProfile);
 router.post('/profile/picture', authenticate, upload.single('file'), userController.uploadProfilePicture);
+router.get('/registrations', authenticate, userController.getRegistrations);
+router.put('/registrations/:id/approve', authenticate, userController.approveRegistration);
+router.put('/registrations/:id/reject', authenticate, userController.rejectRegistration);
+
+router.get('/notifications', authenticate, userController.getNotifications);
+router.put('/notifications/read-all', authenticate, userController.readAllNotifications);
+router.put('/notifications/:id/read', authenticate, userController.readNotification);
+
 router.post('/manage', authenticate, userController.createUser);
 router.put('/manage/:id', authenticate, userController.updateUser);
 router.delete('/manage/:id', authenticate, userController.deleteUser);

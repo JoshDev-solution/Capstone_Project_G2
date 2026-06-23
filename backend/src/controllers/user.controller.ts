@@ -83,15 +83,115 @@ export class UserController {
   async getVets(req: Request, res: Response, next: NextFunction) {
     try {
       const vets = await prisma.user.findMany({
-        where: { role: { name: 'Vet' }, isActive: true },
-        select: { id: true, firstName: true, lastName: true, email: true }
+        where: { role: { name: 'Vet' } },
+        select: { id: true, firstName: true, lastName: true }
       });
-      const mapped = vets.map(c => ({
-        id: c.id,
-        name: `Dr. ${c.firstName || ''} ${c.lastName || ''}`.trim(),
-        email: c.email
+      res.json(vets.map(v => ({ id: v.id, name: `${v.firstName || ''} ${v.lastName || ''}`.trim() })));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getRegistrations(req: Request, res: Response, next: NextFunction) {
+    try {
+      const users = await prisma.user.findMany({
+        where: {
+          role: { name: 'Client' },
+          isApproved: false,
+          isActive: true
+        },
+        include: {
+          client: {
+            include: { pets: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      const mapped = users.map(u => ({
+        id: u.id,
+        name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email.split('@')[0],
+        email: u.email,
+        phone: u.phone || 'N/A',
+        address: 'N/A', // Address not in schema
+        submittedAt: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date(u.createdAt)),
+        status: "Pending",
+        pets: u.client?.pets.map(p => p.name) || []
       }));
       res.json(mapped);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveRegistration(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id as string);
+      await prisma.user.update({
+        where: { id },
+        data: { isApproved: true }
+      });
+      res.status(200).json({ message: 'Approved' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rejectRegistration(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id as string);
+      await prisma.user.update({
+        where: { id },
+        data: { isActive: false }
+      });
+      res.status(200).json({ message: 'Rejected' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.user || !req.user.userId) return res.status(401).json({ message: 'Unauthorized' });
+      const notifications = await prisma.notification.findMany({
+        where: { userId: req.user.userId },
+        orderBy: { createdAt: 'desc' }
+      });
+      const mapped = notifications.map(n => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        time: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date(n.createdAt)),
+        type: (n as any).notificationType || 'System',
+        read: n.isRead
+      }));
+      res.json(mapped);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async readNotification(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id as string);
+      await prisma.notification.update({
+        where: { id },
+        data: { isRead: true }
+      });
+      res.status(200).json({ message: 'Marked read' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async readAllNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.user || !req.user.userId) return res.status(401).json({ message: 'Unauthorized' });
+      await prisma.notification.updateMany({
+        where: { userId: req.user.userId, isRead: false },
+        data: { isRead: true }
+      });
+      res.status(200).json({ message: 'All marked read' });
     } catch (error) {
       next(error);
     }

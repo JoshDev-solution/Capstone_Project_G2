@@ -5,7 +5,17 @@ export class ProductController {
   async getAllProducts(req: Request, res: Response, next: NextFunction) {
     try {
       const products = await productService.getAllProducts();
-      res.json(products);
+      const mapped = products.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category?.name || 'Uncategorized',
+        sku: p.sku || `PRD-${p.id}`,
+        price: Number(p.price),
+        stock: p.inventory?.quantity || 0,
+        status: p.isActive ? (p.inventory?.quantity > 0 ? "In Stock" : "Low Stock") : "Out of Stock",
+        lastRestocked: p.inventory?.lastRestocked ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(p.inventory.lastRestocked)) : 'Never'
+      }));
+      res.json(mapped);
     } catch (error) {
       next(error);
     }

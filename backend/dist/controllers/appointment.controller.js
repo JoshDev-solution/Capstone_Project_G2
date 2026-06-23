@@ -6,7 +6,21 @@ class AppointmentController {
     async getAllAppointments(req, res, next) {
         try {
             const appointments = await appointment_service_1.appointmentService.getAllAppointments();
-            res.json(appointments);
+            const mapped = appointments.map((a) => ({
+                id: a.id,
+                code: a.appointmentCode,
+                clientName: a.client?.user?.firstName ? `${a.client.user.firstName} ${a.client.user.lastName || ''}`.trim() : 'Unknown',
+                petName: a.pet?.name || 'Unknown',
+                petType: a.pet?.petType?.name || 'Unknown',
+                vetName: a.vet?.user?.firstName ? `Dr. ${a.vet.user.firstName} ${a.vet.user.lastName || ''}`.trim() : 'Unassigned',
+                service: a.service?.name || 'Consultation',
+                date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(a.appointmentDate)),
+                time: new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric' }).format(new Date(a.appointmentTime)),
+                status: a.status,
+                type: a.type,
+                reason: a.reason || 'Check-up'
+            }));
+            res.json(mapped);
         }
         catch (error) {
             next(error);
