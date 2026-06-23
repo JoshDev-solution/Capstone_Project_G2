@@ -45,25 +45,19 @@ export class UserController {
 
   async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.user || !req.user.userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
       const user = await prisma.user.findUnique({
-        where: { id: req.user.userId },
+        where: { id: req.user?.userId },
         include: { role: true, staff: true, client: true }
       });
-      
       if (!user) return res.status(404).json({ message: 'User not found' });
       
-      const firstName = user.firstName || "";
-      const lastName = user.lastName || "";
-
-      res.json({
-        firstName,
-        lastName,
-        role: user.role.name,
-        profileImageUrl: user.profileImageUrl
-      });
+      // Return role as a string to prevent React rendering errors on the frontend
+      const responseUser = {
+        ...user,
+        role: user.role?.name || 'User'
+      };
+      
+      res.json(responseUser);
     } catch (error) {
       next(error);
     }
