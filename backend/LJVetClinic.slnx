@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="LJVetClinic.API/LJVetClinic.API.csproj" />
-  <Project Path="LJVetClinic.Application/LJVetClinic.Application.csproj" />
-  <Project Path="LJVetClinic.Domain/LJVetClinic.Domain.csproj" />
-  <Project Path="LJVetClinic.Infrastructure/LJVetClinic.Infrastructure.csproj" />
-</Solution>

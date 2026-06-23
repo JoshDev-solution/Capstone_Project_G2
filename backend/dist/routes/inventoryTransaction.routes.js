@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const inventoryTransaction_controller_1 = require("../controllers/inventoryTransaction.controller");
+const router = (0, express_1.Router)();
+router.get('/', inventoryTransaction_controller_1.inventoryTransactionController.getAll);
+router.get('/:id', inventoryTransaction_controller_1.inventoryTransactionController.getById);
+router.post('/', inventoryTransaction_controller_1.inventoryTransactionController.create);
+router.put('/:id', inventoryTransaction_controller_1.inventoryTransactionController.update);
+router.delete('/:id', inventoryTransaction_controller_1.inventoryTransactionController.delete);
+exports.default = router;

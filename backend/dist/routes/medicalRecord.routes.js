@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const medicalRecord_controller_1 = require("../controllers/medicalRecord.controller");
+const router = (0, express_1.Router)();
+router.get('/', medicalRecord_controller_1.medicalRecordController.getAllMedicalRecords);
+router.get('/:id', medicalRecord_controller_1.medicalRecordController.getMedicalRecordById);
+router.post('/', medicalRecord_controller_1.medicalRecordController.createMedicalRecord);
+router.put('/:id', medicalRecord_controller_1.medicalRecordController.updateMedicalRecord);
+router.delete('/:id', medicalRecord_controller_1.medicalRecordController.deleteMedicalRecord);
+exports.default = router;

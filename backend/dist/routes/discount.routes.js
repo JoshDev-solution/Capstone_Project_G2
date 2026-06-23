@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const discount_controller_1 = require("../controllers/discount.controller");
+const router = (0, express_1.Router)();
+router.get('/', discount_controller_1.discountController.getAllDiscounts);
+router.get('/:id', discount_controller_1.discountController.getDiscountById);
+router.post('/', discount_controller_1.discountController.createDiscount);
+router.put('/:id', discount_controller_1.discountController.updateDiscount);
+router.delete('/:id', discount_controller_1.discountController.deleteDiscount);
+exports.default = router;

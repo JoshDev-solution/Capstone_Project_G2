@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const chatbotLog_controller_1 = require("../controllers/chatbotLog.controller");
+const router = (0, express_1.Router)();
+router.get('/', chatbotLog_controller_1.chatbotLogController.getAll);
+router.get('/:id', chatbotLog_controller_1.chatbotLogController.getById);
+router.post('/', chatbotLog_controller_1.chatbotLogController.create);
+router.put('/:id', chatbotLog_controller_1.chatbotLogController.update);
+router.delete('/:id', chatbotLog_controller_1.chatbotLogController.delete);
+exports.default = router;

@@ -13,6 +13,7 @@ obj/
 # Node/Next.js
 node_modules/
 .next/
+backend/public/uploads/
 out/
 build/
 .env*.local

@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const notification_controller_1 = require("../controllers/notification.controller");
+const router = (0, express_1.Router)();
+router.get('/', notification_controller_1.notificationController.getAll);
+router.get('/:id', notification_controller_1.notificationController.getById);
+router.post('/', notification_controller_1.notificationController.create);
+router.put('/:id', notification_controller_1.notificationController.update);
+router.delete('/:id', notification_controller_1.notificationController.delete);
+exports.default = router;

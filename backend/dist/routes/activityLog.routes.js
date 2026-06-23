@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const activityLog_controller_1 = require("../controllers/activityLog.controller");
+const router = (0, express_1.Router)();
+router.get('/', activityLog_controller_1.activityLogController.getAll);
+router.get('/:id', activityLog_controller_1.activityLogController.getById);
+router.post('/', activityLog_controller_1.activityLogController.create);
+router.put('/:id', activityLog_controller_1.activityLogController.update);
+router.delete('/:id', activityLog_controller_1.activityLogController.delete);
+exports.default = router;

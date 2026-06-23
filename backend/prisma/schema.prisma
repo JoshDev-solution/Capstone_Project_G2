@@ -1,0 +1,561 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider        = "prisma-client-js"
+  engineType      = "library"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  email              String    @unique
+  passwordHash       String
+  firstName          String?
+  lastName           String?
+  phone              String?
+  profileImageUrl    String?
+  
+  // Role relation
+  roleId             Int
+  role               Role      @relation(fields: [roleId], references: [id])
+  
+  // Verification
+  emailVerified      Boolean   @default(false)
+  emailVerifiedAt    DateTime?
+  verificationToken  String?
+  resetToken         String?
+  resetTokenExpiry   DateTime?
+  
+  // Status
+  isActive           Boolean   @default(true)
+  isApproved         Boolean   @default(false)
+  
+  // Lockout & Audit
+  lockoutEnabled     Boolean   @default(true)
+  lockoutEnd         DateTime?
+  failedLoginCount   Int       @default(0)
+  lastLoginAt        DateTime?
+  
+  // Navigation properties
+  client             Client?
+  staff              Staff?
+  
+  activityLogs    ActivityLog[]
+  auditLogs       AuditLog[]
+  chatbotLogs     ChatbotLog[]
+  notifications   Notification[]
+  sentMessages    Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  generatedReports Report[] @relation("GeneratedReports")
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+model Client {
+  id                    Int      @id @default(autoincrement())
+  userId                Int      @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  clientCode            String   @unique
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  preferredVetId        Int?     
+  notes                 String?
+  
+  pets                  Pet[]
+  appointments          Appointment[]
+  bills                 Bill[]
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model PetType {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  pets        Pet[]
+}
+
+model Breed {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  pets        Pet[]
+}
+
+model Pet {
+  id                Int      @id @default(autoincrement())
+  clientId          Int
+  client            Client   @relation(fields: [clientId], references: [id])
+  
+  petTypeId         Int
+  petType           PetType  @relation(fields: [petTypeId], references: [id])
+  
+  breedId           Int?
+  breed             Breed?   @relation(fields: [breedId], references: [id])
+  
+  name              String
+  color             String?
+  sex               String   @default("Unknown")
+  birthDate         DateTime? @db.Date
+  weightKg          Decimal?
+  heightCm          Decimal?
+  microchipNumber   String?
+  allergies         String?
+  medicalNotes      String?
+  profileImageUrl   String?
+  isNeutered        Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  
+  appointments      Appointment[]
+  consultations     Consultation[]
+  medicalRecords    MedicalRecord[]
+  diagnoses         Diagnosis[]
+  prescriptions     Prescription[]
+  bills             Bill[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Staff {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  user        User     @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+  consultations Consultation[]
+  diagnoses     Diagnosis[]
+  prescriptions Prescription[]
+}
+
+model Service {
+  id          Int      @id @default(autoincrement())
+  name        String
+  appointments Appointment[]
+  billItems    BillItem[]
+}
+
+model Appointment {
+  id                Int      @id @default(autoincrement())
+  appointmentCode   String   @unique
+  
+  petId             Int
+  pet               Pet      @relation(fields: [petId], references: [id])
+  
+  clientId          Int
+  client            Client   @relation(fields: [clientId], references: [id])
+  
+  vetId             Int?
+  vet               Staff?   @relation(fields: [vetId], references: [id])
+  
+  serviceId         Int?
+  service           Service? @relation(fields: [serviceId], references: [id])
+  
+  appointmentDate   DateTime @db.Date
+  appointmentTime   DateTime @db.Time
+  endTime           DateTime? @db.Time
+  
+  status            String   @default("Pending")
+  type              String   @default("Scheduled")
+  reason            String?
+  notes             String?
+  cancelledReason   String?
+  cancelledAt       DateTime?
+  completedAt       DateTime?
+  
+  consultations     Consultation[]
+  bills             Bill[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Consultation {
+  id                Int      @id @default(autoincrement())
+  appointmentId     Int
+  appointment       Appointment @relation(fields: [appointmentId], references: [id])
+  
+  petId             Int
+  pet               Pet      @relation(fields: [petId], references: [id])
+  
+  vetId             Int
+  vet               Staff    @relation(fields: [vetId], references: [id])
+  
+  weightKg          Decimal?
+  heightCm          Decimal?
+  temperatureC      Decimal?
+  heartRate         Int?
+  respiratoryRate   Int?
+  
+  chiefComplaint    String?
+  clinicalFindings  String?
+  notes             String?
+  consultationDate  DateTime @default(now())
+  
+  diagnoses         Diagnosis[]
+  prescriptions     Prescription[]
+  medicalRecords    MedicalRecord[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model MedicalRecord {
+  id                Int      @id @default(autoincrement())
+  petId             Int
+  pet               Pet      @relation(fields: [petId], references: [id])
+  
+  consultationId    Int?
+  consultation      Consultation? @relation(fields: [consultationId], references: [id])
+  
+  recordType        String
+  title             String
+  description       String?
+  attachments       Json?    
+  recordDate        DateTime @default(now())
+  recordedBy        Int?     
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Diagnosis {
+  id                Int      @id @default(autoincrement())
+  consultationId    Int
+  consultation      Consultation @relation(fields: [consultationId], references: [id])
+  
+  petId             Int
+  pet               Pet      @relation(fields: [petId], references: [id])
+  
+  vetId             Int
+  vet               Staff    @relation(fields: [vetId], references: [id])
+  
+  diagnosisText     String
+  severity          String?
+  treatmentPlan     String?
+  notes             String?
+  diagnosedAt       DateTime @default(now())
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Prescription {
+  id                Int      @id @default(autoincrement())
+  consultationId    Int
+  consultation      Consultation @relation(fields: [consultationId], references: [id])
+  
+  petId             Int
+  pet               Pet      @relation(fields: [petId], references: [id])
+  
+  vetId             Int
+  vet               Staff    @relation(fields: [vetId], references: [id])
+  
+  prescriptionCode  String   @unique
+  notes             String?
+  prescribedAt      DateTime @default(now())
+  
+  items             PrescriptionItem[]
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model PrescriptionItem {
+  id                Int      @id @default(autoincrement())
+  prescriptionId    Int
+  prescription      Prescription @relation(fields: [prescriptionId], references: [id])
+  
+  medicationName    String
+  dosage            String
+  frequency         String
+  duration          String?
+  quantity          Int?
+  instructions      String?
+  
+  createdAt         DateTime @default(now())
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  products    Product[]
+}
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  categoryId      Int?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  
+  name            String
+  description     String?
+  sku             String?  @unique
+  price           Decimal  @default(0.00)
+  costPrice       Decimal?
+  imageUrl        String?
+  unit            String?
+  isActive        Boolean  @default(true)
+  
+  inventory       Inventory?
+  billItems       BillItem[]
+  inventoryTransactions InventoryTransaction[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Inventory {
+  id              Int      @id @default(autoincrement())
+  productId       Int      @unique
+  product         Product  @relation(fields: [productId], references: [id])
+  
+  quantity        Int      @default(0)
+  reorderLevel    Int      @default(10)
+  maxStock        Int?
+  expirationDate  DateTime? @db.Date
+  batchNumber     String?
+  location        String?
+  lastRestocked   DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Discount {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String?
+  type            String
+  value           Decimal
+  minPurchase     Decimal?
+  maxDiscount     Decimal?
+  code            String?  @unique
+  startDate       DateTime? @db.Date
+  endDate         DateTime? @db.Date
+  isActive        Boolean  @default(true)
+  usageLimit      Int?
+  usageCount      Int      @default(0)
+  eligibleRoles   Json?    
+  
+  bills           Bill[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Refund {
+  id              Int      @id @default(autoincrement())
+  billId          Int
+  bill            Bill     @relation(fields: [billId], references: [id])
+  paymentId       Int
+  payment         Payment  @relation(fields: [paymentId], references: [id])
+  amount          Decimal
+  reason          String?
+  createdAt       DateTime @default(now())
+}
+
+model Bill {
+  id              Int      @id @default(autoincrement())
+  billCode        String   @unique
+  
+  clientId        Int
+  client          Client   @relation(fields: [clientId], references: [id])
+  
+  petId           Int?
+  pet             Pet?     @relation(fields: [petId], references: [id])
+  
+  appointmentId   Int?
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+  
+  discountId      Int?
+  discount        Discount? @relation(fields: [discountId], references: [id])
+  
+  subtotal        Decimal  @default(0.00)
+  discountAmount  Decimal  @default(0.00)
+  taxAmount       Decimal  @default(0.00)
+  totalAmount     Decimal  @default(0.00)
+  
+  status          String   @default("Draft")
+  dueDate         DateTime? @db.Date
+  notes           String?
+  
+  items           BillItem[]
+  payments        Payment[]
+  refunds         Refund[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BillItem {
+  id              Int      @id @default(autoincrement())
+  billId          Int
+  bill            Bill     @relation(fields: [billId], references: [id])
+  
+  itemType        String   
+  
+  serviceId       Int?
+  service         Service? @relation(fields: [serviceId], references: [id])
+  
+  productId       Int?
+  product         Product? @relation(fields: [productId], references: [id])
+  
+  description     String
+  quantity        Int      @default(1)
+  unitPrice       Decimal
+  totalPrice      Decimal
+  
+  createdAt       DateTime @default(now())
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  paymentCode     String   @unique
+  
+  billId          Int
+  bill            Bill     @relation(fields: [billId], references: [id])
+  
+  amount          Decimal
+  paymentMethod   String   
+  status          String   @default("Pending")
+  referenceNumber String?
+  paymentDate     DateTime @default(now())
+  notes           String?
+  
+  refunds         Refund[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ActivityLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  
+  activityType    String
+  description     String
+  metadata        Json?
+  ipAddress       String?
+  
+  createdAt       DateTime @default(now())
+}
+
+model AuditLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  
+  action          String
+  entityType      String
+  entityId        Int?
+  oldValues       Json?
+  newValues       Json?
+  ipAddress       String?
+  userAgent       String?
+  
+  createdAt       DateTime @default(now())
+}
+
+model ChatbotLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  
+  sessionId       String
+  userMessage     String
+  botResponse     String
+  intent          String?
+  confidence      Decimal?
+  escalated       Boolean  @default(false)
+  escalatedTo     Int?
+  
+  createdAt       DateTime @default(now())
+}
+
+model Message {
+  id              Int      @id @default(autoincrement())
+  senderId        Int
+  sender          User     @relation("SentMessages", fields: [senderId], references: [id])
+  
+  receiverId      Int
+  receiver        User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  
+  subject         String?
+  body            String
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  
+  parentId        Int?
+  parent          Message? @relation("MessageReplies", fields: [parentId], references: [id])
+  replies         Message[] @relation("MessageReplies")
+  
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+}
+
+model Notification {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  
+  type            String
+  title           String
+  message         String
+  data            Json?
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  isDeleted       Boolean  @default(false)
+  deletedAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+}
+
+model InventoryTransaction {
+  id              Int      @id @default(autoincrement())
+  productId       Int
+  product         Product  @relation(fields: [productId], references: [id])
+  
+  type            String
+  quantity        Int
+  referenceType   String?
+  referenceId     Int?
+  reason          String?
+  performedBy     Int?
+  
+  transactionDate DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
+
+model Report {
+  id              Int      @id @default(autoincrement())
+  reportType      String
+  title           String
+  description     String?
+  parameters      Json?
+  fileUrl         String?
+  fileFormat      String?
+  
+  generatedBy     Int?
+  generatedByUser User?    @relation("GeneratedReports", fields: [generatedBy], references: [id])
+  
+  generatedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
