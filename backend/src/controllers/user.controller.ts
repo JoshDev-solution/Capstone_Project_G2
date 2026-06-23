@@ -114,7 +114,37 @@ export class UserController {
 
   async createUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await userService.createUser(req.body);
+      const { name, email, phone, password, role, status } = req.body;
+      const { hashPassword } = require('../utils/hash');
+
+      // Hash the password
+      const passwordHash = await hashPassword(password);
+
+      // Split name
+      const nameParts = (name || '').split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Find role
+      const roleRecord = await prisma.role.findFirst({
+        where: { name: role === 'Administrator' ? 'Admin' : role }
+      });
+      
+      if (!roleRecord) {
+        return res.status(400).json({ message: 'Invalid role specified' });
+      }
+
+      const user = await prisma.user.create({
+        data: {
+          email,
+          phone,
+          firstName,
+          lastName,
+          passwordHash,
+          roleId: roleRecord.id,
+          isActive: status === 'Active'
+        }
+      });
       res.status(201).json(user);
     } catch (error) {
       next(error);
