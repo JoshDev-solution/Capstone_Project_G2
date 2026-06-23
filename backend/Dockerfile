@@ -40,5 +40,5 @@ EXPOSE 5000
 ENV NODE_ENV=production
 ENV PORT=5000
 
-# Start the application
-CMD ["node", "dist/server.js"]
+# Start the application by running the db-push script first, then the server
+CMD ["sh", "-c", "node prisma/db-push.js && node dist/server.js"]
