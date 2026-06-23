@@ -125,14 +125,17 @@ export class UserController {
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
 
-      // Find role
-      const roleRecord = await prisma.role.findFirst({
-        where: { name: role === 'Administrator' ? 'Admin' : role }
+      // Map frontend role names to database role names
+      let dbRoleName = role;
+      if (role === 'Administrator') dbRoleName = 'Admin';
+      if (role === 'Veterinarian') dbRoleName = 'Vet';
+
+      // Ensure role exists in the database
+      const roleRecord = await prisma.role.upsert({
+        where: { name: dbRoleName },
+        update: {},
+        create: { name: dbRoleName, description: `System ${dbRoleName}` }
       });
-      
-      if (!roleRecord) {
-        return res.status(400).json({ message: 'Invalid role specified' });
-      }
 
       const user = await prisma.user.create({
         data: {
