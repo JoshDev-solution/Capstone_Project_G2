@@ -1,12 +1,30 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
 const user_controller_1 = require("../controllers/user.controller");
-const auth_middleware_1 = require("../middlewares/auth.middleware");
+const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
+// Configure multer for file uploads
+const storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'profile-' + uniqueSuffix + path_1.default.extname(file.originalname));
+    }
+});
+const upload = (0, multer_1.default)({ storage: storage });
 router.get('/list', auth_middleware_1.authenticate, user_controller_1.userController.getAllUsers);
 router.get('/counts', auth_middleware_1.authenticate, user_controller_1.userController.getCounts);
 router.get('/profile', auth_middleware_1.authenticate, user_controller_1.userController.getProfile);
+router.put('/profile', auth_middleware_1.authenticate, user_controller_1.userController.updateProfile);
+router.post('/profile/picture', auth_middleware_1.authenticate, upload.single('file'), user_controller_1.userController.uploadProfilePicture);
 router.post('/manage', auth_middleware_1.authenticate, user_controller_1.userController.createUser);
 router.put('/manage/:id', auth_middleware_1.authenticate, user_controller_1.userController.updateUser);
 router.delete('/manage/:id', auth_middleware_1.authenticate, user_controller_1.userController.deleteUser);

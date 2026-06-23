@@ -26,11 +26,14 @@ const message_routes_1 = __importDefault(require("./routes/message.routes"));
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const inventoryTransaction_routes_1 = __importDefault(require("./routes/inventoryTransaction.routes"));
 const report_routes_1 = __importDefault(require("./routes/report.routes"));
+const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
+// Serve static files
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../public/uploads')));
 // Basic health check route
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', message: 'API is running' });

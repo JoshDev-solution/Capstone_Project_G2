@@ -17,16 +17,8 @@ class UserController {
                 }
             });
             const mappedUsers = users.map(u => {
-                let name = "Unknown";
-                let phone = "N/A";
-                if (u.staff) {
-                    name = `${u.staff.firstName || ''} ${u.staff.lastName || ''}`.trim() || 'Staff User';
-                    phone = u.staff.phone || "N/A";
-                }
-                else if (u.client) {
-                    name = u.client.emergencyContactName || 'Client User';
-                    phone = u.client.emergencyContactPhone || "N/A";
-                }
+                const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || (u.email.split('@')[0]);
+                const phone = u.phone || "N/A";
                 return {
                     id: u.id,
                     name,
@@ -64,22 +56,44 @@ class UserController {
             });
             if (!user)
                 return res.status(404).json({ message: 'User not found' });
-            let firstName = "";
-            let lastName = "";
-            if (user.staff) {
-                firstName = user.staff.firstName || "";
-                lastName = user.staff.lastName || "";
-            }
-            else if (user.client) {
-                firstName = user.client.emergencyContactName?.split(' ')[0] || "";
-                lastName = user.client.emergencyContactName?.split(' ').slice(1).join(' ') || "";
-            }
+            const firstName = user.firstName || "";
+            const lastName = user.lastName || "";
             res.json({
                 firstName,
                 lastName,
                 role: user.role.name,
-                profileImageUrl: null
+                profileImageUrl: user.profileImageUrl
             });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async updateProfile(req, res, next) {
+        try {
+            if (!req.user || !req.user.userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            const { firstName, lastName, phone } = req.body;
+            const updated = await prisma_1.default.user.update({
+                where: { id: req.user.userId },
+                data: { firstName, lastName, phone }
+            });
+            res.json({ message: 'Profile updated successfully' });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async uploadProfilePicture(req, res, next) {
+        try {
+            if (!req.user || !req.user.userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            if (!req.file)
+                return res.status(400).json({ message: 'No file uploaded' });
+            const profileImageUrl = '/uploads/' + req.file.filename;
+            // Save URL to database
+            await prisma_1.default.user.update({ where: { id: req.user.userId }, data: { profileImageUrl } });
+            res.json({ profileImageUrl });
         }
         catch (error) {
             next(error);
