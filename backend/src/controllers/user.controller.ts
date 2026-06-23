@@ -63,6 +63,40 @@ export class UserController {
     }
   }
 
+  async getClients(req: Request, res: Response, next: NextFunction) {
+    try {
+      const clients = await prisma.user.findMany({
+        where: { role: { name: 'Client' }, isActive: true },
+        select: { id: true, firstName: true, lastName: true, email: true }
+      });
+      const mapped = clients.map(c => ({
+        id: c.id,
+        name: `${c.firstName || ''} ${c.lastName || ''}`.trim() || c.email.split('@')[0],
+        email: c.email
+      }));
+      res.json(mapped);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getVets(req: Request, res: Response, next: NextFunction) {
+    try {
+      const vets = await prisma.user.findMany({
+        where: { role: { name: 'Vet' }, isActive: true },
+        select: { id: true, firstName: true, lastName: true, email: true }
+      });
+      const mapped = vets.map(c => ({
+        id: c.id,
+        name: `Dr. ${c.firstName || ''} ${c.lastName || ''}`.trim(),
+        email: c.email
+      }));
+      res.json(mapped);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async updateProfile(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user || !req.user.userId) return res.status(401).json({ message: 'Unauthorized' });
