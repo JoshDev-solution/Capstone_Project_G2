@@ -27,7 +27,7 @@ model User {
   firstName          String?
   lastName           String?
   phone              String?
-  profileImageUrl    String?
+  profileImageUrl    String?   @db.LongText
   
   // Role relation
   roleId             Int
