@@ -25,7 +25,7 @@ export class UserController {
           status: u.isActive ? "Active" : "Inactive",
           joined: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(u.createdAt)),
           phone,
-          profileImageUrl: null // Implement file uploads later if needed
+          profileImageUrl: u.profileImageUrl || undefined
         };
       });
       res.json(mappedUsers);
@@ -285,7 +285,34 @@ export class UserController {
   async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id as string);
-      const user = await userService.updateUser(id, req.body);
+      const { name, email, phone, role, status } = req.body;
+      
+      const dataToUpdate: any = {};
+      
+      if (name) {
+        const nameParts = name.split(' ');
+        dataToUpdate.firstName = nameParts[0] || '';
+        dataToUpdate.lastName = nameParts.slice(1).join(' ') || '';
+      }
+      
+      if (email) dataToUpdate.email = email;
+      if (phone !== undefined) dataToUpdate.phone = phone;
+      if (status) dataToUpdate.isActive = status === 'Active';
+      
+      if (role) {
+        let dbRoleName = role;
+        if (role === 'Administrator') dbRoleName = 'Admin';
+        if (role === 'Veterinarian') dbRoleName = 'Vet';
+        const roleRecord = await prisma.role.findUnique({ where: { name: dbRoleName } });
+        if (roleRecord) {
+          dataToUpdate.roleId = roleRecord.id;
+        }
+      }
+
+      const user = await prisma.user.update({
+        where: { id },
+        data: dataToUpdate
+      });
       res.json(user);
     } catch (error) {
       next(error);

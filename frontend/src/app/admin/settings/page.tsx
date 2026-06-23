@@ -146,7 +146,7 @@ export default function SettingsPage() {
   if (profile.profileImageUrl) {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
-      fullImageUrl = `${baseUrl}${profile.profileImageUrl}`;
+      fullImageUrl = profile.profileImageUrl.startsWith('http') ? profile.profileImageUrl : `${baseUrl}${profile.profileImageUrl}`;
   }
 
   const handleSave = () => {
