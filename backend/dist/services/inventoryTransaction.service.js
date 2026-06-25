@@ -7,7 +7,11 @@ exports.inventoryTransactionService = exports.InventoryTransactionService = void
 const prisma_1 = __importDefault(require("../utils/prisma"));
 class InventoryTransactionService {
     async getAll() {
-        return await prisma_1.default.inventoryTransaction.findMany();
+        return await prisma_1.default.inventoryTransaction.findMany({
+            include: { product: true },
+            orderBy: { transactionDate: 'desc' },
+            take: 50
+        });
     }
     async getById(id) {
         return await prisma_1.default.inventoryTransaction.findUnique({

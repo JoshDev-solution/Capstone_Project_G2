@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* ============================================================
    LJ VETERINARY CLINIC — Design System (Tailwind v4)
    ============================================================ */
@@ -87,6 +89,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #09090B;
   --foreground: #FAFAFA;
   

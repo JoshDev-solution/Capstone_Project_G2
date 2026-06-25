@@ -9,6 +9,15 @@ export class InventoryService {
     });
   }
 
+  async getLowStockAlerts() {
+    // Fetch all inventory items with product relation and filter where quantity <= reorderLevel
+    // This is safe for a small-medium clinic scale.
+    const allInventory = await prisma.inventory.findMany({
+      include: { product: true },
+    });
+    return allInventory.filter(item => item.quantity <= item.reorderLevel);
+  }
+
   async getInventoryById(id: number) {
     return await prisma.inventory.findUnique({
       where: { id },

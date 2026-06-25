@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { messageController } from '../controllers/message.controller';
+import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/', messageController.getAll);
-router.get('/:id', messageController.getById);
-router.post('/', messageController.create);
-router.put('/:id', messageController.update);
-router.delete('/:id', messageController.delete);
+// All message routes require authentication
+router.use(authenticate);
+
+router.get('/inbox', messageController.getInbox);
+router.get('/conversation/:userId', messageController.getConversation);
+router.post('/', messageController.sendMessage);
 
 export default router;

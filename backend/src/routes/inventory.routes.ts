@@ -4,6 +4,7 @@ import { inventoryController } from '../controllers/inventory.controller';
 const router = Router();
 
 router.get('/', inventoryController.getAllInventory);
+router.get('/low-stock', inventoryController.getLowStockAlerts);
 router.get('/:id', inventoryController.getInventoryById);
 router.post('/', inventoryController.createInventory);
 router.put('/:id', inventoryController.updateInventory);

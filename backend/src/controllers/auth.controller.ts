@@ -36,7 +36,8 @@ export class AuthController {
       const user = await userService.createUser({
         email,
         passwordHash,
-        roleId: role.id
+        roleId: role.id,
+        isApproved: true // Automatically approve new registrations per updated requirement
       });
 
       // Generate token

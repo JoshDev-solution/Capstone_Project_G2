@@ -35,6 +35,16 @@ async function main() {
         update: {},
         create: { name: 'Client', description: 'Pet Owner' },
     });
+    const managerRole = await prisma.role.upsert({
+        where: { name: 'Manager' },
+        update: {},
+        create: { name: 'Manager', description: 'Clinic Manager' },
+    });
+    const cashierRole = await prisma.role.upsert({
+        where: { name: 'Cashier' },
+        update: {},
+        create: { name: 'Cashier', description: 'Billing and POS Cashier' },
+    });
     // 2. Users
     const passwordHash = await bcrypt_1.default.hash('password123', 10);
     const adminUser = await prisma.user.upsert({
@@ -75,6 +85,34 @@ async function main() {
             lastName: 'Doe',
             phone: '1112223333',
             roleId: clientRole.id,
+            isActive: true,
+            emailVerified: true
+        },
+    });
+    const managerUser = await prisma.user.upsert({
+        where: { email: 'manager@ljvetclinic.com' },
+        update: {},
+        create: {
+            email: 'manager@ljvetclinic.com',
+            passwordHash,
+            firstName: 'Operations',
+            lastName: 'Manager',
+            phone: '4445556666',
+            roleId: managerRole.id,
+            isActive: true,
+            emailVerified: true
+        },
+    });
+    const cashierUser = await prisma.user.upsert({
+        where: { email: 'cashier@ljvetclinic.com' },
+        update: {},
+        create: {
+            email: 'cashier@ljvetclinic.com',
+            passwordHash,
+            firstName: 'Frontdesk',
+            lastName: 'Cashier',
+            phone: '7778889999',
+            roleId: cashierRole.id,
             isActive: true,
             emailVerified: true
         },
@@ -150,6 +188,7 @@ async function main() {
     // 7. Appointments
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date();
     await prisma.appointment.upsert({
         where: { appointmentCode: 'APT-001' },
         update: {},
@@ -163,6 +202,21 @@ async function main() {
             appointmentTime: tomorrow, // Using datetime for time as requested by schema
             status: 'Scheduled',
             reason: 'Annual vaccination and checkup'
+        }
+    });
+    await prisma.appointment.upsert({
+        where: { appointmentCode: 'APT-002' },
+        update: {},
+        create: {
+            appointmentCode: 'APT-002',
+            clientId: clientRecord.id,
+            petId: petBuster.id,
+            vetId: vetStaff.id,
+            serviceId: generalCheckup.id,
+            appointmentDate: today,
+            appointmentTime: today,
+            status: 'Scheduled',
+            reason: 'Limping left leg'
         }
     });
     console.log('Seeding completed successfully!');

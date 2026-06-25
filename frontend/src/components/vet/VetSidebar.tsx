@@ -69,73 +69,22 @@ const navGroups: NavGroup[] = [
       { 
         icon: Calendar, 
         label: "Scheduling", 
-        href: "/vet/scheduling",
-        subItems: [
-          { icon: CalendarCheck, label: "Today's Appointments", href: "/vet/scheduling/today" },
-          { icon: Users, label: "Walk-ins", href: "/vet/scheduling/walk-ins" },
-          { icon: CalendarClock, label: "Follow-ups", href: "/vet/scheduling/follow-ups" },
-          { icon: AlertCircle, label: "Emergency Cases", href: "/vet/scheduling/emergency" },
-        ]
+        href: "/vet/scheduling"
       },
       { 
         icon: Stethoscope, 
-        label: "Consultation", 
-        href: "/vet/consultation",
-        subItems: [
-          { icon: Users, label: "Patient Queue", href: "/vet/consultation/queue" },
-          { icon: FileText, label: "Consultation Form", href: "/vet/consultation/form" },
-          { icon: Activity, label: "Vital Signs", href: "/vet/consultation/vitals" },
-          { icon: FileEdit, label: "Examination Notes", href: "/vet/consultation/notes" },
-        ]
-      },
-      { 
-        icon: Pill, 
-        label: "Diagnosis & Rx", 
-        href: "/vet/diagnosis-prescription",
-        subItems: [
-          { icon: FileText, label: "Diagnosis", href: "/vet/diagnosis-prescription/diagnosis" },
-          { icon: ClipboardList, label: "Treatment Plans", href: "/vet/diagnosis-prescription/treatment-plans" },
-          { icon: Pill, label: "Prescriptions", href: "/vet/diagnosis-prescription/prescriptions" },
-          { icon: History, label: "Prescription History", href: "/vet/diagnosis-prescription/history" },
-        ]
+        label: "Consultation Queue", 
+        href: "/vet/consultation"
       },
       { 
         icon: ClipboardType, 
         label: "Medical Records", 
-        href: "/vet/medical-records",
-        subItems: [
-          { icon: FileClock, label: "Medical History", href: "/vet/medical-records/history" },
-          { icon: Syringe, label: "Vaccinations", href: "/vet/medical-records/vaccinations" },
-          { icon: Bug, label: "Deworming", href: "/vet/medical-records/deworming" },
-          { icon: Scissors, label: "Surgeries", href: "/vet/medical-records/surgeries" },
-          { icon: Activity, label: "Treatments", href: "/vet/medical-records/treatments" },
-        ]
+        href: "/vet/medical-records"
       },
-    ],
-  },
-  {
-    title: "Client Relations",
-    items: [
       { 
         icon: MessageSquare, 
-        label: "Client Messaging", 
-        href: "/vet/messaging",
-        subItems: [
-          { icon: MessageCircle, label: "Chat Requests", href: "/vet/messaging/requests" },
-          { icon: Bot, label: "Chatbot Escalations", href: "/vet/messaging/escalations" },
-          { icon: MessagesSquare, label: "Conversations", href: "/vet/messaging/conversations" },
-          { icon: Bell, label: "Reminders", href: "/vet/messaging/reminders" },
-        ]
-      },
-      { 
-        icon: BellRing, 
-        label: "Follow-ups", 
-        href: "/vet/follow-ups",
-        subItems: [
-          { icon: Syringe, label: "Vaccination Due", href: "/vet/follow-ups/vaccinations" },
-          { icon: Bug, label: "Deworming Due", href: "/vet/follow-ups/deworming" },
-          { icon: CalendarClock, label: "Appointments", href: "/vet/follow-ups/appointments" },
-        ]
+        label: "Messages", 
+        href: "/vet/messages"
       },
     ],
   },

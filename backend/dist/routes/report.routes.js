@@ -4,6 +4,7 @@ const express_1 = require("express");
 const report_controller_1 = require("../controllers/report.controller");
 const router = (0, express_1.Router)();
 router.get('/', report_controller_1.reportController.getAll);
+router.post('/generate', report_controller_1.reportController.generate);
 router.get('/:id', report_controller_1.reportController.getById);
 router.post('/', report_controller_1.reportController.create);
 router.put('/:id', report_controller_1.reportController.update);

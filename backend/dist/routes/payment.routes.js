@@ -4,6 +4,7 @@ const express_1 = require("express");
 const payment_controller_1 = require("../controllers/payment.controller");
 const router = (0, express_1.Router)();
 router.get('/', payment_controller_1.paymentController.getAllPayments);
+router.get('/daily', payment_controller_1.paymentController.getDailySales);
 router.get('/:id', payment_controller_1.paymentController.getPaymentById);
 router.post('/', payment_controller_1.paymentController.createPayment);
 router.put('/:id', payment_controller_1.paymentController.updatePayment);

@@ -12,6 +12,15 @@ class PaymentController {
             next(error);
         }
     }
+    async getDailySales(req, res, next) {
+        try {
+            const sales = await payment_service_1.paymentService.getDailySales();
+            res.json(sales);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
     async getPaymentById(req, res, next) {
         try {
             const id = parseInt(req.params.id);

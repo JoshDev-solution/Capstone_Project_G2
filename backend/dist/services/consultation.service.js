@@ -29,8 +29,22 @@ class ConsultationService {
         });
     }
     async createConsultation(data) {
-        return await prisma_1.default.consultation.create({
-            data,
+        return await prisma_1.default.$transaction(async (tx) => {
+            // 1. Create the consultation (which may include nested diagnoses and prescriptions)
+            const consultation = await tx.consultation.create({
+                data,
+            });
+            // 2. Update the appointment status to Completed
+            if (data.appointmentId) {
+                await tx.appointment.update({
+                    where: { id: data.appointmentId },
+                    data: {
+                        status: 'Completed',
+                        completedAt: new Date()
+                    }
+                });
+            }
+            return consultation;
         });
     }
     async updateConsultation(id, data) {

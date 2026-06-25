@@ -54,8 +54,12 @@ export default function LoginPage() {
       const role = data.user?.role?.toLowerCase() || "client";
       if (role === "veterinarian" || role === "vet") {
         window.location.href = "/vet";
-      } else if (role === "admin" || role === "manager") {
+      } else if (role === "admin") {
         window.location.href = "/admin";
+      } else if (role === "manager") {
+        window.location.href = "/manager";
+      } else if (role === "cashier") {
+        window.location.href = "/cashier";
       } else {
         window.location.href = "/";
       }

@@ -19,10 +19,35 @@ class PetService {
         return await prisma_1.default.pet.findUnique({
             where: { id },
             include: {
-                client: true,
+                client: { include: { user: true } },
                 petType: true,
                 breed: true,
                 appointments: true,
+            },
+        });
+    }
+    async getPetHistory(id) {
+        return await prisma_1.default.pet.findUnique({
+            where: { id },
+            include: {
+                client: { include: { user: true } },
+                petType: true,
+                breed: true,
+                consultations: {
+                    include: {
+                        vet: { include: { user: true } },
+                        diagnoses: true,
+                        prescriptions: {
+                            include: { items: true }
+                        },
+                        medicalRecords: true
+                    },
+                    orderBy: { consultationDate: 'desc' }
+                },
+                medicalRecords: {
+                    where: { consultationId: null }, // Only records not attached to a consultation
+                    orderBy: { recordDate: 'desc' }
+                }
             },
         });
     }

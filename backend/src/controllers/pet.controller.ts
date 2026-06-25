@@ -40,6 +40,19 @@ export class PetController {
     }
   }
 
+  async getPetHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id as string);
+      const history = await petService.getPetHistory(id);
+      if (!history) {
+        return res.status(404).json({ message: 'Pet not found' });
+      }
+      res.json(history);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async createPet(req: Request, res: Response, next: NextFunction) {
     try {
       const pet = await petService.createPet(req.body);

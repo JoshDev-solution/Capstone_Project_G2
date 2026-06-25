@@ -4,6 +4,7 @@ import { appointmentController } from '../controllers/appointment.controller';
 const router = Router();
 
 router.get('/', appointmentController.getAllAppointments);
+router.get('/vet/me', appointmentController.getVetAppointments);
 router.get('/:id', appointmentController.getAppointmentById);
 router.post('/', appointmentController.createAppointment);
 router.put('/:id', appointmentController.updateAppointment);

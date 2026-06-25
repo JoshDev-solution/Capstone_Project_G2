@@ -220,10 +220,14 @@ class UserController {
                 return res.status(401).json({ message: 'Unauthorized' });
             if (!req.file)
                 return res.status(400).json({ message: 'No file uploaded' });
-            const profileImageUrl = '/uploads/' + req.file.filename;
-            // Save URL to database
-            await prisma_1.default.user.update({ where: { id: req.user.userId }, data: { profileImageUrl } });
-            res.json({ profileImageUrl });
+            const fs = require('fs');
+            const fileBuffer = fs.readFileSync(req.file.path);
+            const base64Image = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+            // Save Base64 to database
+            await prisma_1.default.user.update({ where: { id: req.user.userId }, data: { profileImageUrl: base64Image } });
+            // Delete temporary file
+            fs.unlinkSync(req.file.path);
+            res.json({ profileImageUrl: base64Image });
         }
         catch (error) {
             next(error);

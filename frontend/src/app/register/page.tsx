@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/providers/ThemeProvider";
+import { useRouter } from "next/navigation";
 
 const steps = ["Account", "Personal Info", "Verify"];
 
@@ -17,6 +18,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,7 +66,16 @@ export default function RegisterPage() {
         throw new Error(data.message || "Registration failed.");
       }
 
-      setDone(true);
+      // Automatically log the user in since accounts are auto-approved
+      if (data.token && data.user) {
+        localStorage.setItem("vcms_token", data.token);
+        localStorage.setItem("vcms_user", JSON.stringify(data.user));
+        
+        // Redirect to client dashboard
+        router.push("/client");
+      } else {
+        setDone(true); // Fallback just in case
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred during registration.");
     } finally {

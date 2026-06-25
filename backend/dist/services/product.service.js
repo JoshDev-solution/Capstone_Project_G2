@@ -24,14 +24,70 @@ class ProductService {
         });
     }
     async createProduct(data) {
+        const { name, category, sku, price, unit, stock, reorderLevel, expiry, active } = data;
+        // Find or create category
+        const cat = await prisma_1.default.category.upsert({
+            where: { name: category },
+            update: {},
+            create: { name: category }
+        });
         return await prisma_1.default.product.create({
-            data,
+            data: {
+                name,
+                sku,
+                price: Number(price),
+                unit,
+                isActive: active,
+                categoryId: cat.id,
+                inventory: {
+                    create: {
+                        quantity: Number(stock),
+                        reorderLevel: Number(reorderLevel),
+                        expirationDate: expiry ? new Date(expiry) : null
+                    }
+                }
+            },
+            include: {
+                category: true,
+                inventory: true
+            }
         });
     }
     async updateProduct(id, data) {
+        const { name, category, sku, price, unit, stock, reorderLevel, expiry, active } = data;
+        const cat = await prisma_1.default.category.upsert({
+            where: { name: category },
+            update: {},
+            create: { name: category }
+        });
         return await prisma_1.default.product.update({
             where: { id },
-            data,
+            data: {
+                name,
+                sku,
+                price: Number(price),
+                unit,
+                isActive: active,
+                categoryId: cat.id,
+                inventory: {
+                    upsert: {
+                        create: {
+                            quantity: Number(stock),
+                            reorderLevel: Number(reorderLevel),
+                            expirationDate: expiry ? new Date(expiry) : null
+                        },
+                        update: {
+                            quantity: Number(stock),
+                            reorderLevel: Number(reorderLevel),
+                            expirationDate: expiry ? new Date(expiry) : null
+                        }
+                    }
+                }
+            },
+            include: {
+                category: true,
+                inventory: true
+            }
         });
     }
     async deleteProduct(id) {

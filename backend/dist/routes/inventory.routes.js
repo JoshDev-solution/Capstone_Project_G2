@@ -4,6 +4,7 @@ const express_1 = require("express");
 const inventory_controller_1 = require("../controllers/inventory.controller");
 const router = (0, express_1.Router)();
 router.get('/', inventory_controller_1.inventoryController.getAllInventory);
+router.get('/low-stock', inventory_controller_1.inventoryController.getLowStockAlerts);
 router.get('/:id', inventory_controller_1.inventoryController.getInventoryById);
 router.post('/', inventory_controller_1.inventoryController.createInventory);
 router.put('/:id', inventory_controller_1.inventoryController.updateInventory);

@@ -11,6 +11,15 @@ export class InventoryController {
     }
   }
 
+  async getLowStockAlerts(req: Request, res: Response, next: NextFunction) {
+    try {
+      const alerts = await inventoryService.getLowStockAlerts();
+      res.json(alerts);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getInventoryById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id as string);

@@ -24,7 +24,6 @@ const navGroups = [
     title: "Management",
     items: [
       { icon: Users, label: "Users", href: "/admin/users" },
-      { icon: ClipboardList, label: "Registrations", href: "/admin/registrations", badge: 3 },
       { icon: PawPrint, label: "Pets", href: "/admin/pets" },
       { icon: CalendarCheck, label: "Appointments", href: "/admin/appointments" },
     ],
@@ -152,8 +151,6 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
               let badgeVal = 0;
               if (item.label === "Notifications") {
                 badgeVal = counts.notificationsCount;
-              } else if (item.label === "Registrations") {
-                badgeVal = counts.registrationsCount;
               }
 
               return (
