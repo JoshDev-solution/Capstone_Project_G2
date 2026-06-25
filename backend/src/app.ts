@@ -23,6 +23,7 @@ import inventoryTransactionRoutes from './routes/inventoryTransaction.routes';
 import reportRoutes from './routes/report.routes';
 import serviceRoutes from './routes/service.routes';
 import refundRoutes from './routes/refund.routes';
+import chatRequestRoutes from './routes/chatRequest.routes';
 
 import path from 'path';
 
@@ -65,6 +66,7 @@ app.use('/api/inventory-transactions', inventoryTransactionRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/refunds', refundRoutes);
+app.use('/api/chat-requests', chatRequestRoutes);
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

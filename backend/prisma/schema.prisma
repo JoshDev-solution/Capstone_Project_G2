@@ -58,9 +58,11 @@ model User {
   auditLogs       AuditLog[]
   chatbotLogs     ChatbotLog[]
   notifications   Notification[]
-  sentMessages    Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
-  generatedReports Report[] @relation("GeneratedReports")
+  sentMessages       Message[] @relation("SentMessages")
+  receivedMessages   Message[] @relation("ReceivedMessages")
+  chatRequestsSent   ChatRequest[] @relation("ChatRequestsSent")
+  chatRequestsReceived ChatRequest[] @relation("ChatRequestsReceived")
+  generatedReports   Report[] @relation("GeneratedReports")
 
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
@@ -500,6 +502,9 @@ model Message {
   receiverId      Int
   receiver        User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
   
+  chatRequestId   Int?
+  chatRequest     ChatRequest? @relation(fields: [chatRequestId], references: [id])
+  
   subject         String?
   body            String
   isRead          Boolean  @default(false)
@@ -513,6 +518,27 @@ model Message {
   deletedAt       DateTime?
   
   createdAt       DateTime @default(now())
+}
+
+model ChatRequest {
+  id                Int      @id @default(autoincrement())
+  
+  clientUserId      Int
+  clientUser        User     @relation("ChatRequestsSent", fields: [clientUserId], references: [id])
+  
+  vetUserId         Int
+  vetUser           User     @relation("ChatRequestsReceived", fields: [vetUserId], references: [id])
+  
+  status            String   @default("Pending") // Pending, Approved, Declined
+  reason            String?  // Why the client wants to chat
+  declineReason     String?
+  escalatedFromBot  Boolean  @default(false)
+  
+  messages          Message[]
+  
+  resolvedAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Notification {

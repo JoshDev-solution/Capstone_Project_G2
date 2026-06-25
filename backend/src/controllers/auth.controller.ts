@@ -53,6 +53,8 @@ export class AuthController {
         user: {
           id: user.id,
           email: user.email,
+          firstName: (user as any).firstName || null,
+          lastName: (user as any).lastName || null,
           role: role.name
         }
       });
@@ -90,6 +92,8 @@ export class AuthController {
         user: {
           id: user.id,
           email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
           role: user.role.name
         }
       });

@@ -60,8 +60,10 @@ export default function LoginPage() {
         window.location.href = "/manager";
       } else if (role === "cashier") {
         window.location.href = "/cashier";
+      } else if (role === "client") {
+        window.location.href = "/client";
       } else {
-        window.location.href = "/";
+        window.location.href = "/client";
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An error occurred while logging in.");
