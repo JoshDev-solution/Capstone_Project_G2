@@ -36,20 +36,6 @@ const typeColor: Record<NType, string> = {
   System:       "#6B7280",
 };
 
-const mockNotifs: Notif[] = [
-  { id: 1,  type: "Registration",  title: "New Client Registration",         message: "Elena Villanueva has submitted a registration request awaiting approval.",      time: "2 min ago",  read: false },
-  { id: 2,  type: "LowStock",      title: "Low Stock Alert",                 message: "Anti-Rabies Vaccine is critically low (5 units remaining). Reorder required.", time: "15 min ago", read: false },
-  { id: 3,  type: "Appointment",   title: "Appointment Request",             message: "Carlo Reyes has booked an appointment for Buddy on June 17.",                   time: "1 hr ago",   read: false },
-  { id: 4,  type: "Payment",       title: "Payment Received",                message: "₱2,500 received from Ana Lopez via GCash. Bill BILL-00015 paid.",              time: "2 hr ago",   read: true },
-  { id: 5,  type: "Message",       title: "New Client Message",              message: "Maria Santos sent a message about Whiskers' medication dosage.",                time: "3 hr ago",   read: true },
-  { id: 6,  type: "Vaccination",   title: "Vaccination Due Reminder",        message: "Buddy (Carlo Reyes) is due for annual anti-rabies vaccination next week.",     time: "4 hr ago",   read: true },
-  { id: 7,  type: "LowStock",      title: "Low Stock Alert",                 message: "5-in-1 Vaccine (Canine) is below reorder level (8 remaining, min: 10).",       time: "5 hr ago",   read: true },
-  { id: 8,  type: "Appointment",   title: "Appointment Completed",           message: "APT-00005 for Rocky (Ramon Diaz) was marked as completed by Dr. Lovely.",      time: "6 hr ago",   read: true },
-  { id: 9,  type: "Registration",  title: "Registration Approved",           message: "David Garcia's client account has been successfully approved.",                 time: "Yesterday",  read: true },
-  { id: 10, type: "System",        title: "System Backup Complete",          message: "Daily database backup completed successfully at 3:00 AM.",                     time: "Yesterday",  read: true },
-  { id: 11, type: "Payment",       title: "Refund Processed",                message: "Refund of ₱800 to Carlo Reyes has been processed via GCash.",                 time: "2 days ago", read: true },
-];
-
 const filters: (NType | "All")[] = ["All", "Appointment", "Registration", "LowStock", "Payment", "Message", "System"];
 
 export default function NotificationsPage() {

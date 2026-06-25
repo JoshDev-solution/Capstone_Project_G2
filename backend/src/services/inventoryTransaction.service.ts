@@ -2,7 +2,11 @@ import prisma from '../utils/prisma';
 
 export class InventoryTransactionService {
   async getAll() {
-    return await prisma.inventoryTransaction.findMany();
+    return await prisma.inventoryTransaction.findMany({
+      include: { product: true },
+      orderBy: { transactionDate: 'desc' },
+      take: 50
+    });
   }
 
   async getById(id: number) {

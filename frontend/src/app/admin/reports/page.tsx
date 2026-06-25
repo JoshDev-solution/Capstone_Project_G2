@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3, FileText, FileSpreadsheet, Download,
@@ -16,13 +16,6 @@ const reportTypes = [
   { id: "staff", label: "Staff Performance", icon: Users, color: "#10B981", desc: "Vet consultations, patient load, and service summary" },
 ];
 
-const recentReports = [
-  { name: "Monthly Sales Report - May 2026", type: "Sales", format: "PDF", size: "2.4 MB", generated: "Jun 1, 2026", by: "System Admin" },
-  { name: "Inventory Usage - Q1 2026", type: "Inventory", format: "Excel", size: "1.1 MB", generated: "Apr 5, 2026", by: "Manager" },
-  { name: "Patient Visit Summary - Apr 2026", type: "Patient Visit", format: "PDF", size: "1.8 MB", generated: "May 2, 2026", by: "System Admin" },
-  { name: "Disease Frequency - 2026 H1", type: "Disease", format: "CSV", size: "512 KB", generated: "Jun 15, 2026", by: "Veterinarian" },
-];
-
 const formatColors: Record<string, string> = {
   PDF: "badge-danger",
   Excel: "badge-success",
@@ -35,6 +28,26 @@ export default function ReportsPage() {
   const [dateTo, setDateTo] = useState("2026-06-30");
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+  const [recentReports, setRecentReports] = useState<any[]>([]);
+
+  const fetchReports = async () => {
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      const token = localStorage.getItem("vcms_token");
+      const res = await fetch(`${baseUrl}/api/reports`, { headers: { "Authorization": `Bearer ${token}` } });
+      if (res.ok) {
+        const data = await res.json();
+        setRecentReports(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
   const handleGenerate = async (format: string) => {
     setError("");
@@ -47,11 +60,29 @@ export default function ReportsPage() {
     }
 
     setGenerating(true);
-    // TODO: Wire to backend report generation endpoint
-    await new Promise((r) => setTimeout(r, 1500));
-    setGenerating(false);
-    // In production: trigger download
-    alert(`Report generated as ${format}! (Connecting to backend...)`);
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      const token = localStorage.getItem("vcms_token");
+      
+      const res = await fetch(`${baseUrl}/api/reports/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ format, reportType: selectedReport, dateFrom, dateTo })
+      });
+      
+      if (!res.ok) throw new Error("Failed to generate report");
+      
+      await fetchReports();
+      alert(`Report generated as ${format}!`);
+    } catch (err: any) {
+      setError(err.message || "An error occurred during generation.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -151,6 +182,7 @@ export default function ReportsPage() {
         <div className="card p-6 h-fit">
           <h2 className="font-bold text-lg mb-4">Recent Reports</h2>
           <div className="flex flex-col gap-3">
+            {recentReports.length === 0 && <div className="text-sm text-neutral-400">No reports generated yet.</div>}
             {recentReports.map((rep, i) => (
               <motion.div
                 key={i}
@@ -164,12 +196,12 @@ export default function ReportsPage() {
                     <FileText className="w-4 h-4 text-primary-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-medium leading-snug mb-1 line-clamp-2">{rep.name}</p>
+                    <p className="text-xs font-medium leading-snug mb-1 line-clamp-2">{rep.title}</p>
                     <div className="flex items-center gap-1.5">
-                      <span className={`badge text-[10px] px-1.5 ${formatColors[rep.format]}`}>{rep.format}</span>
-                      <span className="text-[10px] text-neutral-400">{rep.size}</span>
+                      <span className={`badge text-[10px] px-1.5 ${formatColors[rep.fileFormat] || 'badge-info'}`}>{rep.fileFormat}</span>
+                      <span className="text-[10px] text-neutral-400">Database</span>
                     </div>
-                    <p className="text-[10px] text-neutral-400 mt-0.5">{rep.generated}</p>
+                    <p className="text-[10px] text-neutral-400 mt-0.5">{new Date(rep.generatedAt).toLocaleString()}</p>
                   </div>
                 </div>
                 <button className="btn-icon btn-ghost rounded-lg w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shrink-0">

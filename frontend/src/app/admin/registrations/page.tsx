@@ -16,14 +16,6 @@ interface Registration {
   pets?: string[];
 }
 
-const mock: Registration[] = [
-  { id: 1, name: "Elena Villanueva", email: "elena.v@gmail.com", phone: "+63-922-111-2222", address: "456 Mayon St., Pasig City", submittedAt: "2026-06-16 02:14 AM", status: "Pending", pets: [] },
-  { id: 2, name: "Marco Reyes", email: "marco.r@gmail.com", phone: "+63-933-222-3333", address: "789 Katipunan Ave., Quezon City", submittedAt: "2026-06-15 10:30 PM", status: "Pending", pets: [] },
-  { id: 3, name: "Sofia Lim", email: "sofia.lim@yahoo.com", phone: "+63-944-333-4444", address: "123 Taft Ave., Manila", submittedAt: "2026-06-15 08:55 PM", status: "Pending", pets: [] },
-  { id: 4, name: "David Garcia", email: "david.g@gmail.com", phone: "+63-955-444-5555", address: "321 Buendia Ave., Makati", submittedAt: "2026-06-14 04:00 PM", status: "Approved", pets: [] },
-  { id: 5, name: "Rachel Torres", email: "rachel.t@gmail.com", phone: "+63-966-555-6666", address: "654 Kalayaan Ave., Quezon City", submittedAt: "2026-06-13 11:20 AM", status: "Rejected", pets: [] },
-];
-
 function DetailModal({ reg, onClose, onApprove, onReject }: {
   reg: Registration;
   onClose: () => void;
