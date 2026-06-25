@@ -23,7 +23,16 @@ const pawPositions = [
 
 export default function HeroSection() {
   return (
-    <section id="home" className="relative min-h-screen flex items-center overflow-hidden gradient-hero">
+    <section 
+      id="home" 
+      className="relative min-h-screen flex items-center overflow-hidden"
+      style={{
+        backgroundImage: "linear-gradient(to bottom, rgba(15, 15, 20, 0.7), rgba(15, 15, 20, 0.9)), url('/images/clinic-front.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center 25%",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
       {/* Decorative Blobs */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full bg-primary-200/20 dark:bg-primary-500/5 blur-[120px] -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-accent-200/20 dark:bg-accent-500/5 blur-[100px] translate-x-1/3 translate-y-1/3" />
@@ -73,7 +82,7 @@ export default function HeroSection() {
             >
               <card.icon size={20} style={{ color: card.color }} />
             </div>
-            <span className="text-sm font-semibold whitespace-nowrap">{card.label}</span>
+            <span className="text-sm font-semibold text-white whitespace-nowrap">{card.label}</span>
           </motion.div>
         </motion.div>
       ))}
@@ -89,7 +98,7 @@ export default function HeroSection() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100/60 dark:bg-primary-500/10 border border-primary-200/60 dark:border-primary-500/20 mb-8"
           >
             <PawPrint size={14} className="text-primary-500" />
-            <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-primary-300 uppercase tracking-wider">
               Trusted Pet Healthcare
             </span>
           </motion.div>
@@ -99,7 +108,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.15 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.1] tracking-tight mb-6 text-white"
           >
             Compassionate Care{" "}
             <br className="hidden sm:block" />
@@ -112,7 +121,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="text-lg sm:text-xl text-neutral-500 dark:text-neutral-400 mb-10 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg sm:text-xl text-neutral-300 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
             Your trusted partner in veterinary healthcare — appointments, vaccinations,
             treatments, and complete pet wellness, all in one place.
@@ -152,7 +161,7 @@ export default function HeroSection() {
                 <div className="text-2xl sm:text-3xl font-bold gradient-text">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-sm text-neutral-400 mt-1">{stat.label}</div>
+                <div className="text-xs sm:text-sm text-neutral-300 mt-1">{stat.label}</div>
               </div>
             ))}
           </motion.div>
