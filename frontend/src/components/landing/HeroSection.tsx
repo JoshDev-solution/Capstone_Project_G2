@@ -1,14 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PawPrint, ArrowRight, Heart, Shield, CalendarCheck } from "lucide-react";
+import { PawPrint, ArrowRight, CalendarCheck } from "lucide-react";
 import Link from "next/link";
-
-const floatingCards = [
-  { icon: Heart, label: "Wellness Care", color: "#FF4FA3", x: "8%", y: "25%", delay: 0 },
-  { icon: Shield, label: "Vaccinations", color: "#D98CFF", x: "85%", y: "20%", delay: 0.3 },
-  { icon: CalendarCheck, label: "Easy Booking", color: "#B84DFF", x: "78%", y: "70%", delay: 0.6 },
-];
 
 const pawPositions = [
   { x: "5%", y: "15%", size: 24, rotation: -30, delay: 0 },
@@ -61,31 +55,7 @@ export default function HeroSection() {
         </motion.div>
       ))}
 
-      {/* Floating Feature Cards */}
-      {floatingCards.map((card, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 + card.delay, duration: 0.8, ease: "easeOut" }}
-          className="absolute hidden lg:block pointer-events-none"
-          style={{ left: card.x, top: card.y }}
-        >
-          <motion.div
-            animate={{ y: [0, -15, 0] }}
-            transition={{ duration: 5 + i, repeat: Infinity, ease: "easeInOut" }}
-            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-3"
-          >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `${card.color}20` }}
-            >
-              <card.icon size={20} style={{ color: card.color }} />
-            </div>
-            <span className="text-sm font-semibold text-white whitespace-nowrap">{card.label}</span>
-          </motion.div>
-        </motion.div>
-      ))}
+
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20 w-full">
