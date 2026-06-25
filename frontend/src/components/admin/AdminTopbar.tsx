@@ -30,7 +30,7 @@ export default function AdminTopbar({ sidebarCollapsed, title = "Dashboard" }: A
       if (res.ok) {
         const data = await res.json();
         setUserName({ first: data.firstName || "", last: data.lastName || "", role: data.role || "" });
-        if (data.profileImageUrl && !data.profileImageUrl.includes('/uploads/')) {
+        if (data.profileImageUrl && !data.profileImageUrl.includes('uploads')) {
           setProfilePic(data.profileImageUrl.startsWith('http') || data.profileImageUrl.startsWith('data:') ? data.profileImageUrl : `${baseUrl}${data.profileImageUrl}`);
         } else {
           setProfilePic(null);

@@ -472,7 +472,7 @@ export default function UsersPage() {
                     >
                       <td>
                         <div className="flex items-center gap-3">
-                          {user.profileImageUrl && !user.profileImageUrl.includes('/uploads/') ? (
+                          {user.profileImageUrl && !user.profileImageUrl.includes('uploads') ? (
                             <img src={user.profileImageUrl.startsWith('http') || user.profileImageUrl.startsWith('data:') ? user.profileImageUrl : `${(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "")}${user.profileImageUrl}`} alt={user.name} className="w-10 h-10 rounded-xl object-cover shadow-sm shrink-0" />
                           ) : (
                             <div 
