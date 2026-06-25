@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Swal from 'sweetalert2';
+import Topbar from "@/components/layout/Topbar";
 
 export default function ManagerLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -52,16 +53,6 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex">
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 right-4 z-50">
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-sm text-neutral-600 dark:text-neutral-300"
-        >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -70,7 +61,7 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -78,11 +69,11 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         className={cn(
-          "fixed lg:sticky top-0 h-screen w-[280px] bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 flex flex-col z-40 transition-transform duration-300",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          "fixed md:sticky top-0 h-screen w-[240px] bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 flex flex-col z-40 transition-transform duration-300",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="p-6">
+        <div className="p-6 flex items-center justify-between">
           <Link href="/manager" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-500 to-accent-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary-500/20">
               <PawPrint className="w-5 h-5" />
@@ -91,8 +82,14 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
               LJ Clinic
             </span>
           </Link>
-          <div className="mt-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-10">Manager Portal</div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+        <div className="mt-[-10px] mb-4 text-xs font-semibold text-neutral-400 uppercase tracking-wider pl-16">Manager Portal</div>
 
         <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
           {navItems.map((item) => {
@@ -131,29 +128,18 @@ export default function ManagerLayout({ children }: { children: ReactNode }) {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden w-full">
-        {/* Header */}
-        <header className="sticky top-0 z-30 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 p-4 flex items-center justify-between lg:justify-end">
-          <div className="lg:hidden font-bold text-neutral-800 dark:text-neutral-200">Manager Dashboard</div>
-          <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-600 dark:text-neutral-300">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full border border-white dark:border-neutral-950"></span>
-            </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-neutral-200 dark:border-neutral-800">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-neutral-900 dark:text-white">Manager</p>
-                <p className="text-xs text-neutral-500">Clinic Operations</p>
-              </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-accent-400 to-primary-400 text-white flex items-center justify-center font-bold shadow-md">
-                M
-              </div>
-            </div>
-          </div>
-        </header>
+      <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden w-full pt-16">
+        <Topbar 
+          sidebarCollapsed={false}
+          onMenuClick={() => setIsMobileMenuOpen(true)}
+          title="Manager Dashboard"
+          roleName="Manager"
+          roleBadgeColorClass="bg-accent-500/10 text-accent-600 dark:bg-accent-500/20 dark:text-accent-400"
+          settingsPath="/manager/settings"
+        />
 
         {/* Page Content */}
-        <div className="p-6 lg:p-8 flex-1 max-w-7xl mx-auto w-full">
+        <div className="p-6 md:p-8 flex-1 max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>

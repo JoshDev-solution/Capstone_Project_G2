@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ClientSidebar from "@/components/client/ClientSidebar";
-import MobileHeader from "@/components/layout/MobileHeader";
+import Topbar from "@/components/layout/Topbar";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -38,7 +38,14 @@ export default function ClientLayout({
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#09090B]">
-      <MobileHeader onMenuClick={() => setMobileOpen(true)} portalName="Client" />
+      <Topbar 
+        sidebarCollapsed={collapsed} 
+        onMenuClick={() => setMobileOpen(true)}
+        title="Client Portal"
+        roleName="Client"
+        roleBadgeColorClass="badge-primary"
+        settingsPath="/client/profile/settings"
+      />
       
       <ClientSidebar 
         collapsed={collapsed} 
@@ -49,7 +56,7 @@ export default function ClientLayout({
       
       <main 
         className={cn(
-          "transition-all duration-300 ease-in-out p-4 md:p-6 lg:p-8 min-h-[calc(100vh-4rem)] md:min-h-screen",
+          "pt-16 transition-all duration-300 ease-in-out p-4 md:p-6 lg:p-8 min-h-screen",
           collapsed ? "md:ml-[72px]" : "md:ml-[240px]"
         )}
       >

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import Topbar from "@/components/layout/Topbar";
 import { cn } from "@/lib/utils";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -48,9 +48,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
-      <AdminTopbar 
+      <Topbar 
         sidebarCollapsed={collapsed} 
         onMenuClick={() => setMobileOpen(true)}
+        title="Admin Dashboard"
+        roleName="Admin"
+        roleBadgeColorClass="badge-primary"
+        settingsPath="/admin/settings"
       />
 
       <main

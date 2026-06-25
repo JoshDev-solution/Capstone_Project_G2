@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import VetSidebar from "@/components/vet/VetSidebar";
-import VetTopbar from "@/components/vet/VetTopbar";
+import Topbar from "@/components/layout/Topbar";
 import { cn } from "@/lib/utils";
 
 export default function VetLayout({ children }: { children: React.ReactNode }) {
@@ -48,9 +48,13 @@ export default function VetLayout({ children }: { children: React.ReactNode }) {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
-      <VetTopbar 
+      <Topbar 
         sidebarCollapsed={collapsed} 
         onMenuClick={() => setMobileOpen(true)}
+        title="Clinical Dashboard"
+        roleName="Veterinarian"
+        roleBadgeColorClass="badge-primary"
+        settingsPath="/vet/profile/settings"
       />
 
       <main
