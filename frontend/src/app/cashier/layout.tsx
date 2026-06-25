@@ -6,10 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, ShoppingCart, FileText, 
-  LogOut, Menu, X, PawPrint, Banknote, RefreshCcw
+  LogOut, PawPrint, Banknote, RefreshCcw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Swal from 'sweetalert2';
+import MobileHeader from "@/components/layout/MobileHeader";
 
 export default function CashierLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -51,16 +52,8 @@ export default function CashierLayout({ children }: { children: ReactNode }) {
   if (!isClient) return null;
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex">
-      {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 right-4 z-50">
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-sm text-neutral-600 dark:text-neutral-300"
-        >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 flex flex-col lg:flex-row">
+      <MobileHeader onMenuClick={() => setIsMobileMenuOpen(true)} portalName="Cashier" />
 
       {/* Sidebar Overlay */}
       <AnimatePresence>
@@ -133,8 +126,7 @@ export default function CashierLayout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden w-full">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 p-4 flex items-center justify-between lg:justify-end">
-          <div className="lg:hidden font-bold text-neutral-800 dark:text-neutral-200">Cashier</div>
+        <header className="hidden lg:flex sticky top-0 z-30 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 p-4 items-center justify-end">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 pl-4 border-l border-neutral-200 dark:border-neutral-800">
               <div className="text-right hidden sm:block">

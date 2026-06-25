@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 export default function VetLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
@@ -41,13 +42,21 @@ export default function VetLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--background)" }}>
-      <VetSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <VetTopbar sidebarCollapsed={collapsed} />
+      <VetSidebar 
+        collapsed={collapsed} 
+        onToggle={() => setCollapsed(!collapsed)} 
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
+      <VetTopbar 
+        sidebarCollapsed={collapsed} 
+        onMenuClick={() => setMobileOpen(true)}
+      />
 
       <main
         className={cn(
           "pt-16 min-h-screen transition-all duration-300",
-          collapsed ? "pl-[72px]" : "pl-[240px]"
+          collapsed ? "md:pl-[72px]" : "md:pl-[240px]"
         )}
       >
         <div className="p-6 lg:p-8">{children}</div>

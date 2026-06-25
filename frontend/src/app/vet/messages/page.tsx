@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   MessageSquare, Search, User, Send, CheckCircle2, Clock, XCircle,
-  Filter, Loader2, AlertTriangle, Bot
+  Filter, Loader2, AlertTriangle, Bot, ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +55,7 @@ export default function VetMessagesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -140,6 +141,7 @@ export default function VetMessagesPage() {
         if (activeRequest?.id === requestId) {
           setActiveRequest(null);
           setMessages([]);
+          setMobileView("list");
         }
       }
     } catch (err) { console.error(err); }
@@ -193,10 +195,13 @@ export default function VetMessagesPage() {
   if (loading) return <div className="py-20 text-center text-neutral-500"><Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />Loading inbox...</div>;
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex gap-6 pb-6">
+    <div className="h-[calc(100vh-8rem)] flex gap-6 pb-6 relative">
 
       {/* ── SIDEBAR: Requests List (REQ084) ── */}
-      <div className="w-[360px] flex flex-col card overflow-hidden shrink-0">
+      <div className={cn(
+        "w-full md:w-[360px] flex flex-col card overflow-hidden shrink-0",
+        mobileView === "detail" ? "hidden md:flex" : "flex"
+      )}>
         {/* Header */}
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <div className="flex items-center justify-between mb-3">
@@ -253,7 +258,7 @@ export default function VetMessagesPage() {
             filteredRequests.map((req) => (
               <button
                 key={req.id}
-                onClick={() => setActiveRequest(req)}
+                onClick={() => { setActiveRequest(req); setMobileView("detail"); }}
                 className={cn(
                   "w-full text-left p-3 rounded-xl flex gap-3 transition-colors",
                   activeRequest?.id === req.id 
@@ -297,12 +302,21 @@ export default function VetMessagesPage() {
       </div>
 
       {/* ── MAIN AREA ── */}
-      <div className="flex-1 flex flex-col card overflow-hidden">
+      <div className={cn(
+        "flex-1 flex flex-col card overflow-hidden relative",
+        mobileView === "list" ? "hidden md:flex" : "flex"
+      )}>
         {activeRequest ? (
           <>
             {/* Chat Header */}
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-white/50 dark:bg-neutral-900/50 backdrop-blur">
               <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setMobileView("list")}
+                  className="md:hidden p-2 -ml-2 rounded-xl text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
                 <div className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0",
                   activeRequest.status === "Approved" ? "bg-emerald-500" :

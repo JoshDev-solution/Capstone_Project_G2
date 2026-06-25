@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, PawPrint, CalendarCheck, Stethoscope,
-  ShoppingBag, Package, BarChart3, Settings, ChevronLeft,
-  ChevronRight, PawPrint as Paw, ClipboardList, BadgePercent,
-  RotateCcw, Bell, LogOut, PanelLeft,
+  ShoppingBag, Package, BarChart3, Settings, ChevronLeft, ChevronRight,
+  RotateCcw, Bell, LogOut, PanelLeft, X, BadgePercent, PawPrint as Paw
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,9 +54,11 @@ const navGroups = [
 interface AdminSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
 }
 
-export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
+export default function AdminSidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }: AdminSidebarProps) {
   const pathname = usePathname();
   const [counts, setCounts] = useState({ registrationsCount: 0, notificationsCount: 0 });
   const [user, setUser] = useState<{ firstName: string; lastName: string; email: string; role: string } | null>(null);
@@ -108,34 +109,62 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
   };
 
   return (
-    <motion.aside
-      animate={{ width: collapsed ? 72 : 240 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="fixed left-0 top-0 bottom-0 z-30 flex flex-col border-r"
-      style={{
-        background: "var(--sidebar-bg)",
-        borderColor: "var(--sidebar-border)",
-      }}
-    >
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b" style={{ borderColor: "var(--sidebar-border)" }}>
-        <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-md shrink-0">
-          <Paw className="w-5 h-5 text-white" />
+    <>
+      {/* Mobile Backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: collapsed ? 72 : 240,
+          x: typeof window !== "undefined" && window.innerWidth < 768 ? (mobileOpen ? 0 : -240) : 0
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="fixed left-0 top-0 bottom-0 z-50 flex flex-col border-r shadow-2xl md:shadow-none"
+        style={{
+          background: "var(--sidebar-bg)",
+          borderColor: "var(--sidebar-border)",
+        }}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-between px-4 h-16 border-b shrink-0" style={{ borderColor: "var(--sidebar-border)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center shadow-md shrink-0">
+              <Paw className="w-5 h-5 text-white" />
+            </div>
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="text-sm font-bold gradient-text whitespace-nowrap">LJ Veterinary</div>
+                  <div className="text-[9px] uppercase tracking-widest text-neutral-400 whitespace-nowrap">Admin Portal</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="text-sm font-bold gradient-text whitespace-nowrap">LJ Veterinary</div>
-              <div className="text-[9px] uppercase tracking-widest text-neutral-400 whitespace-nowrap">Admin Panel</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 flex flex-col gap-1">
@@ -197,7 +226,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         {/* Collapse button */}
         <button
           onClick={onToggle}
-          className={cn("sidebar-link w-full", collapsed && "justify-center")}
+          className={cn("sidebar-link w-full hidden md:flex", collapsed && "justify-center")}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -227,5 +256,6 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         </div>
       </div>
     </motion.aside>
+    </>
   );
 }

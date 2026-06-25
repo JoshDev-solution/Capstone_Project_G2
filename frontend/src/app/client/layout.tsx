@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ClientSidebar from "@/components/client/ClientSidebar";
+import MobileHeader from "@/components/layout/MobileHeader";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +12,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,15 +38,19 @@ export default function ClientLayout({
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-[#09090B]">
+      <MobileHeader onMenuClick={() => setMobileOpen(true)} portalName="Client" />
+      
       <ClientSidebar 
         collapsed={collapsed} 
         onToggle={() => setCollapsed(!collapsed)} 
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
       />
       
       <main 
         className={cn(
-          "transition-all duration-300 ease-in-out p-4 md:p-6 lg:p-8 min-h-screen",
-          collapsed ? "ml-[72px]" : "ml-0 md:ml-[240px]"
+          "transition-all duration-300 ease-in-out p-4 md:p-6 lg:p-8 min-h-[calc(100vh-4rem)] md:min-h-screen",
+          collapsed ? "md:ml-[72px]" : "md:ml-[240px]"
         )}
       >
         <div className="max-w-7xl mx-auto h-full">

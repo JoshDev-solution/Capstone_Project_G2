@@ -47,6 +47,7 @@ const getUser = () => {
 
 export default function ClientMessagesPage() {
   const [mode, setMode] = useState<"bot" | "vets_list" | "request_status" | "live_chat">("bot");
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Bot State
@@ -208,6 +209,7 @@ export default function ClientMessagesPage() {
   const switchToVetsList = () => {
     setMode("vets_list");
     setSelectedRequest(null);
+    setMobileView("detail");
     fetchVets();
   };
 
@@ -254,6 +256,7 @@ export default function ClientMessagesPage() {
 
   const openRequest = (req: ChatRequestType) => {
     setSelectedRequest(req);
+    setMobileView("detail");
     if (req.status === "Approved") {
       setMode("live_chat");
     } else {
@@ -319,16 +322,19 @@ export default function ClientMessagesPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex gap-6 pb-6 animate-fade-in">
+    <div className="h-[calc(100vh-8rem)] flex gap-6 pb-6 animate-fade-in relative">
 
       {/* ── SIDEBAR: Conversations List ── */}
-      <div className="w-[360px] flex flex-col card overflow-hidden shrink-0">
+      <div className={cn(
+        "w-full md:w-[360px] flex flex-col card overflow-hidden shrink-0",
+        mobileView === "detail" ? "hidden md:flex" : "flex"
+      )}>
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
           <h2 className="text-lg font-bold flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-primary-500" /> Messages
           </h2>
           <button 
-            onClick={() => { setMode("bot"); setSelectedRequest(null); }}
+            onClick={() => { setMode("bot"); setSelectedRequest(null); setMobileView("detail"); }}
             className={cn(
               "w-full flex items-center gap-3 p-3 rounded-xl transition-colors border",
               mode === "bot" 
@@ -393,10 +399,19 @@ export default function ClientMessagesPage() {
       </div>
 
       {/* ── MAIN CHAT AREA ── */}
-      <div className="flex-1 flex flex-col card overflow-hidden bg-white dark:bg-neutral-900 relative">
+      <div className={cn(
+        "flex-1 flex flex-col card overflow-hidden bg-white dark:bg-neutral-900 relative",
+        mobileView === "list" ? "hidden md:flex" : "flex"
+      )}>
         
         {/* Header */}
         <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3 shrink-0 bg-white/50 dark:bg-neutral-900/50 backdrop-blur z-10">
+          <button 
+            onClick={() => setMobileView("list")}
+            className="md:hidden p-2 -ml-2 rounded-xl text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0 text-primary-600">
             {mode === "bot" ? <Bot className="w-5 h-5" /> : 
              mode === "vets_list" ? <User className="w-5 h-5" /> :

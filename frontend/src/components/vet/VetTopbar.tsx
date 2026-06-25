@@ -1,16 +1,17 @@
 "use client";
 
-import { Bell, Search, Sun, Moon, ChevronDown, Settings, LogOut, User } from "lucide-react";
+import { Bell, Search, Sun, Moon, ChevronDown, Settings, LogOut, User, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 
 interface VetTopbarProps {
   sidebarCollapsed: boolean;
+  onMenuClick?: () => void;
   title?: string;
 }
 
-export default function VetTopbar({ sidebarCollapsed, title = "Clinical Dashboard" }: VetTopbarProps) {
+export default function VetTopbar({ sidebarCollapsed, onMenuClick, title = "Clinical Dashboard" }: VetTopbarProps) {
   const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -75,13 +76,21 @@ export default function VetTopbar({ sidebarCollapsed, title = "Clinical Dashboar
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16 z-20 flex items-center justify-between px-6 border-b transition-all duration-300",
-        sidebarCollapsed ? "left-[72px]" : "left-[240px]"
+        "fixed top-0 right-0 h-16 z-20 flex items-center justify-between px-4 md:px-6 border-b transition-all duration-300",
+        sidebarCollapsed ? "md:left-[72px] left-0" : "md:left-[240px] left-0"
       )}
       style={{ background: "var(--card-bg)", borderColor: "var(--card-border)" }}
     >
-      {/* Left: Page title */}
+      {/* Left: Page title & Mobile Menu */}
       <div className="flex items-center gap-3">
+        {onMenuClick && (
+          <button 
+            onClick={onMenuClick}
+            className="md:hidden p-2 -ml-2 rounded-xl text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
         <h1 className="text-lg font-bold">{title}</h1>
         <span className="hidden sm:flex badge badge-primary text-xs">Veterinarian</span>
       </div>
