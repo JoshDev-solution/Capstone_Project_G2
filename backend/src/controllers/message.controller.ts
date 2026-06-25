@@ -17,7 +17,7 @@ export class MessageController {
   async getConversation(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.userId;
-      const otherUserId = parseInt(req.params.userId);
+      const otherUserId = parseInt(req.params.userId as string);
       
       if (!userId) return res.status(401).json({ message: 'Unauthorized' });
       if (isNaN(otherUserId)) return res.status(400).json({ message: 'Invalid user ID' });
