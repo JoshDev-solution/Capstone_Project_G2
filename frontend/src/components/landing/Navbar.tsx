@@ -54,7 +54,7 @@ export default function Navbar() {
                 <span className="text-lg font-bold leading-tight gradient-text">
                   LJ Veterinary
                 </span>
-                <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-medium">
+                <span className={`text-[10px] uppercase tracking-widest font-medium ${scrolled ? 'text-neutral-400' : 'text-white/70'}`}>
                   Clinic
                 </span>
               </div>
@@ -66,7 +66,7 @@ export default function Navbar() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="px-3 py-2 text-sm font-medium text-neutral-500 hover:text-primary-500 transition-colors rounded-lg hover:bg-primary-50/50 dark:hover:bg-primary-500/10"
+                  className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg ${scrolled ? 'text-neutral-600 dark:text-neutral-300 hover:text-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-500/10' : 'text-white/80 hover:text-white hover:bg-white/10'}`}
                 >
                   {link.label}
                 </a>
@@ -79,7 +79,7 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleTheme}
-                className="btn-icon btn-ghost rounded-full w-9 h-9 flex items-center justify-center"
+                className={`btn-icon rounded-full w-9 h-9 flex items-center justify-center ${scrolled ? 'btn-ghost' : 'text-white hover:bg-white/10'}`}
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
@@ -91,7 +91,7 @@ export default function Navbar() {
 
               <Link
                 href="/login"
-                className="hidden sm:inline-flex btn btn-ghost text-sm"
+                className={`hidden sm:inline-flex btn text-sm ${scrolled ? 'btn-ghost' : 'text-white hover:bg-white/10'}`}
               >
                 Sign In
               </Link>
@@ -105,7 +105,7 @@ export default function Navbar() {
               {/* Mobile Hamburger */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden btn-icon btn-ghost p-2"
+                className={`lg:hidden btn-icon p-2 ${scrolled ? 'btn-ghost' : 'text-white hover:bg-white/10'}`}
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

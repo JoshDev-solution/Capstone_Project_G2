@@ -74,7 +74,7 @@ export default function HeroSection() {
           <motion.div
             animate={{ y: [0, -15, 0] }}
             transition={{ duration: 5 + i, repeat: Infinity, ease: "easeInOut" }}
-            className="glass rounded-2xl px-5 py-4 shadow-xl flex items-center gap-3"
+            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-5 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-3"
           >
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center"
@@ -95,7 +95,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-100/60 dark:bg-primary-500/10 border border-primary-200/60 dark:border-primary-500/20 mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-8"
           >
             <PawPrint size={14} className="text-primary-500" />
             <span className="text-xs font-semibold text-primary-300 uppercase tracking-wider">
@@ -134,12 +134,12 @@ export default function HeroSection() {
             transition={{ duration: 0.7, delay: 0.45 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link href="/register" className="btn btn-primary btn-lg group shadow-xl">
+            <Link href="/register" className="btn bg-primary-500 hover:bg-primary-600 text-white border-transparent btn-lg group shadow-[0_0_20px_rgba(255,79,163,0.3)]">
               <CalendarCheck className="w-5 h-5" />
               Book Appointment
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/register" className="btn btn-secondary btn-lg">
+            <Link href="/register" className="btn bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md btn-lg shadow-lg">
               <PawPrint className="w-5 h-5" />
               Register Your Pet
             </Link>
@@ -158,7 +158,7 @@ export default function HeroSection() {
               { value: "98%", label: "Satisfaction" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold gradient-text">
+                <div className="text-2xl sm:text-3xl font-bold text-white drop-shadow-md">
                   {stat.value}
                 </div>
                 <div className="text-xs sm:text-sm text-neutral-300 mt-1">{stat.label}</div>
