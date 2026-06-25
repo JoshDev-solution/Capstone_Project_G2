@@ -3,52 +3,43 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.messageController = exports.MessageController = void 0;
 const message_service_1 = require("../services/message.service");
 class MessageController {
-    async getAll(req, res, next) {
+    async getInbox(req, res, next) {
         try {
-            const records = await message_service_1.messageService.getAll();
-            res.json(records);
+            const userId = req.user?.userId;
+            if (!userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            const inbox = await message_service_1.messageService.getInbox(userId);
+            res.json(inbox);
         }
         catch (error) {
             next(error);
         }
     }
-    async getById(req, res, next) {
+    async getConversation(req, res, next) {
         try {
-            const id = parseInt(req.params.id);
-            const record = await message_service_1.messageService.getById(id);
-            if (!record) {
-                return res.status(404).json({ message: 'Message not found' });
-            }
-            res.json(record);
+            const userId = req.user?.userId;
+            const otherUserId = parseInt(req.params.userId);
+            if (!userId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            if (isNaN(otherUserId))
+                return res.status(400).json({ message: 'Invalid user ID' });
+            const messages = await message_service_1.messageService.getConversation(userId, otherUserId);
+            res.json(messages);
         }
         catch (error) {
             next(error);
         }
     }
-    async create(req, res, next) {
+    async sendMessage(req, res, next) {
         try {
-            const record = await message_service_1.messageService.create(req.body);
-            res.status(201).json(record);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async update(req, res, next) {
-        try {
-            const id = parseInt(req.params.id);
-            const record = await message_service_1.messageService.update(id, req.body);
-            res.json(record);
-        }
-        catch (error) {
-            next(error);
-        }
-    }
-    async delete(req, res, next) {
-        try {
-            const id = parseInt(req.params.id);
-            await message_service_1.messageService.delete(id);
-            res.status(204).send();
+            const senderId = req.user?.userId;
+            const { receiverId, body } = req.body;
+            if (!senderId)
+                return res.status(401).json({ message: 'Unauthorized' });
+            if (!receiverId || !body)
+                return res.status(400).json({ message: 'receiverId and body are required' });
+            const message = await message_service_1.messageService.sendMessage(senderId, parseInt(receiverId), body);
+            res.status(201).json(message);
         }
         catch (error) {
             next(error);

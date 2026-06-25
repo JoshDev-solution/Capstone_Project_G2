@@ -2,10 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const message_controller_1 = require("../controllers/message.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
-router.get('/', message_controller_1.messageController.getAll);
-router.get('/:id', message_controller_1.messageController.getById);
-router.post('/', message_controller_1.messageController.create);
-router.put('/:id', message_controller_1.messageController.update);
-router.delete('/:id', message_controller_1.messageController.delete);
+// All message routes require authentication
+router.use(auth_middleware_1.authenticate);
+router.get('/inbox', message_controller_1.messageController.getInbox);
+router.get('/conversation/:userId', message_controller_1.messageController.getConversation);
+router.post('/', message_controller_1.messageController.sendMessage);
 exports.default = router;

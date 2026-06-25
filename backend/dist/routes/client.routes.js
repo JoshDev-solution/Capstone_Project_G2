@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const client_controller_1 = require("../controllers/client.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
 const router = (0, express_1.Router)();
+router.get('/me', auth_middleware_1.authenticate, client_controller_1.clientController.getMyProfile);
 router.get('/', client_controller_1.clientController.getAllClients);
 router.get('/:id', client_controller_1.clientController.getClientById);
 router.post('/', client_controller_1.clientController.createClient);

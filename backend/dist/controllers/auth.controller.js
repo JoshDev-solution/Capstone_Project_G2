@@ -34,7 +34,8 @@ class AuthController {
             const user = await user_service_1.userService.createUser({
                 email,
                 passwordHash,
-                roleId: role.id
+                roleId: role.id,
+                isApproved: true // Automatically approve new registrations per updated requirement
             });
             // Generate token
             const token = (0, jwt_1.generateToken)({
@@ -48,6 +49,8 @@ class AuthController {
                 user: {
                     id: user.id,
                     email: user.email,
+                    firstName: user.firstName || null,
+                    lastName: user.lastName || null,
                     role: role.name
                 }
             });
@@ -81,6 +84,8 @@ class AuthController {
                 user: {
                     id: user.id,
                     email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
                     role: user.role.name
                 }
             });
