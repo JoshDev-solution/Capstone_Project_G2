@@ -178,7 +178,9 @@ export default function ClientSidebar({ collapsed, onToggle, mobileOpen, setMobi
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate">{user ? `${user.firstName} ${user.lastName}` : "Pet Owner"}</p>
+              <p className="text-xs font-semibold truncate">
+                {user && (user.firstName || user.lastName) ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : "Pet Owner"}
+              </p>
               <p className="text-[10px] text-neutral-400 truncate">{user ? user.email : "client@ljvetclinic.com"}</p>
             </div>
           )}

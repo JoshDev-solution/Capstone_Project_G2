@@ -240,7 +240,9 @@ export default function AdminSidebar({ collapsed, onToggle, mobileOpen, setMobil
           </div>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate">{user ? `${user.firstName} ${user.lastName}` : "System Admin"}</p>
+              <p className="text-xs font-semibold truncate">
+                {user && (user.firstName || user.lastName) ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : "System Admin"}
+              </p>
               <p className="text-[10px] text-neutral-400 truncate">{user ? user.email : "admin@ljvetclinic.com"}</p>
             </div>
           )}

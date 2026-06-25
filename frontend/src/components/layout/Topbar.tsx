@@ -172,7 +172,9 @@ export default function Topbar({
               </div>
             )}
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-semibold leading-tight text-neutral-900 dark:text-neutral-100">{userName ? `${userName.first} ${userName.last}` : "User"}</p>
+              <p className="text-xs font-semibold leading-tight text-neutral-900 dark:text-neutral-100">
+                {userName && (userName.first || userName.last) ? `${userName.first} ${userName.last}`.trim() : "User"}
+              </p>
               <p className="text-[10px] text-neutral-400 leading-tight">{userName ? userName.role : roleName}</p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
