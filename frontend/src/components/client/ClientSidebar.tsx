@@ -16,6 +16,7 @@ const navGroups = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", href: "/client" },
       { icon: PawPrint, label: "My Pets", href: "/client/pets" },
+      { icon: MessageSquare, label: "Messages", href: "/client/messages" },
     ],
   },
   {

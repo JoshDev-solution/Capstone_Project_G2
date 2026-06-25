@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import ClientSidebar from "@/components/client/ClientSidebar";
-import ClientChatbot from "@/components/client/ClientChatbot";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -52,8 +51,6 @@ export default function ClientLayout({
           {children}
         </div>
       </main>
-
-      <ClientChatbot />
     </div>
   );
 }
