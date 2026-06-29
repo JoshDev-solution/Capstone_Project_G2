@@ -17,7 +17,6 @@ export default function GenerateInvoicePage() {
   // Form State
   const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
   const [items, setItems] = useState<any[]>([]);
-  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -75,7 +74,7 @@ export default function GenerateInvoicePage() {
 
   const subtotal = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
   const tax = subtotal * 0.12; // 12% VAT example
-  const totalAmount = subtotal + tax - discountAmount;
+  const totalAmount = subtotal + tax;
 
   const handleSaveInvoice = async () => {
     if (!selectedAppointment) {
@@ -102,7 +101,7 @@ export default function GenerateInvoicePage() {
         appointmentId: selectedAppointment.id,
         subtotal: subtotal,
         taxAmount: tax,
-        discountAmount: discountAmount,
+        discountAmount: 0,
         totalAmount: totalAmount,
         status: "Unpaid",
         items: {
@@ -285,18 +284,6 @@ export default function GenerateInvoicePage() {
               <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
                 <span>VAT (12%)</span>
                 <span className="font-medium text-neutral-900 dark:text-white">₱{tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center text-neutral-600 dark:text-neutral-400">
-                <span>Discount</span>
-                <div className="flex items-center gap-1 w-24">
-                  <span className="text-neutral-500">-₱</span>
-                  <input 
-                    type="number" 
-                    className="input px-2 py-1 h-7 text-right w-full" 
-                    value={discountAmount}
-                    onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                  />
-                </div>
               </div>
             </div>
 
