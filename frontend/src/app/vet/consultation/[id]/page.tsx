@@ -17,7 +17,7 @@ export default function ActiveConsultationPage({ params }: { params: Promise<{ i
 
   // Form State
   const [vitals, setVitals] = useState({ weightKg: "", temperatureC: "", heartRate: "", respiratoryRate: "" });
-  const [notes, setNotes] = useState({ chiefComplaint: "", clinicalFindings: "", generalNotes: "" });
+  const [notes, setNotes] = useState({ chiefComplaint: "", clinicalFindings: "", generalNotes: "", followUpInstructions: "", careNotes: "" });
   
   // Diagnoses List
   const [diagnoses, setDiagnoses] = useState<{diagnosisText: string, severity: string, treatmentPlan: string}[]>([]);
@@ -75,6 +75,9 @@ export default function ActiveConsultationPage({ params }: { params: Promise<{ i
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
 
+      // Combine notes
+      const combinedNotes = `[General Notes]\n${notes.generalNotes || 'None'}\n\n[Follow-up Instructions]\n${notes.followUpInstructions || 'None'}\n\n[Post-Treatment Care]\n${notes.careNotes || 'None'}`;
+
       // 1. Create the Consultation Record
       const consultRes = await fetch(`${baseUrl}/api/consultations`, {
         method: 'POST',
@@ -89,7 +92,7 @@ export default function ActiveConsultationPage({ params }: { params: Promise<{ i
           respiratoryRate: vitals.respiratoryRate ? Number(vitals.respiratoryRate) : null,
           chiefComplaint: notes.chiefComplaint,
           clinicalFindings: notes.clinicalFindings,
-          notes: notes.generalNotes
+          notes: combinedNotes
         })
       });
 
@@ -279,7 +282,7 @@ export default function ActiveConsultationPage({ params }: { params: Promise<{ i
                   <label className="text-sm font-bold mb-1 block text-primary-600">Objective Findings (Vet's examination)</label>
                   <textarea 
                     className="input min-h-[150px] border-primary-200 focus:border-primary-500" 
-                    placeholder="e.g. Abdomen tense on palpation. Mild dehydration (~5%)..." 
+                    placeholder="e.g. Abdomen tense on palpation. Mild dehydration (~5%)...." 
                     value={notes.clinicalFindings} 
                     onChange={(e) => setNotes({...notes, clinicalFindings: e.target.value})}
                   />
@@ -291,6 +294,24 @@ export default function ActiveConsultationPage({ params }: { params: Promise<{ i
                     placeholder="Recommended bloodwork..." 
                     value={notes.generalNotes} 
                     onChange={(e) => setNotes({...notes, generalNotes: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-bold mb-1 block text-blue-600">Follow-up Appointment Instructions</label>
+                  <textarea 
+                    className="input min-h-[100px] border-blue-200 focus:border-blue-500" 
+                    placeholder="e.g. Return in 2 weeks for bloodwork recheck..." 
+                    value={notes.followUpInstructions} 
+                    onChange={(e) => setNotes({...notes, followUpInstructions: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-bold mb-1 block text-emerald-600">Post-Treatment Care Notes</label>
+                  <textarea 
+                    className="input min-h-[100px] border-emerald-200 focus:border-emerald-500" 
+                    placeholder="e.g. Keep the pet indoors, monitor for vomiting..." 
+                    value={notes.careNotes} 
+                    onChange={(e) => setNotes({...notes, careNotes: e.target.value})}
                   />
                 </div>
               </div>

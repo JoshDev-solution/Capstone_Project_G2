@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Stethoscope, Clock, Users, ArrowRight, PawPrint } from "lucide-react";
+import { Stethoscope, Clock, Users, ArrowRight, PawPrint, Search } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function VetConsultationPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchAppointments();
@@ -33,7 +34,14 @@ export default function VetConsultationPage() {
   // For consultation queue, we want to see Arrived, In Progress, or Scheduled for today
   const queue = appointments.filter(apt => {
     const isToday = new Date(apt.appointmentDate).toDateString() === new Date().toDateString();
-    return isToday && (apt.status === "Arrived" || apt.status === "Scheduled" || apt.status === "In Progress");
+    const isCorrectStatus = apt.status === "Arrived" || apt.status === "Scheduled" || apt.status === "In Progress";
+    
+    // Search filter
+    const matchesSearch = apt.pet?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          apt.client?.user?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          apt.client?.user?.firstName?.toLowerCase().includes(searchQuery.toLowerCase());
+                          
+    return isToday && isCorrectStatus && (!searchQuery || matchesSearch);
   }).sort((a, b) => {
     // Prioritize Arrived and In Progress over Scheduled
     const statusOrder = { "In Progress": 1, "Arrived": 2, "Scheduled": 3 };
@@ -46,11 +54,24 @@ export default function VetConsultationPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20">
       
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Stethoscope className="w-6 h-6 text-primary-500" /> Waiting Room / Queue
-        </h1>
-        <p className="text-sm text-neutral-500 mt-1">Start and manage active consultations for checked-in patients.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Stethoscope className="w-6 h-6 text-primary-500" /> Waiting Room / Queue
+          </h1>
+          <p className="text-sm text-neutral-500 mt-1">Start and manage active consultations for checked-in patients.</p>
+        </div>
+        
+        <div className="relative w-full sm:w-64 shrink-0">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input 
+            type="text" 
+            placeholder="Search patient or owner..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input pl-9 w-full text-sm h-10"
+          />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -75,8 +96,10 @@ export default function VetConsultationPage() {
           ) : queue.length === 0 ? (
             <div className="p-16 flex flex-col items-center text-center">
               <Users className="w-12 h-12 text-neutral-300 mb-4" />
-              <h3 className="text-lg font-bold">Waiting Room Empty</h3>
-              <p className="text-sm text-neutral-500 max-w-sm mt-2">There are no patients currently checked in for consultation.</p>
+              <h3 className="text-lg font-bold">{searchQuery ? "No patients found" : "Waiting Room Empty"}</h3>
+              <p className="text-sm text-neutral-500 max-w-sm mt-2">
+                {searchQuery ? "Try a different search term." : "There are no patients currently checked in for consultation."}
+              </p>
             </div>
           ) : (
             queue.map(apt => (

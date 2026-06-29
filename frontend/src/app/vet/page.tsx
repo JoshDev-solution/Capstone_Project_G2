@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, PawPrint, FileText, CheckCircle2, ChevronRight, Users } from "lucide-react";
+import { Calendar, Clock, PawPrint, FileText, CheckCircle2, ChevronRight, Users, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +42,11 @@ export default function VetDashboard() {
   });
 
   const pendingConsults = appointments.filter(a => a.status === "Arrived" || a.status === "In Progress");
+  
+  const emergencyCases = appointments.filter(a => 
+    a.type === "Emergency" && 
+    (a.status === "Pending" || a.status === "Scheduled" || a.status === "Arrived" || a.status === "In Progress")
+  );
 
   const statCards = [
     { title: "Appointments Today", value: todayAppointments.length.toString(), icon: Calendar, color: "text-primary-500", bg: "bg-primary-500/10", border: "border-primary-100 dark:border-primary-900/30" },
@@ -94,6 +99,34 @@ export default function VetDashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* Emergency Cases */}
+      {emergencyCases.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 rounded-2xl p-6 shadow-sm"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-6 h-6 text-red-600 animate-pulse" />
+            <h3 className="font-bold text-lg text-red-700 dark:text-red-400">Emergency & Urgent Cases ({emergencyCases.length})</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {emergencyCases.map((apt) => (
+              <div key={apt.id} className="bg-white dark:bg-neutral-800 p-4 rounded-xl border border-red-100 dark:border-red-900/50 flex flex-col">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-bold text-neutral-900 dark:text-white">{apt.pet?.name || "Unknown Pet"}</h4>
+                  <span className="badge bg-red-100 text-red-700 text-[10px] uppercase font-bold">{apt.status}</span>
+                </div>
+                <p className="text-sm text-neutral-500 mb-1">Owner: {apt.client?.user?.firstName} {apt.client?.user?.lastName}</p>
+                <p className="text-xs text-neutral-400 flex-1 line-clamp-2 mb-3">Reason: {apt.reason || "Emergency"}</p>
+                <Link href={`/vet/consultation/${apt.id}`} className="btn btn-primary bg-red-600 hover:bg-red-700 border-0 w-full py-2 text-xs">
+                  Respond Now
+                </Link>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

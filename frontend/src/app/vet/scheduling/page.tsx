@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Calendar, Filter, Clock, User, PawPrint, Search } from "lucide-react";
+import { Calendar, Filter, Clock, User, PawPrint, Search, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function VetSchedulingPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchAppointments();
@@ -31,13 +32,23 @@ export default function VetSchedulingPage() {
   };
 
   const filteredAppointments = appointments.filter(apt => {
+    // Search filter
+    const matchesSearch = apt.petName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          apt.clientName?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (searchQuery && !matchesSearch) return false;
+
     if (filter === "All") return true;
     if (filter === "Today") {
       // "date" is like "Jun 24, 2026" from API
       return new Date(apt.date).toDateString() === new Date().toDateString();
     }
+    if (filter === "Emergency") return apt.type === "Emergency";
     return apt.status === filter;
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }).sort((a, b) => {
+    if (a.type === "Emergency" && b.type !== "Emergency") return -1;
+    if (b.type === "Emergency" && a.type !== "Emergency") return 1;
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  });
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-20">
@@ -53,17 +64,18 @@ export default function VetSchedulingPage() {
 
       <div className="card p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
-          {["All", "Today", "Scheduled", "Arrived", "In Progress", "Completed"].map(f => (
+          {["All", "Today", "Scheduled", "Arrived", "In Progress", "Completed", "Emergency"].map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
                 filter === f 
-                  ? "bg-primary-500 text-white shadow-md shadow-primary-500/20" 
-                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  ? f === "Emergency" ? "bg-red-500 text-white shadow-md shadow-red-500/20" : "bg-primary-500 text-white shadow-md shadow-primary-500/20" 
+                  : f === "Emergency" ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-900/30" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
               )}
             >
+              {f === "Emergency" && <AlertTriangle className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />}
               {f}
             </button>
           ))}
@@ -74,6 +86,8 @@ export default function VetSchedulingPage() {
           <input 
             type="text" 
             placeholder="Search patient..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="input pl-9 w-full text-sm h-10"
           />
         </div>
@@ -92,10 +106,11 @@ export default function VetSchedulingPage() {
           </div>
         ) : (
           filteredAppointments.map(apt => (
-            <div key={apt.id} className="card p-5 hover:border-primary-400 transition-colors group flex flex-col relative overflow-hidden">
+            <div key={apt.id} className={cn("card p-5 hover:border-primary-400 transition-colors group flex flex-col relative overflow-hidden", apt.type === "Emergency" && "border-red-300 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10")}>
               {/* Status strip */}
               <div className={cn(
                 "absolute top-0 left-0 w-1 h-full",
+                apt.type === "Emergency" ? "bg-red-500" :
                 apt.status === "Scheduled" ? "bg-blue-500" :
                 apt.status === "Arrived" ? "bg-amber-500" :
                 apt.status === "In Progress" ? "bg-purple-500" :
@@ -106,14 +121,19 @@ export default function VetSchedulingPage() {
                 <div>
                   <span className={cn(
                     "badge text-xs mb-2",
+                    apt.type === "Emergency" ? "bg-red-100 text-red-700 border border-red-300 shadow-sm shadow-red-500/20" :
                     apt.status === "Scheduled" ? "bg-blue-100 text-blue-700" :
                     apt.status === "Arrived" ? "bg-amber-100 text-amber-700" :
                     apt.status === "In Progress" ? "bg-purple-100 text-purple-700" :
                     "bg-emerald-100 text-emerald-700"
                   )}>
-                    {apt.status}
+                    {apt.type === "Emergency" ? (
+                      <span className="flex items-center gap-1 font-bold animate-pulse"><AlertTriangle className="w-3 h-3" /> {apt.status} - EMERGENCY</span>
+                    ) : (
+                      apt.status
+                    )}
                   </span>
-                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary-600 transition-colors">
+                  <h3 className={cn("font-bold text-lg leading-tight group-hover:text-primary-600 transition-colors", apt.type === "Emergency" && "text-red-700 dark:text-red-400 group-hover:text-red-800 dark:group-hover:text-red-300")}>
                     {apt.petName || "Unknown Pet"}
                   </h3>
                   <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
@@ -122,7 +142,7 @@ export default function VetSchedulingPage() {
                 </div>
                 
                 <div className="text-right">
-                  <div className="font-bold text-lg text-primary-600 dark:text-primary-400">
+                  <div className={cn("font-bold text-lg", apt.type === "Emergency" ? "text-red-600 dark:text-red-400" : "text-primary-600 dark:text-primary-400")}>
                     {apt.time}
                   </div>
                   <div className="text-xs text-neutral-500">
@@ -152,7 +172,7 @@ export default function VetSchedulingPage() {
                 {apt.status === "Completed" ? (
                   <button className="btn btn-outline w-full text-sm py-2">View Summary</button>
                 ) : (
-                  <Link href={`/vet/consultation/${apt.id}`} className="btn btn-primary w-full text-sm py-2 bg-primary-500 hover:bg-primary-600 border-0">
+                  <Link href={`/vet/consultation/${apt.id}`} className={cn("btn w-full text-sm py-2 border-0", apt.type === "Emergency" ? "bg-red-600 hover:bg-red-700 text-white" : "btn-primary bg-primary-500 hover:bg-primary-600")}>
                     {apt.status === "In Progress" ? "Resume Consult" : "Start Consult"}
                   </Link>
                 )}
