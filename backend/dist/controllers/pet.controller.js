@@ -8,6 +8,7 @@ class PetController {
             const pets = await pet_service_1.petService.getAllPets();
             const mapped = pets.map((p) => ({
                 id: p.id,
+                clientId: p.clientId,
                 name: p.name,
                 species: p.petType?.name || 'Unknown',
                 breed: p.breed?.name || 'Unknown',
