@@ -63,9 +63,14 @@ export default function InventoryPage() {
           <h1 className="text-2xl font-bold">Inventory Management</h1>
           <p className="text-sm text-neutral-400 mt-0.5">Monitor stock levels, reorder alerts, and expiration dates.</p>
         </div>
-        <button className="btn btn-primary text-sm whitespace-nowrap" onClick={() => window.location.href="/admin/products"}>
-          Manage Products
-        </button>
+        <div className="flex items-center gap-3">
+          <button className="btn btn-secondary text-danger border-danger/20 hover:bg-danger/10 text-sm whitespace-nowrap" onClick={() => window.location.href="/admin/inventory/expired"}>
+            <AlertTriangle className="w-4 h-4 mr-2" /> Expired Items
+          </button>
+          <button className="btn btn-primary text-sm whitespace-nowrap" onClick={() => window.location.href="/admin/products"}>
+            Manage Products
+          </button>
+        </div>
       </div>
 
       {loading ? (

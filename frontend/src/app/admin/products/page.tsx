@@ -10,7 +10,6 @@ interface Product {
   id: number;
   name: string;
   category: string;
-  sku: string;
   price: number;
   stock: number;
   reorderLevel: number;
@@ -47,7 +46,6 @@ function ProductModal({
   const isEdit = !!product;
   const [name, setName] = useState(isEdit ? product.name : "");
   const [category, setCategory] = useState(isEdit ? product.category : "Medicines");
-  const [sku, setSku] = useState(isEdit ? product.sku : "");
   const [price, setPrice] = useState(isEdit ? product.price : 0);
   const [unit, setUnit] = useState(isEdit ? product.unit : "piece");
   const [stock, setStock] = useState(isEdit ? product.stock : 0);
@@ -58,8 +56,8 @@ function ProductModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !category || !sku.trim()) {
-      alert("Name, Category, and SKU are required.");
+    if (!name.trim() || !category) {
+      alert("Name and Category are required.");
       return;
     }
     setShowConfirm(true);
@@ -70,7 +68,6 @@ function ProductModal({
       id: product?.id,
       name,
       category,
-      sku,
       price: Number(price),
       unit,
       stock: Number(stock),
@@ -97,7 +94,7 @@ function ProductModal({
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="Product name" required />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="col-span-2 sm:col-span-1">
                 <label className="block text-sm font-medium mb-1.5">Category</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} className="input appearance-none cursor-pointer">
                   {["Medicines", "Vaccines", "Pet Food", "Supplements", "Grooming", "Accessories", "Hygiene", "First Aid"].map((c) => (
@@ -105,19 +102,19 @@ function ProductModal({
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">SKU</label>
-                <input type="text" value={sku} onChange={(e) => setSku(e.target.value)} className="input" placeholder="MED-001" required />
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block text-sm font-medium mb-1.5">Unit</label>
+                <select value={unit} onChange={(e) => setUnit(e.target.value)} className="input appearance-none cursor-pointer">
+                  {["piece", "tablet", "bottle", "box", "kg", "grams", "liter", "ml", "pack", "can"].map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="col-span-2">
                 <label className="block text-sm font-medium mb-1.5">Price (₱)</label>
                 <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" required />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Unit</label>
-                <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="input" placeholder="tablet, bottle..." required />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -247,7 +244,7 @@ export default function ProductsPage() {
   };
 
   const filtered = products.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = catFilter === "All" || p.category === catFilter;
     return matchSearch && matchCat;
   });
@@ -281,7 +278,7 @@ export default function ProductsPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or SKU..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name..." className="input pl-10 w-full" style={{ paddingLeft: "2.5rem" }} />
           </div>
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -318,7 +315,6 @@ export default function ProductsPage() {
                   <tr>
                     <th>Product</th>
                     <th>Category</th>
-                    <th className="hidden sm:table-cell">SKU</th>
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Status</th>
@@ -347,7 +343,6 @@ export default function ProductsPage() {
                           </div>
                         </td>
                         <td><span className={cn("badge", catColors[p.category] || "badge-primary")}>{p.category}</span></td>
-                        <td className="hidden sm:table-cell"><code className="text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">{p.sku}</code></td>
                         <td className="font-semibold text-sm">₱{p.price.toLocaleString()}</td>
                         <td>
                           <div className="flex items-center gap-2">

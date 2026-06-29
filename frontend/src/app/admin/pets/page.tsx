@@ -24,6 +24,7 @@ interface Pet {
   vaccinationStatus: string;
   lastVisit: string;
   microchip: string;
+  profileImageUrl?: string;
 }
 
 const speciesEmoji: Record<string, string> = {
@@ -54,9 +55,13 @@ function PetCard({ pet, onClick }: { pet: Pet; onClick: () => void }) {
     >
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: `${color}15` }}>
-            {emoji}
-          </div>
+          {pet.profileImageUrl && !pet.profileImageUrl.includes('null') ? (
+            <img src={pet.profileImageUrl.startsWith('http') ? pet.profileImageUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${pet.profileImageUrl}`} alt={pet.name} className="w-12 h-12 rounded-2xl object-cover" />
+          ) : (
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: `${color}15` }}>
+              {emoji}
+            </div>
+          )}
           <div>
             <h3 className="font-bold text-base">{pet.name}</h3>
             <p className="text-xs text-neutral-400">{pet.breed}</p>
@@ -92,9 +97,13 @@ function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => voi
         className="relative w-full max-w-xl card z-10 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
         
         <div className="flex items-start gap-4 p-6 border-b border-[var(--card-border)]">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0" style={{ background: `${speciesColor[pet.species]}15` }}>
-            {speciesEmoji[pet.species] || speciesEmoji.Other}
-          </div>
+          {pet.profileImageUrl && !pet.profileImageUrl.includes('null') ? (
+            <img src={pet.profileImageUrl.startsWith('http') ? pet.profileImageUrl : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}${pet.profileImageUrl}`} alt={pet.name} className="w-14 h-14 rounded-2xl object-cover shrink-0" />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0" style={{ background: `${speciesColor[pet.species]}15` }}>
+              {speciesEmoji[pet.species] || speciesEmoji.Other}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold">{pet.name}</h2>
@@ -152,11 +161,12 @@ function PetFormModal({
 }: { 
   pet?: Pet; 
   onClose: () => void;
-  onSave: (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => void;
+  onSave: (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }, file: File | null) => void;
   clients?: {id: number, name: string, email: string}[];
 }) {
   const isEdit = !!pet;
   const [name, setName] = useState(isEdit ? pet.name : "");
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [species, setSpecies] = useState(isEdit ? pet.species : "Dog");
   const [breed, setBreed] = useState(isEdit ? pet.breed : "");
   const [sex, setSex] = useState(isEdit ? pet.sex : "Male");
@@ -203,7 +213,7 @@ function PetFormModal({
       ownerName,
       ownerEmail,
       status
-    });
+    }, profileImage);
     setShowConfirm(false);
     onClose();
   };
@@ -221,6 +231,12 @@ function PetFormModal({
 
           <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-neutral-400">Pet Information</p>
+            
+            <div className="mb-2">
+              <label className="block text-sm font-medium mb-1.5">Profile Picture</label>
+              <input type="file" accept="image/*" onChange={(e) => setProfileImage(e.target.files?.[0] || null)} className="input w-full" />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Pet Name *</label>
@@ -364,7 +380,7 @@ export default function PetsPage() {
     fetchPets();
   }, []);
 
-  const handleSave = async (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }) => {
+  const handleSave = async (formData: Omit<Pet, "id" | "lastVisit" | "vaccinationStatus"> & { id?: number }, file: File | null) => {
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -373,13 +389,22 @@ export default function PetsPage() {
       const url = isEdit ? `${baseUrl}/api/pets/${formData.id}` : `${baseUrl}/api/pets`;
       const method = isEdit ? "PUT" : "POST";
 
+      const formDataToSend = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formDataToSend.append(key, value.toString());
+        }
+      });
+      if (file) {
+        formDataToSend.append("profileImage", file);
+      }
+
       const res = await fetch(url, {
         method,
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: formDataToSend
       });
 
       if (!res.ok) throw new Error("Failed to save pet.");

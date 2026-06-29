@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { petService } from '../services/pet.service';
+import prisma from '../utils/prisma';
 
 export class PetController {
   async getAllPets(req: Request, res: Response, next: NextFunction) {
@@ -20,7 +21,8 @@ export class PetController {
         status: p.isActive ? "Active" : "Inactive",
         vaccinationStatus: p.isNeutered ? "Vaccinated" : "Not Vaccinated", // Rough mapping
         lastVisit: "Recent", // Stub
-        microchip: p.microchipNumber || "None"
+        microchip: p.microchipNumber || "None",
+        profileImageUrl: p.profileImageUrl || null
       }));
       res.json(mapped);
     } catch (error) {
@@ -54,22 +56,73 @@ export class PetController {
     }
   }
 
+  private async preparePetData(req: Request) {
+    const { name, species, breed, sex, dob, weight, color, ownerEmail, status, microchip } = req.body;
+    
+    // Find Client
+    if (!ownerEmail) throw new Error('ownerEmail is required');
+    const user = await prisma.user.findUnique({
+      where: { email: ownerEmail },
+      include: { client: true }
+    });
+    if (!user || !user.client) throw new Error(`Client not found with email: ${ownerEmail}`);
+
+    const data: any = {
+      name: name,
+      clientId: user.client.id,
+      sex: sex || 'Unknown',
+      isActive: status === 'Active'
+    };
+
+    if (dob) data.birthDate = new Date(dob);
+    if (weight !== undefined && weight !== '') data.weightKg = parseFloat(weight);
+    if (color) data.color = color;
+    if (microchip) data.microchipNumber = microchip;
+
+    if (species) {
+      const petType = await prisma.petType.upsert({
+        where: { name: species },
+        update: {},
+        create: { name: species }
+      });
+      data.petTypeId = petType.id;
+    }
+
+    if (breed) {
+      const breedRecord = await prisma.breed.upsert({
+        where: { name: breed },
+        update: {},
+        create: { name: breed }
+      });
+      data.breedId = breedRecord.id;
+    }
+
+    if (req.file) {
+      // Create url using the file path. E.g., /uploads/pet-123.jpg
+      data.profileImageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    return data;
+  }
+
   async createPet(req: Request, res: Response, next: NextFunction) {
     try {
-      const pet = await petService.createPet(req.body);
+      const data = await petController.preparePetData(req);
+      const pet = await petService.createPet(data);
       res.status(201).json(pet);
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
     }
   }
 
   async updatePet(req: Request, res: Response, next: NextFunction) {
     try {
       const id = parseInt(req.params.id as string);
-      const pet = await petService.updatePet(id, req.body);
+      const data = await petController.preparePetData(req);
+      const pet = await petService.updatePet(id, data);
       res.json(pet);
-    } catch (error) {
-      next(error);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
     }
   }
 

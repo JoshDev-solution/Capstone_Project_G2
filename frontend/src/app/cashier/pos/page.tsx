@@ -9,7 +9,6 @@ export default function CashierPOSPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<any[]>([]);
-  const [discountPercent, setDiscountPercent] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("Cash");
   const [amountTendered, setAmountTendered] = useState<number | string>("");
   const [loading, setLoading] = useState(false);
@@ -61,9 +60,9 @@ export default function CashierPOSPage() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
-  const discountAmount = subtotal * (discountPercent / 100);
-  const tax = (subtotal - discountAmount) * 0.12; // 12% VAT
-  const totalDue = subtotal - discountAmount + tax;
+  const discountAmount = 0;
+  const tax = subtotal * 0.12; // 12% VAT
+  const totalDue = subtotal + tax;
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
@@ -137,7 +136,6 @@ export default function CashierPOSPage() {
         }).then(() => {
           setCart([]);
           setAmountTendered("");
-          setDiscountPercent(0);
         });
       } else {
         throw new Error("Failed to create payment record");
@@ -242,16 +240,6 @@ export default function CashierPOSPage() {
             <div className="flex justify-between text-neutral-500">
               <span>Subtotal</span>
               <span>₱{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center text-neutral-500">
-              <span>Discount (%)</span>
-              <input 
-                type="number" 
-                min="0" max="100"
-                className="input px-2 py-1 h-7 text-right w-16" 
-                value={discountPercent}
-                onChange={(e) => setDiscountPercent(Number(e.target.value))}
-              />
             </div>
             <div className="flex justify-between text-neutral-500">
               <span>Tax (12%)</span>
