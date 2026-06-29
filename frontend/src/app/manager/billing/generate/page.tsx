@@ -97,8 +97,8 @@ export default function GenerateInvoicePage() {
       
       const payload = {
         billCode: `INV-${Date.now()}`,
-        clientId: selectedAppointment.client?.id || 1, // Fallback for prototype
-        petId: selectedAppointment.pet?.id || 1,
+        clientId: selectedAppointment.clientId || 1,
+        petId: selectedAppointment.petId || 1,
         appointmentId: selectedAppointment.id,
         subtotal: subtotal,
         taxAmount: tax,

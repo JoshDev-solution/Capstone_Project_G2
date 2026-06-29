@@ -51,13 +51,13 @@ export default function RegisterPetPage() {
         
         // This relies on endpoints being available. If not, it will fail gracefully.
         const [clientsRes, typesRes] = await Promise.all([
-          fetch(`${baseUrl}/api/users`), // Using users, then filtering for Clients ideally
-          fetch(`${baseUrl}/api/pets`)   // Pet Types would ideally have their own endpoint
+          fetch(`${baseUrl}/api/clients`),
+          fetch(`${baseUrl}/api/pets`)
         ]);
 
         if (clientsRes.ok) {
-          const allUsers = await clientsRes.json();
-          setClients(allUsers.filter((u: any) => u.role?.name === "Client" || u.clientCode));
+          const allClients = await clientsRes.json();
+          setClients(allClients);
         }
         
         // Mock Pet Types for prototype
@@ -144,8 +144,8 @@ export default function RegisterPetPage() {
               <select className={cn("input", errors.clientId && "border-red-500")} {...register("clientId")}>
                 <option value="">-- Choose existing client --</option>
                 {clients.map(c => (
-                  <option key={c.id} value={c.clientCode ? c.id : c.id}>
-                    {c.firstName} {c.lastName} ({c.email})
+                  <option key={c.id} value={c.id}>
+                    {c.user?.firstName} {c.user?.lastName} ({c.user?.email || c.clientCode})
                   </option>
                 ))}
               </select>

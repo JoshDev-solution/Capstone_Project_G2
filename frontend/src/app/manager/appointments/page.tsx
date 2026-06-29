@@ -1,15 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Calendar, Filter, Plus, CalendarCheck, Clock, AlertCircle } from "lucide-react";
+import { Search, Calendar, Filter, Plus, CalendarCheck, Clock, AlertCircle, X, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import Swal from 'sweetalert2';
 
 export default function ManagerAppointmentsPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [pets, setPets] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [vets, setVets] = useState<any[]>([]);
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    clientId: "",
+    petId: "",
+    serviceId: "",
+    vetId: "",
+    appointmentDate: "",
+    appointmentTime: "",
+    type: "Scheduled",
+    reason: ""
+  });
 
   useEffect(() => {
     fetchAppointments();
@@ -27,10 +48,84 @@ export default function ManagerAppointmentsPage() {
       }
     } catch (err) {
       console.error(err);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+  const openModal = async () => {
+    setIsModalOpen(true);
+    setModalLoading(true);
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      
+      const [cliRes, petRes, svcRes, userRes] = await Promise.all([
+        fetch(`${baseUrl}/api/clients`),
+        fetch(`${baseUrl}/api/pets`),
+        fetch(`${baseUrl}/api/services`),
+        fetch(`${baseUrl}/api/users`)
+      ]);
+
+      if (cliRes.ok) setClients(await cliRes.json());
+      if (petRes.ok) setPets(await petRes.json());
+      if (svcRes.ok) setServices(await svcRes.json());
+      if (userRes.ok) {
+        const users = await userRes.json();
+        setVets(users.filter((u: any) => u.role?.name === "Vet"));
+      }
+    } catch (err) {
+      console.error("Failed to fetch modal data", err);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+
+      const payload = {
+        appointmentCode: `APT-${Date.now().toString().slice(-6)}`,
+        clientId: Number(formData.clientId),
+        petId: Number(formData.petId),
+        serviceId: formData.serviceId ? Number(formData.serviceId) : undefined,
+        vetId: formData.vetId ? Number(formData.vetId) : undefined,
+        appointmentDate: new Date(formData.appointmentDate).toISOString(),
+        appointmentTime: new Date(`${formData.appointmentDate}T${formData.appointmentTime}:00`).toISOString(),
+        type: formData.type,
+        reason: formData.reason,
+        status: "Scheduled"
+      };
+
+      const res = await fetch(`${baseUrl}/api/appointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        Swal.fire("Success", "Appointment created successfully!", "success");
+        setIsModalOpen(false);
+        setFormData({
+          clientId: "", petId: "", serviceId: "", vetId: "",
+          appointmentDate: "", appointmentTime: "", type: "Scheduled", reason: ""
+        });
+        fetchAppointments();
+      } else {
+        throw new Error("Failed to create appointment");
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", "Could not create appointment. Please check connection.", "error");
+    }
+  };
+
+  const filteredPets = pets.filter(p => p.clientId === Number(formData.clientId));
 
   const filteredAppointments = appointments.filter(a => {
     const matchesSearch = 
@@ -69,7 +164,7 @@ export default function ManagerAppointmentsPage() {
           <h1 className="text-2xl font-bold">Appointments Queue</h1>
           <p className="text-sm text-neutral-500 mt-1">Manage walk-ins, emergencies, and scheduled visits.</p>
         </div>
-        <button className="btn btn-primary shadow-lg shadow-primary-500/20">
+        <button onClick={openModal} className="btn btn-primary shadow-lg shadow-primary-500/20">
           <Plus className="w-4 h-4 mr-2" /> New Appointment
         </button>
       </div>
@@ -168,6 +263,148 @@ export default function ManagerAppointmentsPage() {
           </table>
         </div>
       </div>
+
+      {/* Add Appointment Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-6 border-b border-[var(--card-border)]">
+              <h2 className="text-xl font-bold">New Appointment</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-neutral-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {modalLoading ? (
+                <div className="py-12 text-center text-neutral-500">Loading data...</div>
+              ) : (
+                <form id="appointment-form" onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Select Client *</label>
+                      <select 
+                        className="input" 
+                        required
+                        value={formData.clientId}
+                        onChange={(e) => setFormData({ ...formData, clientId: e.target.value, petId: "" })}
+                      >
+                        <option value="">-- Choose Client --</option>
+                        {clients.map(c => (
+                          <option key={c.id} value={c.id}>
+                            {c.user?.firstName} {c.user?.lastName} ({c.clientCode})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Select Pet *</label>
+                      <select 
+                        className="input" 
+                        required
+                        disabled={!formData.clientId}
+                        value={formData.petId}
+                        onChange={(e) => setFormData({ ...formData, petId: e.target.value })}
+                      >
+                        <option value="">-- Choose Pet --</option>
+                        {filteredPets.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Service *</label>
+                      <select 
+                        className="input" 
+                        required
+                        value={formData.serviceId}
+                        onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                      >
+                        <option value="">-- Choose Service --</option>
+                        {services.map(s => (
+                          <option key={s.id} value={s.id}>{s.name} (₱{s.price})</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Assign Vet</label>
+                      <select 
+                        className="input" 
+                        value={formData.vetId}
+                        onChange={(e) => setFormData({ ...formData, vetId: e.target.value })}
+                      >
+                        <option value="">-- Any Available Vet --</option>
+                        {vets.map(v => (
+                          <option key={v.id} value={v.staff?.id || v.id}>
+                            Dr. {v.firstName} {v.lastName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Date *</label>
+                      <input 
+                        type="date" 
+                        className="input" 
+                        required
+                        value={formData.appointmentDate}
+                        onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Time *</label>
+                      <input 
+                        type="time" 
+                        className="input" 
+                        required
+                        value={formData.appointmentTime}
+                        onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Type</label>
+                      <select 
+                        className="input"
+                        value={formData.type}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      >
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Walk-In">Walk-In</option>
+                        <option value="Emergency">Emergency</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5 md:col-span-2">
+                      <label className="text-sm font-medium">Reason / Notes</label>
+                      <textarea 
+                        className="input min-h-[80px]"
+                        placeholder="e.g. Annual checkup and vaccinations"
+                        value={formData.reason}
+                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                      ></textarea>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-[var(--card-border)] flex justify-end gap-3 bg-neutral-50 dark:bg-neutral-800/50">
+              <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-outline">
+                Cancel
+              </button>
+              <button type="submit" form="appointment-form" className="btn btn-primary shadow-lg shadow-primary-500/20">
+                <Save className="w-4 h-4 mr-2" /> Create Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

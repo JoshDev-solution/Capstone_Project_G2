@@ -177,6 +177,31 @@ async function main() {
             reason: 'Regular visit'
         });
     }
+    const today = new Date();
+    appointmentsData.push({
+        appointmentCode: `APT-EMG-001`,
+        clientId: createdPets[0].clientId,
+        petId: createdPets[0].id,
+        vetId: vetStaff.id,
+        serviceId: createdServices[2].id,
+        appointmentDate: today,
+        appointmentTime: today,
+        status: 'Scheduled',
+        type: 'Emergency',
+        reason: 'Hit by car'
+    });
+    appointmentsData.push({
+        appointmentCode: `APT-TDA-002`,
+        clientId: createdPets[1].clientId,
+        petId: createdPets[1].id,
+        vetId: vetStaff.id,
+        serviceId: createdServices[0].id,
+        appointmentDate: today,
+        appointmentTime: today,
+        status: 'Arrived',
+        type: 'Scheduled',
+        reason: 'Vomiting'
+    });
     const createdAppointments = [];
     for (const a of appointmentsData) {
         createdAppointments.push(await prisma.appointment.create({ data: a }));
@@ -256,6 +281,25 @@ async function main() {
             }
         });
     }
+    // Add Vaccination and Deworming records
+    await prisma.medicalRecord.create({
+        data: {
+            petId: createdPets[0].id,
+            recordType: 'Vaccination',
+            title: 'Rabies Vaccine',
+            description: 'Annual Rabies shot administered.',
+            recordDate: new Date('2025-05-01')
+        }
+    });
+    await prisma.medicalRecord.create({
+        data: {
+            petId: createdPets[1].id,
+            recordType: 'Deworming',
+            title: 'Broad-spectrum Dewormer',
+            description: 'Administered oral deworming suspension.',
+            recordDate: new Date('2026-04-15')
+        }
+    });
     console.log('Seeding completed successfully!');
 }
 main()
