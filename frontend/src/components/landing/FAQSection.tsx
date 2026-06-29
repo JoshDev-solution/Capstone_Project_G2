@@ -4,81 +4,35 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-const faqs = [
-  {
-    q: "What are your clinic hours?",
-    a: "We are open Monday to Saturday, 8:00 AM to 6:00 PM, and Sunday 9:00 AM to 3:00 PM. Emergency services are available 24/7 — please call our hotline for after-hours emergencies.",
-  },
-  {
-    q: "How do I book an appointment online?",
-    a: "Register on our website, add your pet's profile, then click 'Book Appointment' from your dashboard. Choose your preferred date, time, and service. You'll receive a confirmation notification once approved.",
-  },
-  {
-    q: "What vaccinations does my dog/cat need?",
-    a: "Dogs typically need anti-rabies, 5-in-1 (DHPP+L), and kennel cough vaccines. Cats need anti-rabies and 4-in-1 (FVRCP) vaccines. Our vets will customize a vaccination schedule based on your pet's age and health status.",
-  },
-  {
-    q: "How often should I deworm my pet?",
-    a: "Puppies and kittens should be dewormed every 2 weeks until 3 months old, then monthly until 6 months. Adult pets should be dewormed every 3–6 months. Our system will send you automatic reminders.",
-  },
-  {
-    q: "Do you offer payment plans for expensive procedures?",
-    a: "Yes! We accept GCash, Maya, credit cards, and cash. For major surgeries and treatments, we offer flexible installment options. Contact our clinic for details.",
-  },
-  {
-    q: "Can I view my pet's medical records online?",
-    a: "Absolutely. After registering, you can access your pet's complete medical history — consultations, diagnoses, prescriptions, vaccinations, and lab results — anytime through your client dashboard.",
-  },
-  {
-    q: "What should I bring for my first visit?",
-    a: "Please bring any previous vaccination records, medical history, and your pet's current medications if any. For puppies and kittens, bring proof of deworming if already done.",
-  },
-  {
-    q: "Do you have emergency services?",
-    a: "Yes, we handle emergency cases. Please call our emergency hotline at +63-912-345-6789 to notify us before arriving so we can prepare the team for your pet.",
-  },
-];
-
 function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(false);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden"
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+      className="card overflow-hidden"
     >
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-6 text-left group hover:bg-primary-50/50 dark:hover:bg-primary-500/5 transition-colors"
+        className="w-full flex items-center justify-between p-6 text-left"
       >
-        <span className={`font-semibold text-base pr-4 transition-colors ${open ? "text-primary-500" : ""}`}>
-          {q}
-        </span>
-        <motion.div
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-          className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-            open
-              ? "bg-primary-100 dark:bg-primary-500/20 text-primary-500"
-              : "bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
-          }`}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </motion.div>
+        <span className="font-semibold pr-8">{q}</span>
+        <ChevronDown
+          className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
       </button>
-
-      <AnimatePresence initial={false}>
+      <AnimatePresence>
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="overflow-hidden"
           >
-            <div className="px-6 pb-6 text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed border-t border-neutral-100 dark:border-neutral-800 pt-4">
+            <div className="p-6 pt-0 text-neutral-400 leading-relaxed border-t border-[var(--card-border)]/50 mt-2">
               {a}
             </div>
           </motion.div>
@@ -88,7 +42,55 @@ function FAQItem({ q, a, index }: { q: string; a: string; index: number }) {
   );
 }
 
-export default function FAQSection() {
+export default function FAQSection({ clinicInfo }: { clinicInfo?: any }) {
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return "";
+    const [h, m] = timeStr.split(':');
+    let hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${m} ${ampm}`;
+  };
+
+  const monFriOpen = formatTime(clinicInfo?.monFriOpen || "08:00");
+  const monFriClose = formatTime(clinicInfo?.monFriClose || "18:00");
+  const weekendClose = formatTime(clinicInfo?.weekendClose || "18:00");
+
+  const faqs = [
+    {
+      q: "What are your clinic hours?",
+      a: `We are open Monday to Friday, ${monFriOpen} to ${monFriClose}, and Weekends until ${weekendClose}. Emergency services are available 24/7 — please call our hotline for after-hours emergencies.`,
+    },
+    {
+      q: "How do I book an appointment online?",
+      a: "Register on our website, add your pet's profile, then click 'Book Appointment' from your dashboard. Choose your preferred date, time, and service. You'll receive a confirmation notification once approved.",
+    },
+    {
+      q: "What vaccinations does my dog/cat need?",
+      a: "Dogs typically need anti-rabies, 5-in-1 (DHPP+L), and kennel cough vaccines. Cats need anti-rabies and 4-in-1 (FVRCP) vaccines. Our vets will customize a vaccination schedule based on your pet's age and health status.",
+    },
+    {
+      q: "How often should I deworm my pet?",
+      a: "Puppies and kittens should be dewormed every 2 weeks until 3 months old, then monthly until 6 months. Adult pets should be dewormed every 3–6 months. Our system will send you automatic reminders.",
+    },
+    {
+      q: "Do you offer payment plans for expensive procedures?",
+      a: "Yes! We accept GCash, Maya, credit cards, and cash. For major surgeries and treatments, we offer flexible installment options. Contact our clinic for details.",
+    },
+    {
+      q: "Can I view my pet's medical records online?",
+      a: "Absolutely. After registering, you can access your pet's complete medical history — consultations, diagnoses, prescriptions, vaccinations, and lab results — anytime through your client dashboard.",
+    },
+    {
+      q: "What should I bring for my first visit?",
+      a: "Please bring any previous vaccination records, medical history, and your pet's current medications if any. For puppies and kittens, bring proof of deworming if already done.",
+    },
+    {
+      q: "Do you have emergency services?",
+      a: `Yes, we handle emergency cases. Please call our emergency hotline at ${clinicInfo?.contactNumber || "+63-912-345-6789"} to notify us before arriving so we can prepare the team for your pet.`,
+    },
+  ];
+
   return (
     <section id="faq" className="py-24 relative overflow-hidden bg-neutral-50/50 dark:bg-neutral-950/50">
       <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-accent-200/20 dark:bg-accent-500/5 blur-[100px]" />

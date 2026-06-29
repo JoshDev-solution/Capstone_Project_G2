@@ -591,3 +591,10 @@ model Report {
   generatedAt     DateTime @default(now())
   createdAt       DateTime @default(now())
 }
+
+model SystemSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.LongText
+  updatedAt DateTime @updatedAt
+}

@@ -1,28 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Eye, Target, BookOpen } from "lucide-react";
-
-const items = [
-  {
-    icon: Target,
-    title: "Our Mission",
-    text: "To provide compassionate, high-quality veterinary care using modern technology and evidence-based medicine, ensuring the health and happiness of every pet that walks through our doors.",
-    color: "#FF4FA3",
-  },
-  {
-    icon: Eye,
-    title: "Our Vision",
-    text: "To be the most trusted and innovative veterinary clinic in the Philippines, setting the standard for digital-first pet healthcare and client-centered service excellence.",
-    color: "#D98CFF",
-  },
-  {
-    icon: BookOpen,
-    title: "Our History",
-    text: "Founded with a passion for animal welfare, LJ Veterinary Clinic has grown from a small practice into a full-service veterinary hospital. With over 15 years of dedicated service, we continue to evolve with cutting-edge technology.",
-    color: "#B84DFF",
-  },
-];
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Eye, Target, BookOpen, HeartPulse } from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -37,7 +16,31 @@ const cardVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 } as const;
 
-export default function AboutSection() {
+export default function AboutSection({ clinicInfo }: { clinicInfo?: any }) {
+  const { scrollYProgress } = useScroll();
+  const y = useTransform(scrollYProgress, [0, 1], [0, 150]);
+
+  const aboutCards = [
+    {
+      icon: HeartPulse,
+      title: "Our Mission",
+      text: "To provide compassionate, high-quality veterinary care using modern technology and evidence-based medicine, ensuring the health and happiness of every pet that walks through our doors.",
+      color: "#FF4FA3",
+    },
+    {
+      icon: Eye,
+      title: "Our Vision",
+      text: "To be the most trusted and innovative veterinary clinic in the Philippines, setting the standard for digital-first pet healthcare and client-centered service excellence.",
+      color: "#D98CFF",
+    },
+    {
+      icon: BookOpen,
+      title: "Our History",
+      text: `Founded with a passion for animal welfare, ${clinicInfo?.clinicName || "LJ Veterinary Clinic"} has grown from a small practice into a full-service veterinary hospital. With over ${clinicInfo?.yearsExperience || "7"} years of dedicated service, we continue to evolve with cutting-edge technology.`,
+      color: "#B84DFF",
+    },
+  ];
+
   return (
     <section id="about" className="py-24 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-primary-100/30 dark:bg-primary-500/5 blur-[100px]" />
@@ -69,9 +72,9 @@ export default function AboutSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-3 gap-8"
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
         >
-          {items.map((item) => (
+          {aboutCards.map((item, idx) => (
             <motion.div key={item.title} variants={cardVariants} className="card p-8 text-center group">
               <div
                 className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110"

@@ -31,11 +31,25 @@ class AuthController {
                 });
             }
             // Create User
-            const user = await user_service_1.userService.createUser({
-                email,
-                passwordHash,
-                roleId: role.id,
-                isApproved: true // Automatically approve new registrations per updated requirement
+            const user = await prisma_1.default.user.create({
+                data: {
+                    email,
+                    passwordHash,
+                    roleId: role.id,
+                    firstName: req.body.firstName || null,
+                    lastName: req.body.lastName || null,
+                    phone: req.body.phone || null,
+                    isApproved: true, // Automatically approve new registrations per updated requirement
+                    ...(role.name === 'Client' && {
+                        client: {
+                            create: {
+                                clientCode: `CLT-${Date.now().toString().slice(-6)}`,
+                                notes: req.body.address || null
+                            }
+                        }
+                    })
+                },
+                include: { role: true, client: true }
             });
             // Generate token
             const token = (0, jwt_1.generateToken)({

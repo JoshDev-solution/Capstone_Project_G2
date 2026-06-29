@@ -3,34 +3,47 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Clock, ExternalLink, Mail } from "lucide-react";
 
-const contactItems = [
-  {
-    icon: MapPin,
-    title: "Address",
-    lines: ["Surallah, South Cotabato"],
-    color: "#FF4FA3",
-  },
-  {
-    icon: Phone,
-    title: "Contact Numbers",
-    lines: ["Mobile: +63-909-152-3519"],
-    color: "#D98CFF",
-  },
-  {
-    icon: Clock,
-    title: "Operating Hours",
-    lines: ["Mon–Fri: 8:00 AM – 6:00 PM", "Saturday: 8:00 AM – 6:00 PM", "Sunday: 8:00 AM – 6:00 PM"],
-    color: "#B84DFF",
-  },
-  {
-    icon: Mail,
-    title: "Email & Social",
-    lines: ["eguialovely@gmail.com"],
-    color: "#E63590",
-  },
-];
+export default function ContactSection({ clinicInfo }: { clinicInfo?: any }) {
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return "";
+    const [h, m] = timeStr.split(':');
+    let hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    hour = hour % 12 || 12;
+    return `${hour}:${m} ${ampm}`;
+  };
 
-export default function ContactSection() {
+  const monFriOpen = formatTime(clinicInfo?.monFriOpen || "08:00");
+  const monFriClose = formatTime(clinicInfo?.monFriClose || "18:00");
+  const weekendClose = formatTime(clinicInfo?.weekendClose || "18:00");
+
+  const contactItems = [
+    {
+      icon: MapPin,
+      title: "Address",
+      lines: [clinicInfo?.address || "Surallah, South Cotabato"],
+      color: "#FF4FA3",
+    },
+    {
+      icon: Phone,
+      title: "Contact Numbers",
+      lines: [`Mobile: ${clinicInfo?.contactNumber || "+63-909-152-3519"}`],
+      color: "#D98CFF",
+    },
+    {
+      icon: Clock,
+      title: "Operating Hours",
+      lines: [`Mon–Fri: ${monFriOpen} – ${monFriClose}`, `Weekend: ${monFriOpen} – ${weekendClose}`],
+      color: "#B84DFF",
+    },
+    {
+      icon: Mail,
+      title: "Email & Social",
+      lines: [clinicInfo?.emailAddress || "eguialovely@gmail.com"],
+      color: "#E63590",
+    },
+  ];
+
   return (
     <section id="contact" className="py-24 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-primary-100/30 dark:bg-primary-500/5 blur-[100px]" />

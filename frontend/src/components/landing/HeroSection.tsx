@@ -15,7 +15,8 @@ const pawPositions = [
   { x: "60%", y: "30%", size: 16, rotation: 30, delay: 3.5 },
 ];
 
-export default function HeroSection() {
+export default function HeroSection({ clinicInfo }: { clinicInfo?: any }) {
+  const { scrollYProgress } = useScroll();
   return (
     <section 
       id="home" 
@@ -124,7 +125,7 @@ export default function HeroSection() {
           >
             {[
               { value: "5,000+", label: "Happy Pets" },
-              { value: "15+", label: "Years Experience" },
+              { value: `${clinicInfo?.yearsExperience || "7"}+`, label: "Years Experience" },
               { value: "98%", label: "Satisfaction" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">

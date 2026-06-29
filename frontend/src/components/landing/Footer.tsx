@@ -10,7 +10,7 @@ const footerLinks = {
   Account: ["Register", "Sign In", "Book Appointment", "Pet Registration"],
 };
 
-export default function Footer() {
+export default function Footer({ clinicInfo }: { clinicInfo?: any }) {
   const year = new Date().getFullYear();
 
   return (
@@ -65,13 +65,13 @@ export default function Footer() {
               Compassionate veterinary care powered by modern technology. Keeping your pets healthy and happy.
             </p>
             <div className="flex items-center gap-3">
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=100068444538348" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
                 <ExternalLink className="w-4 h-4" />
               </a>
-              <a href="mailto:info@ljvetclinic.com" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
+              <a href={`mailto:${clinicInfo?.emailAddress || "eguialovely@gmail.com"}`} className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
                 <Mail className="w-4 h-4" />
               </a>
-              <a href="tel:+639123456789" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
+              <a href={`tel:${clinicInfo?.contactNumber || "+63-909-152-3519"}`} className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-500/30 flex items-center justify-center transition-colors">
                 <Phone className="w-4 h-4" />
               </a>
             </div>

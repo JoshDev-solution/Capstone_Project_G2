@@ -104,6 +104,79 @@ export default function SettingsPage() {
     }
   };
 
+  const [clinicInfo, setClinicInfo] = useState({
+    clinicName: "",
+    contactNumber: "",
+    emailAddress: "",
+    websiteUrl: "",
+    address: "",
+    monFriOpen: "",
+    monFriClose: "",
+    weekendClose: "",
+    description: "",
+    yearsExperience: "",
+  });
+  const [savingClinic, setSavingClinic] = useState(false);
+
+  useEffect(() => {
+    fetchClinicInfo();
+  }, []);
+
+  const fetchClinicInfo = async () => {
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      
+      const res = await fetch(`${baseUrl}/api/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setClinicInfo({
+          clinicName: data.clinicName || "",
+          contactNumber: data.contactNumber || "",
+          emailAddress: data.emailAddress || "",
+          websiteUrl: data.websiteUrl || "",
+          address: data.address || "",
+          monFriOpen: data.monFriOpen || "",
+          monFriClose: data.monFriClose || "",
+          weekendClose: data.weekendClose || "",
+          description: data.description || "",
+          yearsExperience: data.yearsExperience || "",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClinicSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingClinic(true);
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      const token = localStorage.getItem("vcms_token");
+
+      const res = await fetch(`${baseUrl}/api/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(clinicInfo)
+      });
+
+      if (!res.ok) throw new Error("Failed to update clinic info");
+      
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update clinic info.");
+    } finally {
+      setSavingClinic(false);
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -252,45 +325,60 @@ export default function SettingsPage() {
           {/* Clinic Info */}
           {activeSection === "clinic" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-6 flex flex-col gap-5">
-              <h2 className="text-lg font-bold border-b border-[var(--card-border)] pb-4">Clinic Information</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Clinic Name</label>
-                  <input type="text" defaultValue="LJ Veterinary Clinic" className="input" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Contact Number</label>
-                  <input type="tel" defaultValue="+63-909-152-3519" className="input" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Email Address</label>
-                  <input type="email" defaultValue="eguialovely@gmail.com" className="input" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Website URL</label>
-                  <input type="url" defaultValue="https://ljvetclinic.com" className="input" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Full Address</label>
-                <textarea defaultValue="Surallah, South Cotabato" rows={2} className="input resize-none" />
-              </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                {[
-                  { label: "Mon–Fri Open",   value: "08:00" },
-                  { label: "Mon–Fri Close",  value: "18:00" },
-                  { label: "Weekend Close",  value: "18:00" },
-                ].map((f) => (
-                  <div key={f.label}>
-                    <label className="block text-sm font-medium mb-1.5">{f.label}</label>
-                    <input type="time" defaultValue={f.value} className="input" />
+              <form onSubmit={handleClinicSave}>
+                <h2 className="text-lg font-bold border-b border-[var(--card-border)] pb-4 mb-4">Clinic Information</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Clinic Name</label>
+                    <input type="text" value={clinicInfo.clinicName} onChange={(e) => setClinicInfo({...clinicInfo, clinicName: e.target.value})} className="input" />
                   </div>
-                ))}
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">About / Description</label>
-                <textarea rows={4} className="input resize-none" defaultValue="LJ Veterinary Clinic provides compassionate and professional veterinary care for all pets in Surallah, South Cotabato." />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Contact Number</label>
+                    <input type="tel" value={clinicInfo.contactNumber} onChange={(e) => setClinicInfo({...clinicInfo, contactNumber: e.target.value})} className="input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Email Address</label>
+                    <input type="email" value={clinicInfo.emailAddress} onChange={(e) => setClinicInfo({...clinicInfo, emailAddress: e.target.value})} className="input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Website URL</label>
+                    <input type="url" value={clinicInfo.websiteUrl} onChange={(e) => setClinicInfo({...clinicInfo, websiteUrl: e.target.value})} className="input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Years of Experience</label>
+                    <input type="number" min="0" value={clinicInfo.yearsExperience} onChange={(e) => setClinicInfo({...clinicInfo, yearsExperience: e.target.value})} className="input" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-1.5">Full Address</label>
+                  <textarea value={clinicInfo.address} onChange={(e) => setClinicInfo({...clinicInfo, address: e.target.value})} rows={2} className="input resize-none" />
+                </div>
+                <div className="grid sm:grid-cols-3 gap-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Mon–Fri Open</label>
+                    <input type="time" value={clinicInfo.monFriOpen} onChange={(e) => setClinicInfo({...clinicInfo, monFriOpen: e.target.value})} className="input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Mon–Fri Close</label>
+                    <input type="time" value={clinicInfo.monFriClose} onChange={(e) => setClinicInfo({...clinicInfo, monFriClose: e.target.value})} className="input" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Weekend Close</label>
+                    <input type="time" value={clinicInfo.weekendClose} onChange={(e) => setClinicInfo({...clinicInfo, weekendClose: e.target.value})} className="input" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-1.5">About / Description</label>
+                  <textarea rows={4} className="input resize-none" value={clinicInfo.description} onChange={(e) => setClinicInfo({...clinicInfo, description: e.target.value})} />
+                </div>
+                
+                <div className="flex justify-end pt-6 mt-4 border-t border-[var(--card-border)]">
+                  <button type="submit" disabled={savingClinic} className="btn btn-primary flex items-center gap-2">
+                    {savingClinic ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Clinic Info
+                  </button>
+                </div>
+              </form>
             </motion.div>
           )}
 
