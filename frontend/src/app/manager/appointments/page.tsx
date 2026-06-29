@@ -48,8 +48,6 @@ export default function ManagerAppointmentsPage() {
       }
     } catch (err) {
       console.error(err);
-    } catch (err) {
-      console.error(err);
     } finally {
       setLoading(false);
     }
