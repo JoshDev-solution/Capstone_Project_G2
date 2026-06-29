@@ -9,7 +9,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal";
 interface Discount {
   id: number;
   name: string;
-  code: string;
+  code?: string;
   type: "Percentage" | "FixedAmount";
   value: number;
   minPurchase: number;
@@ -31,7 +31,6 @@ function DiscountModal({
 }) {
   const isEdit = !!discount;
   const [name, setName] = useState(isEdit ? discount.name : "");
-  const [code, setCode] = useState(isEdit ? discount.code : "");
   const [type, setType] = useState<"Percentage" | "FixedAmount">(isEdit ? discount.type : "Percentage");
   const [value, setValue] = useState(isEdit ? discount.value : 0);
   const [minPurchase, setMinPurchase] = useState(isEdit ? discount.minPurchase : 0);
@@ -43,8 +42,8 @@ function DiscountModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !code.trim() || !type) {
-      alert("Name, Code, and Type are required.");
+    if (!name.trim() || !type) {
+      alert("Name and Type are required.");
       return;
     }
     setShowConfirm(true);
@@ -54,7 +53,6 @@ function DiscountModal({
     onSave({
       id: discount?.id,
       name,
-      code: code.toUpperCase(),
       type,
       value: Number(value),
       minPurchase: Number(minPurchase),
@@ -77,17 +75,10 @@ function DiscountModal({
             <button type="button" onClick={onClose} className="btn-icon btn-ghost rounded-xl w-9 h-9 flex items-center justify-center"><X className="w-5 h-5" /></button>
           </div>
           <div className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1.5">Discount Name</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="e.g., Senior Pet Discount" required />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Discount Code</label>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                  <input type="text" value={code} onChange={(e) => setCode(e.target.value)} className="input pl-9 uppercase" style={{ paddingLeft: "2.25rem" }} placeholder="PROMO2026" required />
-                </div>
+                <label className="block text-sm font-medium mb-1.5">Discount Name</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="input" placeholder="e.g., Senior Pet Discount" required />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Type</label>
@@ -260,8 +251,7 @@ export default function DiscountsPage() {
   };
 
   const filtered = discounts.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase()) ||
-    d.code.toLowerCase().includes(search.toLowerCase())
+    d.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -326,7 +316,6 @@ export default function DiscountsPage() {
 
                   <h3 className="font-bold text-base mb-1">{d.name}</h3>
                   <div className="flex items-center gap-2 mb-3">
-                    <code className="text-xs bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded font-mono tracking-wider">{d.code}</code>
                     <span className="badge badge-primary text-xs">
                       {d.type === "Percentage" ? `${d.value}% OFF` : `₱${d.value} OFF`}
                     </span>
