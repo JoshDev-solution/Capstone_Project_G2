@@ -2,18 +2,15 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
-let databaseUrl = process.env.DATABASE_URL || '';
-if (databaseUrl && !databaseUrl.includes('connection_limit')) {
-  databaseUrl = databaseUrl.includes('?') ? `${databaseUrl}&connection_limit=5&connect_timeout=30` : `${databaseUrl}?connection_limit=5&connect_timeout=30`;
+// Append connection limits to DATABASE_URL if not already present
+let dbUrl = process.env.DATABASE_URL || '';
+if (dbUrl && !dbUrl.includes('connection_limit')) {
+  process.env.DATABASE_URL = dbUrl.includes('?')
+    ? `${dbUrl}&connection_limit=5&connect_timeout=30`
+    : `${dbUrl}?connection_limit=5&connect_timeout=30`;
 }
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: databaseUrl,
-    },
-  },
-});
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding database...');

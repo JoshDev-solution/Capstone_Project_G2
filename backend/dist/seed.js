@@ -6,17 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv/config");
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
-let databaseUrl = process.env.DATABASE_URL || '';
-if (databaseUrl && !databaseUrl.includes('connection_limit')) {
-    databaseUrl = databaseUrl.includes('?') ? `${databaseUrl}&connection_limit=5&connect_timeout=30` : `${databaseUrl}?connection_limit=5&connect_timeout=30`;
+// Append connection limits to DATABASE_URL if not already present
+let dbUrl = process.env.DATABASE_URL || '';
+if (dbUrl && !dbUrl.includes('connection_limit')) {
+    process.env.DATABASE_URL = dbUrl.includes('?')
+        ? `${dbUrl}&connection_limit=5&connect_timeout=30`
+        : `${dbUrl}?connection_limit=5&connect_timeout=30`;
 }
-const prisma = new client_1.PrismaClient({
-    datasources: {
-        db: {
-            url: databaseUrl,
-        },
-    },
-});
+const prisma = new client_1.PrismaClient();
 async function main() {
     console.log('Seeding database...');
     const passwordHash = await bcrypt_1.default.hash('password123', 10);
