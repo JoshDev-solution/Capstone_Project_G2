@@ -107,6 +107,8 @@ export default function GenerateInvoicePage() {
         status: "Unpaid",
         items: {
           create: items.map(item => ({
+            itemType: item.type,
+            description: item.name,
             serviceId: item.type === "Service" ? item.serviceId : undefined,
             productId: item.type === "Product" ? item.productId : undefined,
             quantity: item.quantity,
