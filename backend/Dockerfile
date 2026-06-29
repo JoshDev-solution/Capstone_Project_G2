@@ -1,6 +1,9 @@
 # Multi-stage build for Node.js Backend
-FROM node:20-alpine AS build
+FROM node:20-slim AS build
 WORKDIR /app
+
+# Install OpenSSL (needed by Prisma)
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package*.json ./
@@ -18,8 +21,11 @@ RUN npx prisma generate
 RUN npm run build
 
 # Use runtime image
-FROM node:20-alpine AS runtime
+FROM node:20-slim AS runtime
 WORKDIR /app
+
+# Install OpenSSL (needed by Prisma at runtime)
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install only production dependencies
 COPY package*.json ./
