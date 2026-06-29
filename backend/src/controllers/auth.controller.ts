@@ -73,11 +73,55 @@ export class AuthController {
         return res.status(401).json({ message: 'Invalid credentials.' });
       }
 
+      // Check if account is inactive
+      if (!user.isActive) {
+        return res.status(403).json({ message: 'Account is inactive. Please contact administrator.' });
+      }
+
+      // Check if account is currently locked
+      if (user.lockoutEnd && user.lockoutEnd > new Date()) {
+        const remainingMinutes = Math.ceil((user.lockoutEnd.getTime() - new Date().getTime()) / 60000);
+        return res.status(403).json({ message: `Account is temporarily locked due to multiple failed login attempts. Try again in ${remainingMinutes} minutes.` });
+      }
+
       // Verify password
       const isPasswordValid = await comparePassword(password, user.passwordHash);
       if (!isPasswordValid) {
+        // Only track failed attempts for non-clients (staff)
+        if (user.role.name !== 'Client') {
+          const newFailedCount = user.failedLoginCount + 1;
+          let lockoutEnd = null;
+          
+          if (newFailedCount >= 5) {
+            // Lock out for 15 minutes
+            lockoutEnd = new Date(Date.now() + 15 * 60 * 1000);
+          }
+          
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { 
+              failedLoginCount: newFailedCount,
+              lockoutEnd: lockoutEnd
+            }
+          });
+          
+          if (lockoutEnd) {
+             return res.status(403).json({ message: 'Account locked due to 5 failed login attempts. Try again in 15 minutes.' });
+          }
+        }
+        
         return res.status(401).json({ message: 'Invalid credentials.' });
       }
+
+      // Reset failed attempts on successful login
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginCount: 0,
+          lockoutEnd: null,
+          lastLoginAt: new Date()
+        }
+      });
 
       // Generate token
       const token = generateToken({
