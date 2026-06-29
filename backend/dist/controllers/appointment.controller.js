@@ -9,6 +9,8 @@ class AppointmentController {
             const mapped = appointments.map((a) => ({
                 id: a.id,
                 code: a.appointmentCode,
+                clientId: a.clientId,
+                petId: a.petId,
                 clientName: a.client?.user?.firstName ? `${a.client.user.firstName} ${a.client.user.lastName || ''}`.trim() : 'Unknown',
                 petName: a.pet?.name || 'Unknown',
                 petType: a.pet?.petType?.name || 'Unknown',
@@ -35,6 +37,8 @@ class AppointmentController {
             const mapped = appointments.map((a) => ({
                 id: a.id,
                 code: a.appointmentCode,
+                clientId: a.clientId,
+                petId: a.petId,
                 clientName: a.client?.user?.firstName ? `${a.client.user.firstName} ${a.client.user.lastName || ''}`.trim() : 'Unknown',
                 petName: a.pet?.name || 'Unknown',
                 petType: a.pet?.petType?.name || 'Unknown',

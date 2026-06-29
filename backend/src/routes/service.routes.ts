@@ -4,8 +4,8 @@ import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.get('/', authenticate, serviceController.getAllServices);
-router.get('/:id', authenticate, serviceController.getServiceById);
+router.get('/', serviceController.getAllServices);
+router.get('/:id', serviceController.getServiceById);
 router.post('/', authenticate, serviceController.createService);
 router.put('/:id', authenticate, serviceController.updateService);
 router.delete('/:id', authenticate, serviceController.deleteService);
