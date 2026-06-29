@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { PawPrint, ArrowRight, CalendarCheck } from "lucide-react";
 import Link from "next/link";
 
