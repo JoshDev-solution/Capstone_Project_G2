@@ -16,6 +16,9 @@ if (!fs.existsSync(configPath)) {
     '  datasource: {',
     '    url: process.env.DATABASE_URL,',
     '  },',
+    '  migrations: {',
+    '    seed: "node dist/seed.js",',
+    '  },',
     '});',
   ].join('\n');
   fs.writeFileSync(configPath, config);
