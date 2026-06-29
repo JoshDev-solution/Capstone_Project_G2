@@ -21,6 +21,14 @@ async function main() {
 
   // Clear existing related data to avoid conflicts on re-run
   try {
+    await prisma.chatRequest.deleteMany({});
+    await prisma.message.deleteMany({});
+    await prisma.chatbotLog.deleteMany({});
+    await prisma.activityLog.deleteMany({});
+    await prisma.auditLog.deleteMany({});
+    await prisma.notification.deleteMany({});
+    await prisma.report.deleteMany({});
+    await prisma.inventoryTransaction.deleteMany({});
     await prisma.refund.deleteMany({});
     await prisma.payment.deleteMany({});
     await prisma.billItem.deleteMany({});
