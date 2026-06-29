@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, PawPrint, Calendar, Filter, Plus, Edit } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, calculateAge } from "@/lib/utils";
 
 export default function ManagerPetsPage() {
   const [pets, setPets] = useState<any[]>([]);
@@ -94,7 +94,7 @@ export default function ManagerPetsPage() {
                         <div>
                           <p className="font-bold text-base">{pet.name}</p>
                           <p className="text-xs text-neutral-500 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> DOB: {pet.dob}
+                            <Calendar className="w-3 h-3" /> Age: {calculateAge(pet.dob)}
                           </p>
                         </div>
                       </div>

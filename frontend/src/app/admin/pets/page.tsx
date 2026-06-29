@@ -6,7 +6,7 @@ import {
   Plus, Search, Edit, Trash2, PawPrint, X, AlertTriangle, Filter,
   User, Shield, ChevronLeft, ChevronRight, Eye, ClipboardList
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, calculateAge } from "@/lib/utils";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 
 interface Pet {
@@ -557,7 +557,7 @@ export default function PetsPage() {
                             </td>
                             <td className="hidden sm:table-cell text-sm text-neutral-500">{pet.ownerName}</td>
                             <td>
-                              <p className="text-sm">{pet.dob || "Unknown"}</p>
+                              <p className="text-sm">{calculateAge(pet.dob)}</p>
                               <p className="text-xs text-neutral-400">{pet.weight} kg</p>
                             </td>
                             <td>

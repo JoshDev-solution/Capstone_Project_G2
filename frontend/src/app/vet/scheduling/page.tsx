@@ -33,8 +33,8 @@ export default function VetSchedulingPage() {
 
   const filteredAppointments = appointments.filter(apt => {
     // Search filter
-    const matchesSearch = apt.petName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          apt.clientName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (apt.pet?.name || apt.petName || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (apt.client?.user?.firstName + ' ' + apt.client?.user?.lastName || apt.clientName || '').toLowerCase().includes(searchQuery.toLowerCase());
     if (searchQuery && !matchesSearch) return false;
 
     if (filter === "All") return true;
@@ -156,7 +156,7 @@ export default function VetSchedulingPage() {
                   <User className="w-4 h-4 shrink-0 mt-0.5 text-neutral-400" />
                   <span>
                     <span className="text-xs text-neutral-500 block">Owner</span>
-                    {apt.clientName || "Unknown Owner"}
+                    {apt.client?.user?.firstName ? `${apt.client.user.firstName} ${apt.client.user.lastName}` : (apt.clientName || "Unknown Owner")}
                   </span>
                 </p>
                 <p className="flex items-start gap-2 text-neutral-600 dark:text-neutral-300">
