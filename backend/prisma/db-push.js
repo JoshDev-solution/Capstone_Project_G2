@@ -6,23 +6,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Generate prisma.config.js at runtime if it doesn't exist
-const configPath = path.join(process.cwd(), 'prisma.config.js');
-if (!fs.existsSync(configPath)) {
-  const config = [
-    'const { defineConfig } = require("@prisma/config");',
-    'module.exports = defineConfig({',
-    '  datasource: {',
-    '    url: process.env.DATABASE_URL,',
-    '  },',
-    '  migrations: {',
-    '    seed: "node dist/seed.js",',
-    '  },',
-    '});',
-  ].join('\n');
-  fs.writeFileSync(configPath, config);
-  console.log('Generated prisma.config.js for runtime');
-}
+// No longer generating prisma.config.js since we downgraded to v5.14.0
 
 if (!process.env.DATABASE_URL) {
   console.error('ERROR: DATABASE_URL is not set!');
