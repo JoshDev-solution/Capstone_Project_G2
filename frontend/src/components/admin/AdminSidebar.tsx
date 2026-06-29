@@ -24,7 +24,6 @@ const navGroups = [
     items: [
       { icon: Users, label: "Users", href: "/admin/users" },
       { icon: PawPrint, label: "Pets", href: "/admin/pets" },
-      { icon: CalendarCheck, label: "Appointments", href: "/admin/appointments" },
     ],
   },
   {

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import {
-  PawPrint, CalendarCheck,
+  PawPrint, RotateCcw,
   AlertTriangle, ArrowUp, ArrowDown, PhilippinePeso,
   ClipboardList,
 } from "lucide-react";
@@ -37,11 +37,11 @@ const kpiCards = [
     bg: "from-accent-400 to-accent-600",
   },
   {
-    label: "Today's Appointments",
-    value: "23",
-    change: "-3 from yesterday",
+    label: "Pending Refunds",
+    value: "4",
+    change: "+1 new today",
     positive: false,
-    icon: CalendarCheck,
+    icon: RotateCcw,
     color: "#10B981",
     bg: "from-emerald-400 to-emerald-600",
   },
@@ -86,12 +86,12 @@ const revenueData = {
   ],
 };
 
-const appointmentsData = {
+const salesData = {
   labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   datasets: [
     {
-      label: "Appointments",
-      data: [18, 25, 22, 30, 27, 20, 8],
+      label: "Products Sold",
+      data: [42, 58, 45, 65, 70, 85, 30],
       backgroundColor: "rgba(255, 79, 163, 0.7)",
       borderRadius: 8,
       borderSkipped: false,
@@ -143,7 +143,7 @@ const lowStockItems = [
 const recentActivity = [
   { action: "New registration", user: "Sarah Mendoza", time: "2 min ago", type: "info" },
   { action: "Payment received", user: "Carlo Reyes — ₱2,500", time: "15 min ago", type: "success" },
-  { action: "Appointment completed", user: "Buddy (Golden Retriever)", time: "1 hr ago", type: "success" },
+  { action: "Product sale", user: "Dog Food 5kg", time: "1 hr ago", type: "success" },
   { action: "Refund request", user: "Ana Cruz — ₱800", time: "2 hr ago", type: "warning" },
   { action: "Low stock alert", user: "Anti-Rabies Vaccine", time: "3 hr ago", type: "danger" },
 ];
@@ -248,7 +248,7 @@ export default function AdminDashboardPage() {
           className="card p-6"
         >
           <h3 className="font-bold text-lg mb-1">Top Services</h3>
-          <p className="text-xs text-neutral-400 mb-6">By appointment volume</p>
+          <p className="text-xs text-neutral-400 mb-6">By service revenue</p>
           <div className="h-48">
             <Doughnut
               data={servicesData}
@@ -271,18 +271,18 @@ export default function AdminDashboardPage() {
 
       {/* Appointments Bar + Low Stock + Activity */}
       <div className="grid xl:grid-cols-3 gap-6">
-        {/* Weekly Appointments */}
+        {/* Weekly Product Sales */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
           className="card p-6"
         >
-          <h3 className="font-bold text-lg mb-1">Weekly Appointments</h3>
-          <p className="text-xs text-neutral-400 mb-6">This week&apos;s appointment volume</p>
+          <h3 className="font-bold text-lg mb-1">Weekly Sales</h3>
+          <p className="text-xs text-neutral-400 mb-6">This week&apos;s product sales volume</p>
           <div className="h-48">
             <Bar
-              data={appointmentsData}
+              data={salesData}
               options={{
                 ...chartOptions,
                 plugins: { ...chartOptions.plugins, legend: { display: false } },
