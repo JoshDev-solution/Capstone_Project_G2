@@ -9,7 +9,7 @@ class PetService {
     async getAllPets() {
         return await prisma_1.default.pet.findMany({
             include: {
-                client: true,
+                client: { include: { user: true } },
                 petType: true,
                 breed: true,
             },

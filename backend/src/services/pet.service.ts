@@ -4,7 +4,7 @@ export class PetService {
   async getAllPets() {
     return await prisma.pet.findMany({
       include: {
-        client: true,
+        client: { include: { user: true } },
         petType: true,
         breed: true,
       },

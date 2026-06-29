@@ -9,9 +9,9 @@ class AppointmentService {
     async getAllAppointments() {
         return await prisma_1.default.appointment.findMany({
             include: {
-                pet: true,
-                client: true,
-                vet: true,
+                pet: { include: { petType: true, breed: true } },
+                client: { include: { user: true } },
+                vet: { include: { user: true } },
                 service: true,
             },
         });
@@ -20,9 +20,9 @@ class AppointmentService {
         return await prisma_1.default.appointment.findUnique({
             where: { id },
             include: {
-                pet: true,
-                client: true,
-                vet: true,
+                pet: { include: { petType: true, breed: true } },
+                client: { include: { user: true } },
+                vet: { include: { user: true } },
                 service: true,
             },
         });

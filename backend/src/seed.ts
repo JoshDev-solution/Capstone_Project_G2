@@ -180,11 +180,14 @@ async function main() {
 
   if (!vetStaff) throw new Error("No vet staff found");
 
-  // 8. Appointments
+  // 8. Appointments (clinic hours: 8:00 AM - 5:00 PM)
+  const clinicHours = [8, 9, 10, 11, 14]; // 8am, 9am, 10am, 11am, 2pm
   const appointmentsData = [];
   for (let i = 0; i < 5; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
+    d.setHours(clinicHours[i], 0, 0, 0); // Set to clinic hours
+    const timeSlot = new Date(d);
     appointmentsData.push({
       appointmentCode: `APT-00${i+1}`,
       clientId: createdPets[i].clientId,
@@ -192,34 +195,39 @@ async function main() {
       vetId: vetStaff.id,
       serviceId: createdServices[i].id,
       appointmentDate: d,
-      appointmentTime: d,
+      appointmentTime: timeSlot,
       status: 'Completed',
       reason: 'Regular visit'
     });
   }
 
-  const today = new Date();
+  // Emergency appointment today at 8:30 AM
+  const emergencyTime = new Date();
+  emergencyTime.setHours(8, 30, 0, 0);
   appointmentsData.push({
     appointmentCode: `APT-EMG-001`,
     clientId: createdPets[0].clientId,
     petId: createdPets[0].id,
     vetId: vetStaff.id,
     serviceId: createdServices[2].id,
-    appointmentDate: today,
-    appointmentTime: today,
+    appointmentDate: emergencyTime,
+    appointmentTime: emergencyTime,
     status: 'Scheduled',
     type: 'Emergency',
     reason: 'Hit by car'
   });
 
+  // Walk-in appointment today at 10:00 AM
+  const walkinTime = new Date();
+  walkinTime.setHours(10, 0, 0, 0);
   appointmentsData.push({
     appointmentCode: `APT-TDA-002`,
     clientId: createdPets[1].clientId,
     petId: createdPets[1].id,
     vetId: vetStaff.id,
     serviceId: createdServices[0].id,
-    appointmentDate: today,
-    appointmentTime: today,
+    appointmentDate: walkinTime,
+    appointmentTime: walkinTime,
     status: 'Arrived',
     type: 'Scheduled',
     reason: 'Vomiting'
