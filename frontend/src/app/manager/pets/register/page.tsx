@@ -18,10 +18,7 @@ const petSchema = z.object({
   sex: z.enum(["Male", "Female", "Unknown"]),
   color: z.string().optional(),
   weightKg: z.string().optional(),
-  microchipNumber: z.string().optional(),
   isNeutered: z.boolean().optional(),
-  allergies: z.string().optional(),
-  medicalNotes: z.string().optional(),
 });
 
 type PetFormValues = z.infer<typeof petSchema>;
@@ -204,33 +201,10 @@ export default function RegisterPetPage() {
               <label className="text-sm font-medium">Weight (kg)</label>
               <input type="number" step="0.1" className="input" placeholder="e.g. 12.5" {...register("weightKg")} />
             </div>
-          </div>
-        </div>
-
-        {/* Medical & Additional Info */}
-        <div className="card p-6 space-y-4">
-          <h3 className="text-lg font-bold flex items-center gap-2 border-b border-[var(--card-border)] pb-3">
-            <Stethoscope className="w-5 h-5 text-primary-500" /> Medical Profile
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Microchip Number</label>
-              <input type="text" className="input" placeholder="e.g. 981020000000000" {...register("microchipNumber")} />
-            </div>
 
             <div className="flex items-center gap-3 pt-6">
               <input type="checkbox" id="isNeutered" className="w-5 h-5 rounded border-neutral-300 text-primary-600 focus:ring-primary-500" {...register("isNeutered")} />
               <label htmlFor="isNeutered" className="text-sm font-medium cursor-pointer">Pet is Spayed / Neutered</label>
-            </div>
-
-            <div className="md:col-span-2 space-y-1.5 mt-2">
-              <label className="text-sm font-medium">Known Allergies</label>
-              <textarea className="input min-h-[80px]" placeholder="List any known allergies..." {...register("allergies")}></textarea>
-            </div>
-
-            <div className="md:col-span-2 space-y-1.5">
-              <label className="text-sm font-medium">Initial Medical Notes</label>
-              <textarea className="input min-h-[100px]" placeholder="Any important background information..." {...register("medicalNotes")}></textarea>
             </div>
           </div>
         </div>
