@@ -15,6 +15,7 @@ export default function ManagerAppointmentsPage() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
+  const [selectedAptId, setSelectedAptId] = useState<number | null>(null);
   const [clients, setClients] = useState<any[]>([]);
   const [pets, setPets] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -29,7 +30,8 @@ export default function ManagerAppointmentsPage() {
     appointmentDate: "",
     appointmentTime: "",
     type: "Scheduled",
-    reason: ""
+    reason: "",
+    status: "Scheduled"
   });
 
   useEffect(() => {
@@ -53,9 +55,51 @@ export default function ManagerAppointmentsPage() {
     }
   };
 
-  const openModal = async () => {
+  const openModal = async (apt?: any) => {
     setIsModalOpen(true);
     setModalLoading(true);
+    
+    if (apt) {
+      setSelectedAptId(apt.id);
+      
+      // Extract time from rawTime (which is ISO string like 1970-01-01T10:30:00Z)
+      let aptTimeStr = "";
+      if (apt.rawTime) {
+        const t = new Date(apt.rawTime);
+        aptTimeStr = t.toISOString().substring(11, 16); // Extract HH:mm
+      }
+      
+      let aptDateStr = "";
+      if (apt.rawDate) {
+        aptDateStr = new Date(apt.rawDate).toISOString().split('T')[0];
+      }
+
+      setFormData({
+        clientId: apt.clientId ? String(apt.clientId) : "",
+        petId: apt.petId ? String(apt.petId) : "",
+        serviceId: apt.serviceId ? String(apt.serviceId) : "",
+        vetId: apt.vetId ? String(apt.vetId) : "",
+        appointmentDate: aptDateStr,
+        appointmentTime: aptTimeStr,
+        type: apt.type || "Scheduled",
+        reason: apt.reason || "",
+        status: apt.status || "Scheduled"
+      });
+    } else {
+      setSelectedAptId(null);
+      setFormData({
+        clientId: "",
+        petId: "",
+        serviceId: "",
+        vetId: "",
+        appointmentDate: "",
+        appointmentTime: "",
+        type: "Scheduled",
+        reason: "",
+        status: "Scheduled"
+      });
+    }
+
     try {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
@@ -97,25 +141,30 @@ export default function ManagerAppointmentsPage() {
         appointmentTime: new Date(`${formData.appointmentDate}T${formData.appointmentTime}:00`).toISOString(),
         type: formData.type,
         reason: formData.reason,
-        status: "Scheduled"
+        status: formData.status
       };
 
-      const res = await fetch(`${baseUrl}/api/appointments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const url = selectedAptId ? `${baseUrl}/api/appointments/${selectedAptId}` : `${baseUrl}/api/appointments`;
+      const method = selectedAptId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        Swal.fire("Success", "Appointment created successfully!", "success");
         setIsModalOpen(false);
-        setFormData({
-          clientId: "", petId: "", serviceId: "", vetId: "",
-          appointmentDate: "", appointmentTime: "", type: "Scheduled", reason: ""
-        });
         fetchAppointments();
+        Swal.fire({
+          title: "Success",
+          text: `Appointment successfully ${selectedAptId ? 'updated' : 'created'}.`,
+          icon: "success",
+          confirmButtonColor: "#FF4FA3",
+        });
       } else {
-        throw new Error("Failed to create appointment");
       }
     } catch (err) {
       console.error(err);
@@ -250,7 +299,7 @@ export default function ManagerAppointmentsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <button className="btn btn-outline text-xs py-1.5 h-auto px-3">
+                      <button onClick={() => openModal(apt)} className="btn btn-outline text-xs py-1.5 h-auto px-3">
                         Manage
                       </button>
                     </td>
@@ -267,7 +316,7 @@ export default function ManagerAppointmentsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-neutral-900 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center p-6 border-b border-[var(--card-border)]">
-              <h2 className="text-xl font-bold">New Appointment</h2>
+              <h2 className="text-xl font-bold">{selectedAptId ? "Manage Appointment" : "New Appointment"}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-neutral-700">
                 <X className="w-5 h-5" />
               </button>
@@ -378,6 +427,21 @@ export default function ManagerAppointmentsPage() {
                       </select>
                     </div>
 
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Status</label>
+                      <select 
+                        className="input"
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      >
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Arrived">Arrived</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </div>
+
                     <div className="space-y-1.5 md:col-span-2">
                       <label className="text-sm font-medium">Reason / Notes</label>
                       <textarea 
@@ -397,7 +461,7 @@ export default function ManagerAppointmentsPage() {
                 Cancel
               </button>
               <button type="submit" form="appointment-form" className="btn btn-primary shadow-lg shadow-primary-500/20">
-                <Save className="w-4 h-4 mr-2" /> Create Appointment
+                <Save className="w-4 h-4 mr-2" /> {selectedAptId ? "Save Changes" : "Create Appointment"}
               </button>
             </div>
           </div>

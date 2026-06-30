@@ -22,7 +22,14 @@ export default function VetSchedulingPage() {
       
       const res = await fetch(`${baseUrl}/api/appointments`);
       if (res.ok) {
-        setAppointments(await res.json());
+        const data = await res.json();
+        // Vet should only see medical appointments. Filter out Grooming and Boarding.
+        const medicalAppointments = data.filter((apt: any) => 
+          apt.serviceCategory !== "Grooming" && 
+          apt.serviceCategory !== "Boarding" &&
+          apt.serviceCategory !== "Accessories" // just in case
+        );
+        setAppointments(medicalAppointments);
       }
     } catch (err) {
       console.error(err);
