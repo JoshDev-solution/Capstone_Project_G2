@@ -47,7 +47,7 @@ export class UserController {
 
       const activePatients = await prisma.pet.count({ where: { isActive: true } });
       
-      const pendingRefunds = await prisma.refund.count(); // Placeholder if no status
+      const pendingRefunds = await prisma.refund.count({ where: { status: 'Pending' } });
 
       const pendingRegistrations = await prisma.user.count({
         where: { role: { name: 'Client' }, isApproved: false }

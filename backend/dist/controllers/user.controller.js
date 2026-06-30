@@ -46,7 +46,7 @@ class UserController {
             });
             const grossSales = Number(salesResult._sum.totalAmount || 0);
             const activePatients = await prisma_1.default.pet.count({ where: { isActive: true } });
-            const pendingRefunds = await prisma_1.default.refund.count(); // Placeholder if no status
+            const pendingRefunds = await prisma_1.default.refund.count({ where: { status: 'Pending' } });
             const pendingRegistrations = await prisma_1.default.user.count({
                 where: { role: { name: 'Client' }, isApproved: false }
             });

@@ -11,6 +11,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  buyPrice?: number;
   stock: number;
   reorderLevel: number;
   unit: string;
@@ -47,6 +48,7 @@ function ProductModal({
   const [name, setName] = useState(isEdit ? product.name : "");
   const [category, setCategory] = useState(isEdit ? product.category : "Medicines");
   const [price, setPrice] = useState(isEdit ? product.price : 0);
+  const [buyPrice, setBuyPrice] = useState(isEdit ? product.buyPrice || 0 : 0);
   const [unit, setUnit] = useState(isEdit ? product.unit : "piece");
   const [stock, setStock] = useState(isEdit ? product.stock : 0);
   const [reorderLevel, setReorderLevel] = useState(isEdit ? product.reorderLevel : 10);
@@ -69,6 +71,7 @@ function ProductModal({
       name,
       category,
       price: Number(price),
+      buyPrice: Number(buyPrice),
       unit,
       stock: Number(stock),
       reorderLevel: Number(reorderLevel),
@@ -112,9 +115,13 @@ function ProductModal({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-medium mb-1.5">Price (₱)</label>
-                <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" required />
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Retail Price (₱)</label>
+                <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" step="0.01" required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Buy Price (₱)</label>
+                <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" step="0.01" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

@@ -13,6 +13,7 @@ class ProductController {
                 categoryId: p.categoryId,
                 sku: p.sku || `PRD-${p.id}`,
                 price: Number(p.price),
+                buyPrice: p.costPrice ? Number(p.costPrice) : undefined,
                 stock: p.inventory?.quantity || 0,
                 unit: p.unit || "piece",
                 reorderLevel: p.inventory?.reorderLevel || 10,

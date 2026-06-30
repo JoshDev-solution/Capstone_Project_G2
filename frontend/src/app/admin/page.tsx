@@ -128,10 +128,15 @@ export default function AdminDashboardPage() {
   });
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    
     const fetchCounts = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/users/counts", {
+        let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+        if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+        const token = localStorage.getItem("vcms_token"); // Fix token key
+        
+        const res = await fetch(`${baseUrl}/api/users/counts`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -142,7 +147,12 @@ export default function AdminDashboardPage() {
         console.error("Failed to fetch counts", error);
       }
     };
+    
     fetchCounts();
+    // Poll every 10 seconds for real-time updates
+    intervalId = setInterval(fetchCounts, 10000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const kpiCards = [

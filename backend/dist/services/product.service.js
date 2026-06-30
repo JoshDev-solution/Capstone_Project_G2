@@ -24,7 +24,7 @@ class ProductService {
         });
     }
     async createProduct(data) {
-        const { name, category, sku, price, unit, stock, reorderLevel, expiry, active } = data;
+        const { name, category, sku, price, buyPrice, unit, stock, reorderLevel, expiry, active } = data;
         // Find or create category
         const cat = await prisma_1.default.category.upsert({
             where: { name: category },
@@ -36,6 +36,7 @@ class ProductService {
                 name,
                 sku,
                 price: Number(price),
+                costPrice: buyPrice ? Number(buyPrice) : null,
                 unit,
                 isActive: active,
                 categoryId: cat.id,
@@ -54,7 +55,7 @@ class ProductService {
         });
     }
     async updateProduct(id, data) {
-        const { name, category, sku, price, unit, stock, reorderLevel, expiry, active } = data;
+        const { name, category, sku, price, buyPrice, unit, stock, reorderLevel, expiry, active } = data;
         const cat = await prisma_1.default.category.upsert({
             where: { name: category },
             update: {},
@@ -66,6 +67,7 @@ class ProductService {
                 name,
                 sku,
                 price: Number(price),
+                costPrice: buyPrice ? Number(buyPrice) : null,
                 unit,
                 isActive: active,
                 categoryId: cat.id,

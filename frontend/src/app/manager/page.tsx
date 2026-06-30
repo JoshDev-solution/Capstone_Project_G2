@@ -30,7 +30,11 @@ export default function ManagerDashboard() {
   const [lowStockAlerts, setLowStockAlerts] = useState<any[]>([]);
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     fetchDashboardData();
+    // Poll every 10 seconds for real-time updates
+    intervalId = setInterval(fetchDashboardData, 10000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchDashboardData = async () => {

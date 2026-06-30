@@ -9,24 +9,40 @@ class PaymentService {
     async getAllPayments() {
         return await prisma_1.default.payment.findMany({
             include: {
-                bill: true,
+                bill: {
+                    include: {
+                        items: { include: { product: true, service: true } },
+                        client: { include: { user: true } }
+                    }
+                },
                 refunds: true,
             },
+            orderBy: { paymentDate: 'desc' }
         });
     }
     async getPaymentById(id) {
         return await prisma_1.default.payment.findUnique({
             where: { id },
             include: {
-                bill: true,
+                bill: {
+                    include: {
+                        items: { include: { product: true, service: true } },
+                        client: { include: { user: true } }
+                    }
+                },
                 refunds: true,
             },
         });
     }
     async createPayment(data) {
         return await prisma_1.default.$transaction(async (tx) => {
+            // Ensure paymentCode exists
+            const paymentData = { ...data };
+            if (!paymentData.paymentCode) {
+                paymentData.paymentCode = `PAY-${Date.now()}`;
+            }
             // Create the payment record
-            const payment = await tx.payment.create({ data });
+            const payment = await tx.payment.create({ data: paymentData });
             // If a bill is associated, we update its status to 'Paid'
             // In a real system, you'd check if sum of payments >= bill.totalAmount
             if (data.billId) {

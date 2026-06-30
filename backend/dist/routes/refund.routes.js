@@ -7,4 +7,5 @@ const router = (0, express_1.Router)();
 router.get('/', auth_middleware_1.authenticate, refund_controller_1.refundController.getAllRefunds);
 router.get('/:id', auth_middleware_1.authenticate, refund_controller_1.refundController.getRefundById);
 router.post('/', auth_middleware_1.authenticate, refund_controller_1.refundController.processRefund);
+router.put('/:id/status', auth_middleware_1.authenticate, refund_controller_1.refundController.updateRefundStatus);
 exports.default = router;

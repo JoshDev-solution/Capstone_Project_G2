@@ -12,9 +12,13 @@ export default function VetDashboard() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     const userStr = localStorage.getItem("vcms_user");
     if (userStr) setUser(JSON.parse(userStr));
     fetchDashboardData();
+    // Poll every 10 seconds for real-time updates
+    intervalId = setInterval(fetchDashboardData, 10000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchDashboardData = async () => {
