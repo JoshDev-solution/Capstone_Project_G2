@@ -116,11 +116,11 @@ function ProductModal({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Retail Price (₱)</label>
+                <label className="block text-sm font-medium mb-1.5">Selling Price (₱)</label>
                 <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" step="0.01" required />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Buy Price (₱)</label>
+                <label className="block text-sm font-medium mb-1.5">Cost Price (₱)</label>
                 <input type="number" value={buyPrice} onChange={(e) => setBuyPrice(Number(e.target.value))} className="input" placeholder="0.00" min="0" step="0.01" />
               </div>
             </div>
