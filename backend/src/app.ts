@@ -25,6 +25,7 @@ import serviceRoutes from './routes/service.routes';
 import refundRoutes from './routes/refund.routes';
 import chatRequestRoutes from './routes/chatRequest.routes';
 import settingRoutes from './routes/setting.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 
 import path from 'path';
 
@@ -69,6 +70,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/refunds', refundRoutes);
 app.use('/api/chat-requests', chatRequestRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

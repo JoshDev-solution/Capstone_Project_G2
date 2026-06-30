@@ -30,6 +30,7 @@ const service_routes_1 = __importDefault(require("./routes/service.routes"));
 const refund_routes_1 = __importDefault(require("./routes/refund.routes"));
 const chatRequest_routes_1 = __importDefault(require("./routes/chatRequest.routes"));
 const setting_routes_1 = __importDefault(require("./routes/setting.routes"));
+const dashboard_routes_1 = __importDefault(require("./routes/dashboard.routes"));
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 // Middleware
@@ -68,6 +69,7 @@ app.use('/api/services', service_routes_1.default);
 app.use('/api/refunds', refund_routes_1.default);
 app.use('/api/chat-requests', chatRequest_routes_1.default);
 app.use('/api/settings', setting_routes_1.default);
+app.use('/api/dashboard', dashboard_routes_1.default);
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);

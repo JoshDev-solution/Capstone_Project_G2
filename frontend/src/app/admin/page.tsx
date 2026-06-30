@@ -19,62 +19,6 @@ ChartJS.register(
   BarElement, ArcElement, Title, Tooltip, Legend, Filler
 );
 
-// Removed hardcoded kpiCards array, will be computed dynamically inside the component
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-const revenueData = {
-  labels: months,
-  datasets: [
-    {
-      label: "Gross Revenue",
-      data: [145000, 162000, 178000, 155000, 200000, 225000, 210000, 240000, 258000, 275000, 284500, 0],
-      borderColor: "#FF4FA3",
-      backgroundColor: "rgba(255, 79, 163, 0.08)",
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointBackgroundColor: "#FF4FA3",
-      borderWidth: 2.5,
-    },
-    {
-      label: "Net Income",
-      data: [89000, 98000, 112000, 95000, 130000, 148000, 138000, 162000, 170000, 185000, 195000, 0],
-      borderColor: "#D98CFF",
-      backgroundColor: "rgba(217, 140, 255, 0.05)",
-      fill: true,
-      tension: 0.4,
-      pointRadius: 4,
-      pointBackgroundColor: "#D98CFF",
-      borderWidth: 2.5,
-    },
-  ],
-};
-
-const salesData = {
-  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  datasets: [
-    {
-      label: "Products Sold",
-      data: [42, 58, 45, 65, 70, 85, 30],
-      backgroundColor: "rgba(255, 79, 163, 0.7)",
-      borderRadius: 8,
-      borderSkipped: false,
-    },
-  ],
-};
-
-const servicesData = {
-  labels: ["Consultation", "Vaccination", "Grooming", "Surgery", "Deworming", "Lab Tests"],
-  datasets: [
-    {
-      data: [35, 25, 15, 10, 10, 5],
-      backgroundColor: ["#FF4FA3", "#D98CFF", "#B84DFF", "#E63590", "#FF7DC0", "#ECC8FF"],
-      borderWidth: 0,
-      hoverOffset: 6,
-    },
-  ],
-};
-
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -98,20 +42,6 @@ const chartOptions = {
   },
 };
 
-const lowStockItems = [
-  { name: "Anti-Rabies Vaccine", stock: 5, reorder: 15, status: "Critical" },
-  { name: "5-in-1 Vaccine (Canine)", stock: 8, reorder: 10, status: "Low" },
-  { name: "Amoxicillin 250mg", stock: 12, reorder: 50, status: "Low" },
-];
-
-const recentActivity = [
-  { action: "New registration", user: "Sarah Mendoza", time: "2 min ago", type: "info" },
-  { action: "Payment received", user: "Carlo Reyes — ₱2,500", time: "15 min ago", type: "success" },
-  { action: "Product sale", user: "Dog Food 5kg", time: "1 hr ago", type: "success" },
-  { action: "Refund request", user: "Ana Cruz — ₱800", time: "2 hr ago", type: "warning" },
-  { action: "Low stock alert", user: "Anti-Rabies Vaccine", time: "3 hr ago", type: "danger" },
-];
-
 const activityColors: Record<string, string> = {
   info: "bg-info/10 text-info",
   success: "bg-success/10 text-success",
@@ -126,6 +56,12 @@ export default function AdminDashboardPage() {
     pendingRefunds: 0,
     pendingRegistrations: 0
   });
+
+  const [revenueData, setRevenueData] = useState<any>({ labels: [], datasets: [] });
+  const [salesData, setSalesData] = useState<any>({ labels: [], datasets: [] });
+  const [servicesData, setServicesData] = useState<any>({ labels: [], datasets: [] });
+  const [lowStockItems, setLowStockItems] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -143,8 +79,77 @@ export default function AdminDashboardPage() {
           const data = await res.json();
           setCounts(data);
         }
+
+        const statsRes = await fetch(`${baseUrl}/api/dashboard/admin`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          setRevenueData({
+            labels: stats.revenueData.labels,
+            datasets: [
+              {
+                label: "Gross Revenue",
+                data: stats.revenueData.gross,
+                borderColor: "#FF4FA3",
+                backgroundColor: "rgba(255, 79, 163, 0.08)",
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#FF4FA3",
+                borderWidth: 2.5,
+              },
+              {
+                label: "Net Income",
+                data: stats.revenueData.net,
+                borderColor: "#D98CFF",
+                backgroundColor: "rgba(217, 140, 255, 0.05)",
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#D98CFF",
+                borderWidth: 2.5,
+              },
+            ],
+          });
+          setSalesData({
+            labels: stats.salesData.labels,
+            datasets: [{
+              label: "Products Sold",
+              data: stats.salesData.data,
+              backgroundColor: "rgba(255, 79, 163, 0.7)",
+              borderRadius: 8,
+              borderSkipped: false,
+            }]
+          });
+          setServicesData({
+            labels: stats.servicesData.labels,
+            datasets: [{
+              data: stats.servicesData.data,
+              backgroundColor: ["#FF4FA3", "#D98CFF", "#B84DFF", "#E63590", "#FF7DC0", "#ECC8FF"],
+              borderWidth: 0,
+              hoverOffset: 6,
+            }]
+          });
+          setLowStockItems(stats.lowStockItems);
+          
+          const timeAgo = (dateStr: string) => {
+            const diff = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 60000);
+            if (diff < 1) return "Just now";
+            if (diff < 60) return `${diff} min ago`;
+            if (diff < 1440) return `${Math.floor(diff/60)} hr ago`;
+            return `${Math.floor(diff/1440)} days ago`;
+          };
+
+          setRecentActivity(stats.recentActivity.map((act: any) => ({
+            action: act.type,
+            user: act.user + (act.detail ? ` — ${act.detail}` : ''),
+            time: timeAgo(act.date),
+            type: act.color
+          })));
+        }
       } catch (error) {
-        console.error("Failed to fetch counts", error);
+        console.error("Failed to fetch counts or stats", error);
       }
     };
     
