@@ -25,6 +25,9 @@ interface Pet {
   lastVisit: string;
   microchip: string;
   profileImageUrl?: string;
+  petTypeId?: number;
+  isNeutered?: boolean;
+  rawDob?: string;
 }
 
 const speciesEmoji: Record<string, string> = {
