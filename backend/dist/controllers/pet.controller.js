@@ -19,10 +19,13 @@ class PetController {
                 sex: p.sex,
                 color: p.color || 'Unknown',
                 dob: p.birthDate ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(p.birthDate)) : 'Unknown',
+                rawDob: p.birthDate ? new Date(p.birthDate).toISOString().split('T')[0] : '',
                 weight: Number(p.weightKg) || 0,
                 ownerName: p.client?.user?.firstName ? `${p.client.user.firstName} ${p.client.user.lastName || ''}`.trim() : 'Unknown',
                 ownerEmail: p.client?.user?.email || 'Unknown',
                 status: p.isActive ? "Active" : "Inactive",
+                isNeutered: p.isNeutered,
+                petTypeId: p.petTypeId,
                 vaccinationStatus: p.isNeutered ? "Vaccinated" : "Not Vaccinated", // Rough mapping
                 lastVisit: "Recent", // Stub
                 microchip: p.microchipNumber || "None",

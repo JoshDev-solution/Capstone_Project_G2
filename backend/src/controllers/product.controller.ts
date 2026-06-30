@@ -9,9 +9,14 @@ export class ProductController {
         id: p.id,
         name: p.name,
         category: p.category?.name || 'Uncategorized',
+        categoryId: p.categoryId,
         sku: p.sku || `PRD-${p.id}`,
         price: Number(p.price),
         stock: p.inventory?.quantity || 0,
+        unit: p.unit || "piece",
+        reorderLevel: p.inventory?.reorderLevel || 10,
+        expiry: p.inventory?.expirationDate ? new Date(p.inventory.expirationDate).toISOString().split('T')[0] : "",
+        active: p.isActive,
         status: p.isActive ? (p.inventory?.quantity > 0 ? "In Stock" : "Low Stock") : "Out of Stock",
         lastRestocked: p.inventory?.lastRestocked ? new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(p.inventory.lastRestocked)) : 'Never'
       }));

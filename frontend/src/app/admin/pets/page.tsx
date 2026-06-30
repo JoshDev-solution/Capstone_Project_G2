@@ -167,12 +167,14 @@ function PetFormModal({
   const isEdit = !!pet;
   const [name, setName] = useState(isEdit ? pet.name : "");
   const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [species, setSpecies] = useState(isEdit ? pet.species : "Dog");
+  const [species, setSpecies] = useState(isEdit ? (pet.petTypeId ? String(pet.petTypeId) : "1") : "1");
   const [breed, setBreed] = useState(isEdit ? pet.breed : "");
-  const [sex, setSex] = useState(isEdit ? pet.sex : "Male");
-  const [dob, setDob] = useState(isEdit ? pet.dob : "");
+  const [sex, setSex] = useState(isEdit ? pet.sex : "Unknown");
+  const [dob, setDob] = useState(isEdit ? (pet.rawDob || pet.dob) : "");
   const [weight, setWeight] = useState(isEdit ? pet.weight : 0);
   const [color, setColor] = useState(isEdit ? pet.color : "");
+  const [microchip, setMicrochip] = useState(isEdit ? pet.microchip : "");
+  const [isNeutered, setIsNeutered] = useState(isEdit ? !!pet.isNeutered : false);
   const [ownerName, setOwnerName] = useState(isEdit ? pet.ownerName : "");
   const [ownerEmail, setOwnerEmail] = useState(isEdit ? pet.ownerEmail : "");
   
