@@ -26,6 +26,28 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  
+  const handleNameChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setter(e.target.value.replace(/[^a-zA-Z\s\-ñÑ]/g, ''));
+  };
+
+  const handlePhoneChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('63')) val = val.substring(2);
+    else if (val.startsWith('0')) val = val.substring(1);
+    
+    val = val.substring(0, 10);
+    
+    if (val.length > 0) {
+      let formatted = '+63 ';
+      if (val.length > 0) formatted += val.substring(0, 3);
+      if (val.length > 3) formatted += ' ' + val.substring(3, 6);
+      if (val.length > 6) formatted += ' ' + val.substring(6, 10);
+      setter(formatted);
+    } else {
+      setter('');
+    }
+  };
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
 
@@ -235,19 +257,19 @@ export default function RegisterPage() {
                         <label className="block text-sm font-medium mb-1.5" htmlFor="first-name">First Name</label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                          <input id="first-name" type="text" required minLength={2} pattern="^[a-zA-Z\s\-]+$" title="Only letters, spaces, and hyphens allowed" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Juan" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                          <input id="first-name" type="text" required minLength={2} pattern="^[a-zA-Z\s\-ñÑ]+$" title="Only letters, spaces, and hyphens allowed" value={firstName} onChange={handleNameChange(setFirstName)} placeholder="Juan" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                         </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-1.5" htmlFor="last-name">Last Name</label>
-                        <input id="last-name" type="text" required minLength={2} pattern="^[a-zA-Z\s\-]+$" title="Only letters, spaces, and hyphens allowed" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Dela Cruz" className="input" />
+                        <input id="last-name" type="text" required minLength={2} pattern="^[a-zA-Z\s\-ñÑ]+$" title="Only letters, spaces, and hyphens allowed" value={lastName} onChange={handleNameChange(setLastName)} placeholder="Dela Cruz" className="input" />
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1.5" htmlFor="phone">Phone Number</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                        <input id="phone" type="tel" required pattern="^(09|\+639)\d{9}$" title="Format: 09XXXXXXXXX or +639XXXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+63-9XX-XXX-XXXX" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
+                        <input id="phone" type="tel" required pattern="^\+63\s9\d{2}\s\d{3}\s\d{4}$" title="Format: +63 9XX XXX XXXX" value={phone} onChange={handlePhoneChange(setPhone)} placeholder="+63 9XX XXX XXXX" className="input pl-10" style={{ paddingLeft: "2.5rem" }} />
                       </div>
                     </div>
                     <div>

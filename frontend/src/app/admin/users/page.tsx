@@ -53,9 +53,31 @@ function UserModal({
   const [firstName, setFirstName] = useState(isEdit ? user.name.split(" ")[0] : "");
   const [lastName, setLastName] = useState(isEdit ? user.name.split(" ").slice(1).join(" ") : "");
   const [email, setEmail] = useState(isEdit ? user.email : "");
-  const [phone, setPhone] = useState(isEdit ? user.phone : "");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>(isEdit ? user.role : "Client");
+  const [phone, setPhone] = useState(isEdit ? user.phone : "");
+  const [role, setRole] = useState<Role>(isEdit ? user.role : "Veterinarian");
+
+  const handleNameChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setter(e.target.value.replace(/[^a-zA-Z\s\-ñÑ]/g, ''));
+  };
+
+  const handlePhoneChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('63')) val = val.substring(2);
+    else if (val.startsWith('0')) val = val.substring(1);
+    
+    val = val.substring(0, 10);
+    
+    if (val.length > 0) {
+      let formatted = '+63 ';
+      if (val.length > 0) formatted += val.substring(0, 3);
+      if (val.length > 3) formatted += ' ' + val.substring(3, 6);
+      if (val.length > 6) formatted += ' ' + val.substring(6, 10);
+      setter(formatted);
+    } else {
+      setter('');
+    }
+  };
   const [status, setStatus] = useState<Status>(isEdit ? user.status : "Active");
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -112,7 +134,9 @@ function UserModal({
                 <input 
                   type="text" 
                   value={firstName} 
-                  onChange={(e) => setFirstName(e.target.value)} 
+                  onChange={handleNameChange(setFirstName)} 
+                  pattern="^[a-zA-Z\s\-ñÑ]+$"
+                  title="Only letters, spaces, and hyphens allowed"
                   className="input pl-10" 
                   style={{ paddingLeft: "2.5rem" }}
                   placeholder="Juan" 
@@ -125,7 +149,9 @@ function UserModal({
               <input 
                 type="text" 
                 value={lastName} 
-                onChange={(e) => setLastName(e.target.value)} 
+                onChange={handleNameChange(setLastName)} 
+                pattern="^[a-zA-Z\s\-ñÑ]+$"
+                title="Only letters, spaces, and hyphens allowed"
                 className="input" 
                 placeholder="Dela Cruz" 
                 required 
@@ -169,10 +195,12 @@ function UserModal({
               <input 
                 type="tel" 
                 value={phone} 
-                onChange={(e) => setPhone(e.target.value)} 
+                onChange={handlePhoneChange(setPhone)} 
+                pattern="^\+63\s9\d{2}\s\d{3}\s\d{4}$"
+                title="Format: +63 9XX XXX XXXX"
                 className="input pl-10" 
                 style={{ paddingLeft: "2.5rem" }}
-                placeholder="+63-9XX-XXX-XXXX" 
+                placeholder="+63 9XX XXX XXXX" 
                 required 
               />
             </div>
