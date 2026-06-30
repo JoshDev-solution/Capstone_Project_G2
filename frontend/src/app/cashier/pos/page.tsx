@@ -352,7 +352,7 @@ export default function CashierPOSPage() {
         <div className="flex-1 overflow-y-auto pr-2 pb-4">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map(product => {
-              const stock = product.inventory?.quantity || 0;
+              const stock = product.stock || 0;
               return (
                 <div 
                   key={product.id} 
@@ -367,10 +367,10 @@ export default function CashierPOSPage() {
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <span className="text-[10px] font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded mb-2 inline-block">
-                        {product.category?.name || "Retail"}
+                        {product.category || "Retail"}
                       </span>
                       {stock <= 0 && <span className="badge bg-danger/10 text-danger text-[10px]">Out of Stock</span>}
-                      {stock > 0 && stock <= (product.inventory?.reorderLevel || 5) && <span className="badge bg-warning/10 text-warning text-[10px]">Low Stock</span>}
+                      {stock > 0 && stock <= (product.reorderLevel || 5) && <span className="badge bg-warning/10 text-warning text-[10px]">Low Stock</span>}
                     </div>
                     <h3 className={cn("font-bold text-sm leading-tight transition-colors line-clamp-2", stock > 0 && "group-hover:text-primary-600")}>
                       {product.name}
