@@ -136,7 +136,7 @@ export default function RefundsPage() {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
-      const res = await fetch(`${baseUrl}/api/refunds/${id}`, {
+      const res = await fetch(`${baseUrl}/api/refunds/${id}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
