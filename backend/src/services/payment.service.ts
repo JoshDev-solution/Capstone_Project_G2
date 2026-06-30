@@ -22,8 +22,14 @@ export class PaymentService {
 
   async createPayment(data: any) {
     return await prisma.$transaction(async (tx) => {
+      // Ensure paymentCode exists
+      const paymentData = { ...data };
+      if (!paymentData.paymentCode) {
+        paymentData.paymentCode = `PAY-${Date.now()}`;
+      }
+
       // Create the payment record
-      const payment = await tx.payment.create({ data });
+      const payment = await tx.payment.create({ data: paymentData });
 
       // If a bill is associated, we update its status to 'Paid'
       // In a real system, you'd check if sum of payments >= bill.totalAmount

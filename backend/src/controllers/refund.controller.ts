@@ -25,7 +25,7 @@ export class RefundController {
         amount: Number(r.amount),
         date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(r.createdAt)),
         reason: r.reason || 'Requested by client',
-        status: "Completed"
+        status: r.status
       }));
       
       res.json(mapped);
@@ -61,7 +61,7 @@ export class RefundController {
         amount: Number(refund.amount),
         date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(refund.createdAt)),
         reason: refund.reason || 'Requested by client',
-        status: "Completed"
+        status: refund.status
       };
       
       res.json(mapped);
@@ -92,6 +92,19 @@ export class RefundController {
         }
       });
       res.status(201).json(refund);
+    } catch (error) {
+      next(error);
+    }
+  }
+  async updateRefundStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id as string);
+      const { status } = req.body;
+      const refund = await prisma.refund.update({
+        where: { id },
+        data: { status }
+      });
+      res.json(refund);
     } catch (error) {
       next(error);
     }
