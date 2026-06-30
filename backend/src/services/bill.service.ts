@@ -32,7 +32,7 @@ export class BillService {
   }
 
   async createBill(data: any) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const bill = await tx.bill.create({
         data,
         include: { items: true } // Include items to get what was just created
@@ -59,7 +59,7 @@ export class BillService {
   }
 
   async updateBill(id: number, data: any) {
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: any) => {
       const bill = await tx.bill.update({
         where: { id },
         data,
