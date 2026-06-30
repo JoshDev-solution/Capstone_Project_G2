@@ -4,14 +4,15 @@ export class BillService {
   async getAllBills() {
     return await prisma.bill.findMany({
       include: {
-        client: true,
+        client: { include: { user: true } },
         pet: true,
         appointment: true,
         discount: true,
-        items: true,
+        items: { include: { service: true, product: true } },
         payments: true,
         refunds: true,
       },
+      orderBy: { createdAt: 'desc' }
     });
   }
 
@@ -19,11 +20,11 @@ export class BillService {
     return await prisma.bill.findUnique({
       where: { id },
       include: {
-        client: true,
+        client: { include: { user: true } },
         pet: true,
         appointment: true,
         discount: true,
-        items: true,
+        items: { include: { service: true, product: true } },
         payments: true,
         refunds: true,
       },
@@ -58,9 +59,30 @@ export class BillService {
   }
 
   async updateBill(id: number, data: any) {
-    return await prisma.bill.update({
-      where: { id },
-      data,
+    return await prisma.$transaction(async (tx) => {
+      const bill = await tx.bill.update({
+        where: { id },
+        data,
+        include: { items: true }
+      });
+
+      // Deduct inventory for newly added items if data.items.create exists
+      if (data.items && data.items.create) {
+        for (const item of data.items.create) {
+          if (item.productId && item.quantity) {
+            await tx.inventory.updateMany({
+              where: { productId: item.productId },
+              data: {
+                quantity: {
+                  decrement: item.quantity
+                }
+              }
+            });
+          }
+        }
+      }
+
+      return bill;
     });
   }
 
