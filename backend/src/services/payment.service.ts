@@ -4,9 +4,15 @@ export class PaymentService {
   async getAllPayments() {
     return await prisma.payment.findMany({
       include: {
-        bill: true,
+        bill: {
+          include: {
+            items: { include: { product: true, service: true } },
+            client: { include: { user: true } }
+          }
+        },
         refunds: true,
       },
+      orderBy: { paymentDate: 'desc' }
     });
   }
 
@@ -14,7 +20,12 @@ export class PaymentService {
     return await prisma.payment.findUnique({
       where: { id },
       include: {
-        bill: true,
+        bill: {
+          include: {
+            items: { include: { product: true, service: true } },
+            client: { include: { user: true } }
+          }
+        },
         refunds: true,
       },
     });

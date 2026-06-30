@@ -23,14 +23,35 @@ export default function CashierRefunds() {
 
   // New Refund Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [payments, setPayments] = useState<any[]>([]);
   const [paymentId, setPaymentId] = useState("");
   const [amount, setAmount] = useState<number | "">("");
   const [reason, setReason] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
   useEffect(() => {
     fetchRefunds();
+    fetchPayments();
   }, []);
+
+  const fetchPayments = async () => {
+    try {
+      let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+      if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
+      const token = localStorage.getItem("vcms_token");
+
+      const res = await fetch(`${baseUrl}/api/payments`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPayments(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchRefunds = async () => {
     setLoading(true);
@@ -53,6 +74,25 @@ export default function CashierRefunds() {
     }
   };
 
+  const handlePaymentSelect = (pid: string) => {
+    setPaymentId(pid);
+    setSelectedItems([]);
+    setAmount("");
+  };
+
+  const handleItemToggle = (item: any, checked: boolean) => {
+    let newItems = [...selectedItems];
+    if (checked) {
+      newItems.push(item);
+    } else {
+      newItems = newItems.filter(i => i.id !== item.id);
+    }
+    setSelectedItems(newItems);
+    
+    const total = newItems.reduce((sum, i) => sum + Number(i.total), 0);
+    setAmount(total > 0 ? total : "");
+  };
+
   const handleCreateRefund = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paymentId || !amount || !reason) return;
@@ -62,6 +102,9 @@ export default function CashierRefunds() {
       let baseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
       if (!baseUrl.startsWith("http")) baseUrl = `https://${baseUrl}`;
       const token = localStorage.getItem("vcms_token");
+      
+      const itemNames = selectedItems.map(i => i.name).join(", ");
+      const finalReason = itemNames ? `Refund for: ${itemNames}. Reason: ${reason}` : reason;
 
       const res = await fetch(`${baseUrl}/api/refunds`, {
         method: 'POST',
@@ -69,7 +112,7 @@ export default function CashierRefunds() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         },
-        body: JSON.stringify({ paymentId, amount: Number(amount), reason })
+        body: JSON.stringify({ paymentId, amount: Number(amount), reason: finalReason })
       });
 
       if (!res.ok) {
@@ -210,17 +253,42 @@ export default function CashierRefunds() {
             <div className="p-6">
               <form onSubmit={handleCreateRefund} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Transaction ID (Payment Code)</label>
-                  <input 
-                    type="text" 
+                  <label className="block text-sm font-medium mb-1">Select Transaction</label>
+                  <select 
                     required 
-                    placeholder="e.g. PAY-1234567890" 
                     value={paymentId}
-                    onChange={(e) => setPaymentId(e.target.value)}
+                    onChange={(e) => handlePaymentSelect(e.target.value)}
                     className="input w-full"
-                  />
-                  <p className="text-xs text-neutral-500 mt-1">Found on the client's receipt.</p>
+                  >
+                    <option value="">-- Choose Transaction --</option>
+                    {payments.map((p: any) => (
+                      <option key={p.id} value={p.paymentCode}>
+                        {p.paymentCode} - {p.clientName} (₱{Number(p.amount).toLocaleString()})
+                      </option>
+                    ))}
+                  </select>
                 </div>
+                
+                {paymentId && payments.find(p => p.paymentCode === paymentId)?.items?.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Select Items to Refund</label>
+                    <div className="space-y-2 border border-[var(--card-border)] rounded-xl p-3 bg-neutral-50 dark:bg-neutral-900/50 max-h-40 overflow-y-auto">
+                      {payments.find(p => p.paymentCode === paymentId)?.items.map((item: any) => (
+                        <label key={item.id} className="flex items-center gap-3 p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded cursor-pointer transition-colors">
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 text-primary-500 rounded border-neutral-300 focus:ring-primary-500"
+                            checked={selectedItems.some(i => i.id === item.id)}
+                            onChange={(e) => handleItemToggle(item, e.target.checked)}
+                          />
+                          <div className="flex-1 text-sm font-medium">{item.name} <span className="text-neutral-500 font-normal">x{item.qty}</span></div>
+                          <div className="text-sm font-bold">₱{Number(item.total).toLocaleString()}</div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div>
                   <label className="block text-sm font-medium mb-1">Refund Amount (₱)</label>
                   <input 
@@ -230,9 +298,10 @@ export default function CashierRefunds() {
                     step="0.01"
                     placeholder="0.00" 
                     value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="input w-full"
+                    disabled={true}
+                    className="input w-full bg-neutral-100 dark:bg-neutral-800 cursor-not-allowed"
                   />
+                  <p className="text-xs text-neutral-500 mt-1">Amount is automatically calculated based on selected items.</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Reason for Refund</label>

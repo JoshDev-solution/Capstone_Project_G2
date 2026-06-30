@@ -5,7 +5,18 @@ export class PaymentController {
   async getAllPayments(req: Request, res: Response, next: NextFunction) {
     try {
       const payments = await paymentService.getAllPayments();
-      res.json(payments);
+      const mapped = payments.map((p: any) => ({
+        ...p,
+        clientName: p.bill?.client?.user ? `${p.bill.client.user.firstName} ${p.bill.client.user.lastName || ''}`.trim() : 'Walk-in Customer',
+        items: p.bill?.items?.map((item: any) => ({
+          id: item.id,
+          name: item.description || item.product?.name || item.service?.name,
+          qty: item.quantity,
+          price: Number(item.unitPrice),
+          total: Number(item.totalPrice)
+        })) || []
+      }));
+      res.json(mapped);
     } catch (error) {
       next(error);
     }
