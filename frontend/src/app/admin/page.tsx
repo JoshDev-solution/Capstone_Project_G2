@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { motion } from "framer-motion";
 import {
   PawPrint, RotateCcw,
@@ -17,45 +19,7 @@ ChartJS.register(
   BarElement, ArcElement, Title, Tooltip, Legend, Filler
 );
 
-const kpiCards = [
-  {
-    label: "Gross Sales (This Month)",
-    value: "₱284,500",
-    change: "+18.3%",
-    positive: true,
-    icon: PhilippinePeso,
-    color: "#FF4FA3",
-    bg: "from-primary-500 to-primary-700",
-  },
-  {
-    label: "Active Patients",
-    value: "1,248",
-    change: "+12.1%",
-    positive: true,
-    icon: PawPrint,
-    color: "#D98CFF",
-    bg: "from-accent-400 to-accent-600",
-  },
-  {
-    label: "Pending Refunds",
-    value: "4",
-    change: "+1 new today",
-    positive: false,
-    icon: RotateCcw,
-    color: "#10B981",
-    bg: "from-emerald-400 to-emerald-600",
-  },
-  {
-    label: "Pending Registrations",
-    value: "7",
-    change: "+3 new today",
-    positive: false,
-    icon: ClipboardList,
-    color: "#F59E0B",
-    bg: "from-amber-400 to-amber-600",
-  },
-];
-
+// Removed hardcoded kpiCards array, will be computed dynamically inside the component
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const revenueData = {
@@ -156,6 +120,70 @@ const activityColors: Record<string, string> = {
 };
 
 export default function AdminDashboardPage() {
+  const [counts, setCounts] = useState({
+    grossSales: 0,
+    activePatients: 0,
+    pendingRefunds: 0,
+    pendingRegistrations: 0
+  });
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:5000/api/users/counts", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCounts(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch counts", error);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  const kpiCards = [
+    {
+      label: "Gross Sales (This Month)",
+      value: `₱${counts.grossSales.toLocaleString()}`,
+      change: "Live",
+      positive: true,
+      icon: PhilippinePeso,
+      color: "#FF4FA3",
+      bg: "from-primary-500 to-primary-700",
+    },
+    {
+      label: "Active Patients",
+      value: counts.activePatients.toLocaleString(),
+      change: "Live",
+      positive: true,
+      icon: PawPrint,
+      color: "#D98CFF",
+      bg: "from-accent-400 to-accent-600",
+    },
+    {
+      label: "Pending Refunds",
+      value: counts.pendingRefunds.toLocaleString(),
+      change: "Live",
+      positive: false,
+      icon: RotateCcw,
+      color: "#10B981",
+      bg: "from-emerald-400 to-emerald-600",
+    },
+    {
+      label: "Pending Registrations",
+      value: counts.pendingRegistrations.toLocaleString(),
+      change: "Live",
+      positive: false,
+      icon: ClipboardList,
+      color: "#F59E0B",
+      bg: "from-amber-400 to-amber-600",
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-8">
       {/* Page Header */}

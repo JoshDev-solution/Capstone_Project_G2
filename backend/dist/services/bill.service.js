@@ -9,25 +9,26 @@ class BillService {
     async getAllBills() {
         return await prisma_1.default.bill.findMany({
             include: {
-                client: true,
+                client: { include: { user: true } },
                 pet: true,
                 appointment: true,
                 discount: true,
-                items: true,
+                items: { include: { service: true, product: true } },
                 payments: true,
                 refunds: true,
             },
+            orderBy: { createdAt: 'desc' }
         });
     }
     async getBillById(id) {
         return await prisma_1.default.bill.findUnique({
             where: { id },
             include: {
-                client: true,
+                client: { include: { user: true } },
                 pet: true,
                 appointment: true,
                 discount: true,
-                items: true,
+                items: { include: { service: true, product: true } },
                 payments: true,
                 refunds: true,
             },
@@ -58,9 +59,28 @@ class BillService {
         });
     }
     async updateBill(id, data) {
-        return await prisma_1.default.bill.update({
-            where: { id },
-            data,
+        return await prisma_1.default.$transaction(async (tx) => {
+            const bill = await tx.bill.update({
+                where: { id },
+                data,
+                include: { items: true }
+            });
+            // Deduct inventory for newly added items if data.items.create exists
+            if (data.items && data.items.create) {
+                for (const item of data.items.create) {
+                    if (item.productId && item.quantity) {
+                        await tx.inventory.updateMany({
+                            where: { productId: item.productId },
+                            data: {
+                                quantity: {
+                                    decrement: item.quantity
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            return bill;
         });
     }
     async deleteBill(id) {

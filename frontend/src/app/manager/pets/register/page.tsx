@@ -28,8 +28,9 @@ export default function RegisterPetPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [petTypes, setPetTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<PetFormValues>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<PetFormValues>({
     resolver: zodResolver(petSchema),
     defaultValues: {
       sex: "Unknown",
@@ -87,10 +88,19 @@ export default function RegisterPetPage() {
         birthDate: data.birthDate ? new Date(data.birthDate).toISOString() : undefined,
       };
 
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      if (profileImage) {
+        formData.append("profileImage", profileImage);
+      }
+
       const res = await fetch(`${baseUrl}/api/pets`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       if (res.ok) {
@@ -98,9 +108,27 @@ export default function RegisterPetPage() {
           title: "Success",
           text: "Pet has been successfully registered.",
           icon: "success",
+          showCancelButton: true,
           confirmButtonColor: "#FF4FA3",
-        }).then(() => {
-          router.push("/manager/pets");
+          confirmButtonText: "Add Another Pet",
+          cancelButtonText: "Go to Pet List"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            setProfileImage(null);
+            reset({
+              clientId: data.clientId,
+              sex: "Unknown",
+              isNeutered: false,
+              name: "",
+              petTypeId: "",
+              breedId: "",
+              birthDate: "",
+              color: "",
+              weightKg: ""
+            });
+          } else {
+            router.push('/manager/pets');
+          }
         });
       } else {
         throw new Error("Failed to register pet");
@@ -158,6 +186,11 @@ export default function RegisterPetPage() {
             <PawPrint className="w-5 h-5 text-primary-500" /> Patient Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium">Profile Image</label>
+              <input type="file" accept="image/*" onChange={(e) => setProfileImage(e.target.files?.[0] || null)} className="input w-full" />
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Pet Name <span className="text-red-500">*</span></label>
               <input type="text" className={cn("input", errors.name && "border-red-500")} placeholder="e.g. Buster" {...register("name")} />

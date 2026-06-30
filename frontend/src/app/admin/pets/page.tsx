@@ -135,7 +135,7 @@ function PetDetailModal({ pet, onClose, onEdit }: { pet: Pet; onClose: () => voi
               { label: "Species",            value: pet.species },
               { label: "Breed",              value: pet.breed },
               { label: "Sex",                value: pet.sex },
-              { label: "Date of Birth",      value: pet.dob || "Unknown" },
+              { label: "Age",                value: calculateAge(pet.dob) },
               { label: "Weight",             value: `${pet.weight} kg` },
               { label: "Color / Markings",   value: pet.color || "None" },
               { label: "Status",             value: pet.status },
@@ -224,7 +224,10 @@ function PetFormModal({
       <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
         className="relative w-full max-w-xl card z-10 shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
         <form onSubmit={handleSubmit}>
-          <div className="flex items-center justify-between p-6 border-b border-[var(--card-border)]">
+          <div className={cn(
+            "flex items-center justify-between p-6 border-b", 
+            isEdit ? "bg-primary-500/10 border-primary-500/20" : "border-[var(--card-border)]"
+          )}>
             <h2 className="text-xl font-bold">{isEdit ? `Edit ${pet.name}` : "Register New Pet"}</h2>
             <button type="button" onClick={onClose} className="btn-icon btn-ghost rounded-xl w-9 h-9 flex items-center justify-center"><X className="w-5 h-5" /></button>
           </div>

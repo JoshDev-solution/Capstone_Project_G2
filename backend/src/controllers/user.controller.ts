@@ -36,8 +36,29 @@ export class UserController {
 
   async getCounts(req: Request, res: Response, next: NextFunction) {
     try {
-      // Stubbed since missing from Prisma schema
-      res.json({ registrationsCount: 0, notificationsCount: 0 });
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const salesResult = await prisma.bill.aggregate({
+        _sum: { totalAmount: true },
+        where: { status: 'Paid', createdAt: { gte: startOfMonth } }
+      });
+      const grossSales = Number(salesResult._sum.totalAmount || 0);
+
+      const activePatients = await prisma.pet.count({ where: { isActive: true } });
+      
+      const pendingRefunds = await prisma.refund.count(); // Placeholder if no status
+
+      const pendingRegistrations = await prisma.user.count({
+        where: { role: { name: 'Client' }, isApproved: false }
+      });
+
+      res.json({
+        grossSales,
+        activePatients,
+        pendingRefunds,
+        pendingRegistrations
+      });
     } catch (error) {
       next(error);
     }
@@ -278,7 +299,19 @@ export class UserController {
           lastName,
           passwordHash,
           roleId: roleRecord.id,
-          isActive: status === 'Active'
+          isActive: status === 'Active',
+          isApproved: true,
+          ...(dbRoleName === 'Client' ? {
+            client: {
+              create: {
+                clientCode: `CLT-${Date.now().toString().slice(-6)}`,
+              }
+            }
+          } : {
+            staff: {
+              create: {}
+            }
+          })
         }
       });
       res.status(201).json(user);
