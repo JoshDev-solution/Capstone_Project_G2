@@ -36,7 +36,7 @@ export default function VetDashboard() {
   };
 
   const todayAppointments = appointments.filter(a => {
-    const aptDate = new Date(a.appointmentDate);
+    const aptDate = new Date(a.rawDate || a.date);
     const today = new Date();
     return aptDate.toDateString() === today.toDateString();
   });

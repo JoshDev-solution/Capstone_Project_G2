@@ -33,13 +33,12 @@ export default function VetConsultationPage() {
 
   // For consultation queue, we want to see Arrived, In Progress, or Scheduled for today
   const queue = appointments.filter(apt => {
-    const isToday = new Date(apt.appointmentDate).toDateString() === new Date().toDateString();
+    const isToday = new Date(apt.rawDate || apt.date).toDateString() === new Date().toDateString();
     const isCorrectStatus = apt.status === "Arrived" || apt.status === "Scheduled" || apt.status === "In Progress";
     
     // Search filter
-    const matchesSearch = apt.pet?.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          apt.client?.user?.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          apt.client?.user?.firstName?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = apt.petName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          apt.clientName?.toLowerCase().includes(searchQuery.toLowerCase());
                           
     return isToday && isCorrectStatus && (!searchQuery || matchesSearch);
   }).sort((a, b) => {
@@ -48,7 +47,7 @@ export default function VetConsultationPage() {
     const orderA = statusOrder[a.status as keyof typeof statusOrder] || 99;
     const orderB = statusOrder[b.status as keyof typeof statusOrder] || 99;
     if (orderA !== orderB) return orderA - orderB;
-    return new Date(a.appointmentTime).getTime() - new Date(b.appointmentTime).getTime();
+    return new Date(a.rawTime).getTime() - new Date(b.rawTime).getTime();
   });
 
   return (
