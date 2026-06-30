@@ -85,7 +85,7 @@ export default function CashierPOSPage() {
 
   const addToCart = (product: any) => {
     // Optional check for inventory limit
-    const inventoryCount = product.inventory?.quantity || 0;
+    const inventoryCount = product.stock || 0;
     
     const existing = cart.find(item => item.id === product.id);
     if (existing) {
@@ -107,7 +107,7 @@ export default function CashierPOSPage() {
     setCart(cart.map(item => {
       if (item.id === id) {
         const newQty = item.quantity + delta;
-        const limit = item.inventory?.quantity || 0;
+        const limit = item.stock || 0;
         if (newQty > limit) {
           Swal.fire("Out of Stock", `Only ${limit} units available.`, "warning");
           return item;
